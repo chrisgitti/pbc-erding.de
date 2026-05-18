@@ -958,10 +958,10 @@ export const mannschaften: Mannschaft[] = [
     rang: 6,
     siege: 1,
     unentschieden: 0,
-    niederlagen: 8,
-    spiele: '32:58',
-    diff: '-26',
-    punkte: '2:16',
+    niederlagen: 9,
+    spiele: '36:64',
+    diff: '-28',
+    punkte: '2:18',
     spielplan: [
       { datum: '2025-09-20', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'PBC Erding II',         ergebnis: '4:6', wertung: 'niederlage' },
       { datum: '2025-10-18', uhrzeit: '11:00', heim: 'BSV PB München III',     gast: 'PBC Erding III',        ergebnis: '6:4', wertung: 'niederlage' },
@@ -972,7 +972,7 @@ export const mannschaften: Mannschaft[] = [
       { datum: '2026-03-07', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'PBC Lerchenau II',      ergebnis: '4:6', wertung: 'niederlage' },
       { datum: '2026-03-14', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'BSV PB München IV',     ergebnis: '6:4', wertung: 'sieg'       },
       { datum: '2026-04-25', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'PBC Markt Schwaben II', ergebnis: '1:9', wertung: 'niederlage' },
-      { datum: '2026-05-09', uhrzeit: '14:00', heim: 'PBC Lerchenau II',       gast: 'PBC Erding III',        ergebnis: null,  wertung: 'offen'      },
+      { datum: '2026-05-09', uhrzeit: '14:00', heim: 'PBC Lerchenau II',       gast: 'PBC Erding III',        ergebnis: '6:4', wertung: 'niederlage' },
     ],
   },
 ]
