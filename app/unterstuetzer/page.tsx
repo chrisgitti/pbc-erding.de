@@ -33,13 +33,16 @@ export default function UnterstuetzerPage() {
 
       <section className="py-20 bg-charcoal-950">
         <Container className="space-y-16">
-          <div className="grid gap-4 lg:grid-cols-3">
-            {packages.map((item) => (
-              <div key={item.name} className="rounded-[1.5rem] border border-white/6 bg-white/[0.02] p-6 h-full">
-                <h2 className="font-display text-2xl sm:text-3xl uppercase text-white">{item.name}</h2>
-                <p className="mt-3 text-sm leading-relaxed text-white/75">{item.text}</p>
-              </div>
-            ))}
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-500 mb-6">Wir bieten:</h2>
+            <div className="grid gap-4 lg:grid-cols-3">
+              {packages.map((item) => (
+                <div key={item.name} className="rounded-[1.5rem] border border-white/6 bg-white/[0.02] p-6 h-full">
+                  <h2 className="font-display text-2xl sm:text-3xl uppercase text-white">{item.name}</h2>
+                  <p className="mt-3 text-sm leading-relaxed text-white/75">{item.text}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div>
