@@ -13,7 +13,7 @@ Statischer Export (`output: 'export'`), deployed im **Wurzelverzeichnis** von pb
 | Dev-Port        | **3005** (`npm run dev`)                  |
 | Deployment-URL  | `/` (Wurzelverzeichnis pbc-erding.de)     |
 | Build-Befehl    | `npm run build`                           |
-| GitHub          | (noch kein Repo)                          |
+| GitHub          | https://github.com/chrisgitti/pbc-erding.de |
 
 ---
 
