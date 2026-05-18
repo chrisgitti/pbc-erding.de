@@ -2757,7 +2757,9 @@ function handleDrill15Shot() {
   } else if (pottedSpot) {
     game.drill15Potted++;
     game.drill15Score += game.drill15FromKitchen ? 2 : 1;
-  } else {
+  }
+  // Kugel immer entfernen wenn nicht versenkt (auch bei gleichzeitigem Scratch)
+  if (!pottedSpot) {
     const b = game.balls.find(bb => bb.num === currentBall && bb.inPlay);
     if (b) b.inPlay = false;
   }
