@@ -33,20 +33,20 @@ export default function Header() {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-3"
+            className="flex shrink-0 items-center gap-3"
             onClick={() => setMenuOpen(false)}
             aria-label="PBC Erding - Startseite"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/logo_pbced.png`}
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/images/logo_pbced.png`}
               alt=""
-              width={36}
-              height={36}
+              width={48}
+              height={48}
               loading="eager"
               decoding="async"
               fetchPriority="high"
-              className="rounded-full"
+              className="rounded-full ring-2 ring-white/10 bg-charcoal-900"
             />
             <span className="sr-only">PBC Erding</span>
           </Link>
