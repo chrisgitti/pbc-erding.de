@@ -1,0 +1,208 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kontakt – PBC Erding</title>
+  <meta name="description" content="Kontakt zum Pool Billard Club Erding. Mitgliedschaft, Fragen, Anfahrt." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <img src="images/logo_pbced.png" alt="PBC Erding Logo" width="32" height="32">
+      PBC Erding
+    </a>
+    <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="main-nav" id="main-nav">
+      <ul>
+        <li><a href="index.html">Startseite</a></li>
+        <li><a href="verein.html">Verein</a></li>
+        <li><a href="mannschaften.html">Mannschaften</a></li>
+        <li><a href="veranstaltungen.html">Veranstaltungen</a></li>
+        <li><a href="ergebnisse.html">Ergebnisse</a></li>
+        <li><a href="downloads.html">Downloads</a></li>
+        <li><a href="links.html">Links</a></li>
+        <li><a href="galerie.html">Galerie</a></li>
+        <li><a href="sponsoren.html">Sponsoren</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+      </ul>
+      <a href="kontakt.html" class="btn-outline-sm">Mitglied werden</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <div class="page-header">
+    <div class="container">
+      <p class="section-label">Schreib uns</p>
+      <h1 class="page-header-title">Kontakt</h1>
+      <p class="page-header-sub">Fragen, Schnuppertraining oder Mitgliedschaft: Der PBC Erding freut sich auf neue Gesichter im Bowling Castle.</p>
+    </div>
+  </div>
+
+  <section class="bg-main">
+    <div class="container">
+      <div class="kontakt-grid">
+
+        <!-- Formular -->
+        <div id="mitgliedschaft">
+          <h2 class="kontakt-info-title" style="margin-bottom:2rem;">Nachricht senden</h2>
+          <form class="kontakt-form" id="kontakt-form">
+            <div class="form-group">
+              <label class="form-label" for="vorname">Vorname</label>
+              <input class="form-control" type="text" id="vorname" name="vorname" placeholder="Max" autocomplete="given-name">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="nachname">Nachname</label>
+              <input class="form-control" type="text" id="nachname" name="nachname" placeholder="Mustermann" autocomplete="family-name">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="email">E-Mail</label>
+              <input class="form-control" type="email" id="email" name="email" placeholder="max@beispiel.de" autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="betreff">Betreff</label>
+              <select class="form-control" id="betreff" name="betreff">
+                <option value="allgemein">Allgemeine Anfrage</option>
+                <option value="training">Schnuppertraining</option>
+                <option value="mitgliedschaft">Mitgliedschaft</option>
+                <option value="turnier">Turnier</option>
+                <option value="sonstiges">Sonstiges</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="nachricht">Nachricht</label>
+              <textarea class="form-control" id="nachricht" name="nachricht" rows="5" placeholder="Ihre Nachricht..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="align-self:flex-start;">
+              Nachricht per E-Mail senden
+            </button>
+            <p style="font-size:0.75rem;color:var(--t55);margin-top:0.5rem;">
+              Klick öffnet Ihr E-Mail-Programm mit einer vorausgefüllten Nachricht.
+            </p>
+          </form>
+        </div>
+
+        <!-- Infos -->
+        <div class="kontakt-info">
+          <div>
+            <h2 class="kontakt-info-title" style="margin-bottom:1.5rem;">Adresse</h2>
+            <address>
+              Pool Billard Club Erding e.V.<br>
+              c/o Bowling-Castle<br>
+              Robert-Bosch-Straße 3<br>
+              85435 Erding<br>
+              <a href="mailto:info@pbc-erding.de">info@pbc-erding.de</a>
+              <a href="tel:015253699008">0152 53699008</a>
+            </address>
+          </div>
+
+          <div style="border-top:1px solid var(--b6);padding-top:2rem;">
+            <h3 style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--t65);margin-bottom:1rem;">
+              Öffnungszeiten Clubheim
+            </h3>
+            <ul class="hours-list">
+              <li class="hours-row"><span>Sonntag</span><span>13:00 – 16:00 Uhr</span></li>
+              <li class="hours-row"><span>Dienstag</span><span>ab 18:00 Uhr</span></li>
+              <li class="hours-row"><span>Donnerstag</span><span>ab 18:00 Uhr</span></li>
+            </ul>
+          </div>
+
+          <div style="border-top:1px solid var(--b6);padding-top:2rem;">
+            <h3 style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--t65);margin-bottom:1rem;">
+              Mitgliedschaft
+            </h3>
+            <ul class="mitglied-list" style="font-size:0.875rem;color:var(--t70);">
+              <li>Aktuelle Unterlagen und Vereinsdokumente stehen auf unserer <a href="downloads.html" style="color:var(--gold);text-decoration:none;">Download-Seite</a> bereit.</li>
+              <li style="margin-top:0.5rem;color:var(--t55);">Bitte die aktuelle Satzung und den Aufnahmeantrag für verbindliche Angaben nutzen.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <img src="images/logo_pbced.png" alt="PBC Erding Logo" width="28" height="28">
+          PBC Erding
+        </a>
+        <p>Pool Billard Club Erding e.V. – Training, Ligabetrieb und Schnuppertraining im Bowling Castle Erding.</p>
+        <address>
+          Bowling Castle Erding<br>
+          Robert-Bosch-Straße 3<br>
+          85435 Erding<br>
+          <a href="mailto:info@pbc-erding.de">info@pbc-erding.de</a>
+          <a href="tel:015253699008">0152 53699008</a>
+        </address>
+        <a href="https://www.facebook.com/billard.erding" target="_blank" rel="noopener noreferrer" class="footer-fb-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          Facebook
+        </a>
+      </div>
+      <div>
+        <p class="footer-nav-title">Navigation</p>
+        <nav class="footer-nav">
+          <a href="index.html">Startseite</a>
+          <a href="verein.html">Verein</a>
+          <a href="mannschaften.html">Mannschaften</a>
+          <a href="veranstaltungen.html">Veranstaltungen</a>
+          <a href="ergebnisse.html">Ergebnisse</a>
+          <a href="galerie.html">Galerie</a>
+        </nav>
+      </div>
+      <div>
+        <p class="footer-nav-title">Mehr</p>
+        <nav class="footer-nav">
+          <a href="downloads.html">Downloads</a>
+          <a href="links.html">Links</a>
+          <a href="sponsoren.html">Sponsoren</a>
+          <a href="kontakt.html">Kontakt</a>
+          <a href="impressum.html">Impressum</a>
+          <a href="datenschutz.html">Datenschutz</a>
+        </nav>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Pool Billard Club Erding e.V.</span>
+      <span><a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/nav.js"></script>
+<script>
+(function () {
+  var form = document.getElementById('kontakt-form');
+  if (!form) return;
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var vorname  = document.getElementById('vorname').value.trim();
+    var nachname = document.getElementById('nachname').value.trim();
+    var email    = document.getElementById('email').value.trim();
+    var betreff  = document.getElementById('betreff').value;
+    var nachricht= document.getElementById('nachricht').value.trim();
+    var subject  = encodeURIComponent('Anfrage über Website (' + betreff + ')');
+    var body     = encodeURIComponent(
+      'Name: ' + vorname + ' ' + nachname + '\n' +
+      'E-Mail: ' + email + '\n\n' +
+      nachricht
+    );
+    window.location.href = 'mailto:info@pbc-erding.de?subject=' + subject + '&body=' + body;
+  });
+})();
+</script>
+</body>
+</html>

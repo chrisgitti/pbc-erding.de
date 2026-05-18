@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PBC Erding 2 – Entwicklungsumgebung</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0a0a0b;
+      color: rgba(255,255,255,0.80);
+      line-height: 1.75;
+      font-size: 0.95rem;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .wrap { max-width: 900px; margin: 0 auto; }
+
+    /* ── Seiten-Header ── */
+    .page-header {
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 2rem;
+      margin-bottom: 3rem;
+    }
+    .page-header .label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; color: #d4a043; margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 900;
+      text-transform: uppercase; letter-spacing: -0.01em;
+      color: #fff; line-height: 1.1; margin-bottom: 0.75rem;
+    }
+    .page-subtitle { color: rgba(255,255,255,0.45); font-size: 0.875rem; }
+
+    /* ── Inhaltsverzeichnis ── */
+    .toc {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 3rem;
+      font-size: 0.83rem;
+    }
+    .toc-title {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #d4a043; margin-bottom: 0.75rem;
+    }
+    .toc ol { padding-left: 1.25rem; color: rgba(255,255,255,0.55); }
+    .toc li { padding: 0.15rem 0; }
+    .toc a { color: rgba(255,255,255,0.55); text-decoration: none; }
+    .toc a:hover { color: #d4a043; }
+
+    /* ── Sektionen ── */
+    .section { margin-bottom: 3.5rem; }
+
+    h2 {
+      font-size: 1.05rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #d4a043;
+      padding: 0.6rem 1rem;
+      background: rgba(212,160,67,0.07);
+      border-left: 3px solid #d4a043;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin-bottom: 1.75rem;
+    }
+
+    h3 {
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: rgba(255,255,255,0.90);
+      margin: 2rem 0 0.75rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    h4 {
+      font-size: 0.82rem; font-weight: 700;
+      color: rgba(255,255,255,0.75); margin: 1.25rem 0 0.4rem;
+    }
+
+    p { margin-bottom: 0.75rem; color: rgba(255,255,255,0.72); }
+    strong { color: rgba(255,255,255,0.90); font-weight: 600; }
+    em { color: rgba(255,255,255,0.50); font-style: italic; }
+
+    code {
+      font-family: 'Consolas','Menlo',monospace;
+      font-size: 0.82em;
+      background: rgba(255,255,255,0.07);
+      color: #d4a043;
+      padding: 0.1em 0.4em;
+      border-radius: 0.25rem;
+    }
+
+    pre {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 0.75rem;
+      padding: 1.1rem 1.4rem;
+      font-size: 0.78rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      color: rgba(255,255,255,0.72);
+      font-family: 'Consolas','Menlo',monospace;
+      margin: 0.75rem 0 1rem;
+    }
+
+    /* ── Listen ── */
+    ul { list-style: none; margin: 0.5rem 0 0.75rem; padding: 0; }
+    ul li {
+      padding: 0.2rem 0 0.2rem 1.25rem;
+      color: rgba(255,255,255,0.72);
+      position: relative;
+    }
+    ul li::before { content: '–'; position: absolute; left: 0; color: #d4a043; }
+
+    /* ── Tabellen ── */
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin: 0.75rem 0 1rem; }
+    th {
+      text-align: left; font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.40); padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    td { padding: 0.5rem 0.75rem; color: rgba(255,255,255,0.70); border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Versions-Badge ── */
+    .ver {
+      display: inline-block; font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.06em; background: rgba(212,160,67,0.12);
+      color: #d4a043; border: 1px solid rgba(212,160,67,0.3);
+      padding: 0.1rem 0.5rem; border-radius: 99px;
+      margin-left: 0.4rem; vertical-align: middle;
+    }
+    .ver-neu { background: rgba(31,140,59,0.12); color: #4ade80; border-color: rgba(31,140,59,0.3); }
+    .ver-info { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.45); border-color: rgba(255,255,255,0.1); }
+
+    /* ── Hinweis-Box ── */
+    .hint {
+      border-left: 3px solid rgba(212,160,67,0.5);
+      background: rgba(212,160,67,0.05);
+      padding: 0.75rem 1rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin: 0.75rem 0 1rem;
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.60);
+    }
+    .hint strong { color: #d4a043; }
+
+    /* ── Schritt-Karten (Installations-Flow) ── */
+    .steps { display: flex; flex-direction: column; gap: 0.75rem; margin: 1rem 0; }
+    .step {
+      display: flex; gap: 1rem; align-items: flex-start;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 0.75rem; padding: 0.875rem 1rem;
+    }
+    .step-num {
+      flex-shrink: 0; width: 1.75rem; height: 1.75rem;
+      background: rgba(212,160,67,0.15); border: 1px solid rgba(212,160,67,0.3);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 800; color: #d4a043;
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-title { font-size: 0.83rem; font-weight: 700; color: rgba(255,255,255,0.90); margin-bottom: 0.25rem; }
+    .step-desc { font-size: 0.8rem; color: rgba(255,255,255,0.55); line-height: 1.6; }
+
+    /* ── Extensions-Grid ── */
+    .ext-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+    .ext-card {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 0.75rem; padding: 0.875rem 1rem;
+    }
+    .ext-card.required { border-color: rgba(212,160,67,0.25); }
+    .ext-name { font-size: 0.83rem; font-weight: 700; color: rgba(255,255,255,0.90); margin-bottom: 0.2rem; }
+    .ext-id { font-size: 0.7rem; color: #d4a043; font-family: 'Consolas','Menlo',monospace; margin-bottom: 0.4rem; }
+    .ext-desc { font-size: 0.78rem; color: rgba(255,255,255,0.50); line-height: 1.55; }
+    .ext-badge {
+      display: inline-block; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.1rem 0.45rem; border-radius: 99px;
+      margin-bottom: 0.4rem;
+    }
+    .badge-required { background: rgba(212,160,67,0.15); color: #d4a043; border: 1px solid rgba(212,160,67,0.3); }
+    .badge-optional { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.40); border: 1px solid rgba(255,255,255,0.1); }
+
+    /* ── Trennlinie ── */
+    hr { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 2.5rem 0; }
+
+    /* ── Footer ── */
+    .page-footer {
+      margin-top: 4rem; padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.72rem; color: rgba(255,255,255,0.25); text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="page-header">
+    <p class="label">Pool Billard Club Erding e.V. · pbc-erding2</p>
+    <h1>Entwicklungsumgebung</h1>
+    <p class="page-subtitle">Vollständige Dokumentation aller System- und Softwarekomponenten für die lokale Entwicklung der PBC-Erding-Website unter Windows 11.</p>
+  </div>
+
+  <!-- Inhaltsverzeichnis -->
+  <div class="toc">
+    <p class="toc-title">Inhalt</p>
+    <ol>
+      <li><a href="#betriebssystem">Betriebssystem</a></li>
+      <li><a href="#laufzeit">Laufzeit &amp; Paketmanager</a></li>
+      <li><a href="#versionskontrolle">Versionskontrolle &amp; GitHub CLI</a></li>
+      <li><a href="#editor">Code-Editor: Visual Studio Code</a></li>
+      <li><a href="#extensions">VS-Code-Erweiterungen</a></li>
+      <li><a href="#claude">KI-Assistenz: Claude Code</a></li>
+      <li><a href="#framework">Framework &amp; Abhängigkeiten</a></li>
+      <li><a href="#deployment">Deployment-Werkzeuge</a></li>
+      <li><a href="#installation">Installations-Reihenfolge</a></li>
+      <li><a href="#konfiguration">Empfohlene Konfiguration</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. Betriebssystem -->
+  <div class="section" id="betriebssystem">
+    <h2>1 · Betriebssystem</h2>
+
+    <table>
+      <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+      <tbody>
+        <tr><td>System</td><td>Windows 11 Pro <span class="ver">Build 26100</span></td></tr>
+        <tr><td>Version</td><td>24H2</td></tr>
+        <tr><td>Architektur</td><td>x64</td></tr>
+        <tr><td>Shell (primär)</td><td>PowerShell 5.1 (Windows-integriert)</td></tr>
+        <tr><td>Shell (Bash)</td><td>Git Bash (via Git for Windows)</td></tr>
+        <tr><td>Terminal</td><td>Windows Terminal <em>oder</em> VS Code integriertes Terminal</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Integrierte Windows-Werkzeuge</h3>
+    <table>
+      <thead><tr><th>Werkzeug</th><th>Zweck im Projekt</th><th>Aufruf</th></tr></thead>
+      <tbody>
+        <tr><td><strong>PowerShell 5.1</strong></td><td>Build-Skripte, Word-COM-Automation, Robocopy</td><td><code>powershell</code></td></tr>
+        <tr><td><strong>Robocopy</strong></td><td>Synchronisierung <code>out/</code> → weberding-Projekt</td><td><code>robocopy</code></td></tr>
+        <tr><td><strong>Windows-Explorer</strong></td><td>Dateiverwaltung, FTP-Upload via FileZilla</td><td>–</td></tr>
+      </tbody>
+    </table>
+
+    <div class="hint">
+      <strong>Hinweis Shell-Syntax:</strong> Im Projekt werden beide Shells verwendet.
+      Bash-Syntax (<code>/dev/null</code>, Forward-Slashes) für Git und npm;
+      PowerShell für Robocopy und Word-COM-Automation.
+      <code>&amp;&amp;</code>-Operator steht in PowerShell 5.1 <em>nicht</em> zur Verfügung
+      — dort <code>; if ($?) { ... }</code> verwenden.
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 2. Laufzeit & Paketmanager -->
+  <div class="section" id="laufzeit">
+    <h2>2 · Laufzeit &amp; Paketmanager</h2>
+
+    <h3>Node.js <span class="ver">v24.14.0</span></h3>
+    <p>JavaScript-Laufzeitumgebung, Grundlage für Next.js und alle Build-Werkzeuge.</p>
+    <ul>
+      <li>Download: <strong>https://nodejs.org</strong> → „LTS"-Version empfohlen</li>
+      <li>Installer: <code>.msi</code> für Windows (installiert Node + npm automatisch)</li>
+      <li>Prüfen: <code>node --version</code></li>
+    </ul>
+
+    <h3>npm <span class="ver">v11.9.0</span></h3>
+    <p>Paketmanager, wird mit Node.js mitinstalliert.</p>
+    <ul>
+      <li>Prüfen: <code>npm --version</code></li>
+      <li>Update (optional): <code>npm install -g npm@latest</code></li>
+    </ul>
+
+    <div class="hint">
+      <strong>Empfehlung:</strong> Node.js Version Manager <strong>nvm-windows</strong>
+      (<code>https://github.com/coreybutler/nvm-windows</code>) ermöglicht den einfachen
+      Wechsel zwischen Node-Versionen, falls mehrere Projekte unterschiedliche Versionen benötigen.
+    </div>
+
+    <h3>Wichtige npm-Befehle im Projekt</h3>
+    <pre>npm install          # Abhängigkeiten installieren (nach git clone)
+npm run dev          # Entwicklungsserver starten (Port 3002)
+npm run build        # Produktions-Build → out/
+npm run lint         # ESLint-Prüfung</pre>
+  </div>
+
+  <hr>
+
+  <!-- 3. Versionskontrolle -->
+  <div class="section" id="versionskontrolle">
+    <h2>3 · Versionskontrolle</h2>
+
+    <h3>Git for Windows <span class="ver">v2.53.0</span></h3>
+    <p>Versionskontrolle und Verbindung zu GitHub. Git for Windows liefert zusätzlich
+    <strong>Git Bash</strong> als Unix-Shell unter Windows.</p>
+    <ul>
+      <li>Download: <strong>https://git-scm.com/download/win</strong></li>
+      <li>Prüfen: <code>git --version</code></li>
+      <li>Empfehlung bei Installation: „Git from the command line and also from 3rd-party software" wählen</li>
+    </ul>
+
+    <h3>Erstkonfiguration nach Installation</h3>
+    <pre>git config --global user.name  "Chrisgitti"
+git config --global user.email "gitti@weberding.de"
+git config --global core.autocrlf true   # Windows-Zeilenenden</pre>
+
+    <h3>GitHub-Repository</h3>
+    <table>
+      <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+      <tbody>
+        <tr><td>Remote</td><td><code>https://github.com/chrisgitti/pbc-erding2</code></td></tr>
+        <tr><td>Branch</td><td><code>master</code></td></tr>
+        <tr><td>Authentifizierung</td><td>HTTPS + GitHub-Credential-Manager (wird bei Installation angeboten)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Erstes Auschecken des Projekts</h3>
+    <pre>git clone https://github.com/chrisgitti/pbc-erding2.git
+cd pbc-erding2
+npm install</pre>
+
+    <h3>GitHub CLI (gh) <span class="ver ver-neu">Neu</span></h3>
+    <p>Das offizielle Kommandozeilen-Tool von GitHub – ergänzt Git um GitHub-spezifische
+    Operationen, die sonst nur über den Browser möglich wären.</p>
+    <ul>
+      <li>Installation: <code>winget install --id GitHub.cli</code></li>
+      <li>Einmalige Anmeldung: <code>gh auth login --web --git-protocol https</code></li>
+      <li>Prüfen: <code>gh --version</code></li>
+    </ul>
+
+    <h4>Warum lohnt sich die Installation?</h4>
+    <table>
+      <thead><tr><th>Vorteil</th><th>Beispiel</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Repository-Metadaten direkt aus dem Terminal ändern</strong></td>
+          <td><code>gh repo edit --description "Neue Beschreibung"</code> – kein Browser nötig</td>
+        </tr>
+        <tr>
+          <td><strong>Claude Code kann GitHub-Aufgaben vollständig automatisieren</strong></td>
+          <td>Repo-Beschreibungen, Topics, Issues anlegen – ohne Rückfrage und ohne Browser-Umweg; spart Token und Rückfragen</td>
+        </tr>
+        <tr>
+          <td><strong>Pull-Requests und Issues aus dem Terminal</strong></td>
+          <td><code>gh pr create</code>, <code>gh issue list</code>, <code>gh pr merge</code></td>
+        </tr>
+        <tr>
+          <td><strong>Release-Verwaltung</strong></td>
+          <td><code>gh release create v1.0 --notes "..."</code></td>
+        </tr>
+        <tr>
+          <td><strong>Repository-Informationen abrufen</strong></td>
+          <td><code>gh repo view</code>, <code>gh run list</code> (CI-Status)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="hint">
+      <strong>Einmaliger Setup:</strong> Nach <code>gh auth login</code> öffnet sich der Browser für die
+      GitHub-Anmeldung – danach ist <code>gh</code> dauerhaft authentifiziert und braucht keine erneute
+      Anmeldung. Der Token wird sicher im Windows Credential Manager gespeichert.
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 4. VS Code -->
+  <div class="section" id="editor">
+    <h2>4 · Code-Editor: Visual Studio Code</h2>
+
+    <p>Primärer Editor für alle Projekt-Dateien (TypeScript, TSX, CSS, Markdown, HTML).</p>
+    <ul>
+      <li>Download: <strong>https://code.visualstudio.com</strong></li>
+      <li>Version: aktuellste stabile Version empfohlen (Auto-Update aktiv lassen)</li>
+      <li>Installer: <code>VSCodeSetup-x64-*.exe</code> für Windows 64-Bit</li>
+      <li>Option bei Installation: „In PATH aufnehmen" aktivieren → ermöglicht <code>code .</code> im Terminal</li>
+    </ul>
+
+    <h3>Projekt öffnen</h3>
+    <pre>cd C:\Daten\Projects\pbc-erding2
+code .</pre>
+
+    <h3>Integriertes Terminal</h3>
+    <p>VS Code bringt ein integriertes Terminal mit (<code>Strg + `</code>).
+    Empfehlung: als Standard-Shell <strong>Git Bash</strong> oder <strong>PowerShell</strong> konfigurieren.</p>
+    <pre># Standard-Shell auf Git Bash setzen (in VS Code settings.json):
+"terminal.integrated.defaultProfile.windows": "Git Bash"</pre>
+  </div>
+
+  <hr>
+
+  <!-- 5. Extensions -->
+  <div class="section" id="extensions">
+    <h2>5 · VS-Code-Erweiterungen</h2>
+
+    <h3>Pflicht-Erweiterungen</h3>
+    <p>Ohne diese Erweiterungen ist die Arbeit am Projekt deutlich eingeschränkt.</p>
+
+    <div class="ext-grid">
+      <div class="ext-card required">
+        <span class="ext-badge badge-required">Pflicht</span>
+        <div class="ext-name">Claude Code</div>
+        <div class="ext-id">anthropic.claude-code</div>
+        <div class="ext-desc">Offizieller KI-Assistent von Anthropic, direkt in VS Code integriert. Ermöglicht kontextbewusstes Code-Editing, Terminal-Steuerung und Datei-Operationen.</div>
+      </div>
+
+      <div class="ext-card required">
+        <span class="ext-badge badge-required">Pflicht</span>
+        <div class="ext-name">Tailwind CSS IntelliSense</div>
+        <div class="ext-id">bradlc.vscode-tailwindcss</div>
+        <div class="ext-desc">Autovervollständigung, Vorschau und Validierung für Tailwind-CSS-Klassen. Unverzichtbar bei Tailwind CSS 4.</div>
+      </div>
+
+      <div class="ext-card required">
+        <span class="ext-badge badge-required">Pflicht</span>
+        <div class="ext-name">ESLint</div>
+        <div class="ext-id">dbaeumer.vscode-eslint</div>
+        <div class="ext-desc">Echtzeit-Anzeige von Code-Stil-Fehlern direkt im Editor. Next.js liefert eine vorkonfigurierte ESLint-Konfiguration mit.</div>
+      </div>
+
+      <div class="ext-card required">
+        <span class="ext-badge badge-required">Pflicht</span>
+        <div class="ext-name">Prettier – Code Formatter</div>
+        <div class="ext-id">esbenp.prettier-vscode</div>
+        <div class="ext-desc">Automatische Code-Formatierung beim Speichern (TSX, CSS, JSON, Markdown). Sorgt für konsistenten Code-Stil im gesamten Projekt.</div>
+      </div>
+    </div>
+
+    <h3>Empfohlene Erweiterungen</h3>
+    <p>Diese Erweiterungen erhöhen den Komfort deutlich, sind aber kein absolutes Muss.</p>
+
+    <div class="ext-grid">
+      <div class="ext-card">
+        <span class="ext-badge badge-optional">Empfohlen</span>
+        <div class="ext-name">GitLens</div>
+        <div class="ext-id">eamodio.gitlens</div>
+        <div class="ext-desc">Erweiterte Git-Integration: Inline-Blame, Commit-Verlauf, Branch-Vergleiche direkt im Editor sichtbar.</div>
+      </div>
+
+      <div class="ext-card">
+        <span class="ext-badge badge-optional">Empfohlen</span>
+        <div class="ext-name">Auto Rename Tag</div>
+        <div class="ext-id">formulahendry.auto-rename-tag</div>
+        <div class="ext-desc">Benennt öffnendes und schließendes HTML/JSX-Tag synchron um. Spart Zeit bei der Arbeit mit React-Komponenten.</div>
+      </div>
+
+      <div class="ext-card">
+        <span class="ext-badge badge-optional">Empfohlen</span>
+        <div class="ext-name">Path Intellisense</div>
+        <div class="ext-id">christian-kohler.path-intellisense</div>
+        <div class="ext-desc">Autovervollständigung für Dateipfade in Import-Statements und <code>src</code>-Attributen.</div>
+      </div>
+
+      <div class="ext-card">
+        <span class="ext-badge badge-optional">Empfohlen</span>
+        <div class="ext-name">Error Lens</div>
+        <div class="ext-id">usernamehw.errorlens</div>
+        <div class="ext-desc">Zeigt TypeScript- und ESLint-Fehler direkt inline im Quellcode an, ohne dass man über den roten Unterstrich hovern muss.</div>
+      </div>
+
+      <div class="ext-card">
+        <span class="ext-badge badge-optional">Empfohlen</span>
+        <div class="ext-name">Markdown Preview Enhanced</div>
+        <div class="ext-id">shd101wyy.markdown-preview-enhanced</div>
+        <div class="ext-desc">Vorschau für <code>Anpassungen.md</code> und andere Markdown-Dateien direkt in VS Code, inklusive Tabellen- und Code-Darstellung.</div>
+      </div>
+
+      <div class="ext-card">
+        <span class="ext-badge badge-optional">Empfohlen</span>
+        <div class="ext-name">Color Highlight</div>
+        <div class="ext-id">naumovs.color-highlight</div>
+        <div class="ext-desc">Zeigt Farb-Hex-Codes (<code>#d4a043</code>, <code>rgba(…)</code>) als farbige Vorschau direkt im Code an.</div>
+      </div>
+    </div>
+
+    <h3>Sammel-Installation via Terminal</h3>
+    <pre>code --install-extension anthropic.claude-code
+code --install-extension bradlc.vscode-tailwindcss
+code --install-extension dbaeumer.vscode-eslint
+code --install-extension esbenp.prettier-vscode
+code --install-extension eamodio.gitlens
+code --install-extension formulahendry.auto-rename-tag
+code --install-extension christian-kohler.path-intellisense
+code --install-extension usernamehw.errorlens
+code --install-extension naumovs.color-highlight</pre>
+  </div>
+
+  <hr>
+
+  <!-- 6. Claude Code -->
+  <div class="section" id="claude">
+    <h2>6 · KI-Assistenz: Claude Code</h2>
+
+    <p>Claude Code ist der KI-Assistent von Anthropic und wird in diesem Projekt auf
+    zwei Wegen genutzt: als <strong>VS-Code-Erweiterung</strong> (primär) und als
+    <strong>CLI-Tool</strong> (optional, für terminal-basierte Workflows).</p>
+
+    <h3>VS-Code-Erweiterung (primärer Weg)</h3>
+    <p>Die Erweiterung <code>anthropic.claude-code</code> integriert Claude direkt in VS Code.
+    Sie kennt den gesamten Workspace-Kontext, kann Dateien lesen und schreiben, Terminal-Befehle
+    ausführen und Codeänderungen vorschlagen.</p>
+    <ul>
+      <li>Installation über VS Code Marketplace oder Befehl (siehe Abschnitt 5)</li>
+      <li>Anmeldung mit Anthropic-Account (claude.ai) erforderlich</li>
+      <li>Öffnen: Seitenleiste → Claude-Icon <em>oder</em> <code>Strg+Shift+P</code> → „Claude"</li>
+    </ul>
+
+    <h3>Claude Code CLI (optional)</h3>
+    <p>Das CLI ermöglicht die Nutzung von Claude Code direkt im Terminal, unabhängig von VS Code.</p>
+    <pre># Installation (Node.js erforderlich)
+npm install -g @anthropic-ai/claude-code
+
+# Starten im Projektverzeichnis
+cd C:\Daten\Projects\pbc-erding2
+claude
+
+# Verfügbare Slash-Commands im Projekt:
+/bbv-ergebnisse     # BBV-Spielergebnisse abrufen und eintragen
+/pbced-publish      # Build erstellen und auf GitHub veröffentlichen
+/pbced-anpassungen  # Anpassungen.md und .html fortschreiben</pre>
+
+    <h3>Skills (Projekt-spezifische Automatisierungen)</h3>
+    <p>Skills sind wiederverwendbare Anweisungen für Claude Code, die im Verzeichnis
+    <code>.claude/skills/</code> gespeichert sind. Sie erscheinen automatisch als
+    <code>/skill-name</code>-Befehle.</p>
+    <table>
+      <thead><tr><th>Skill</th><th>Aufruf</th><th>Zweck</th></tr></thead>
+      <tbody>
+        <tr><td>bbv-ergebnisse</td><td><code>/bbv-ergebnisse</code></td><td>BBV-Portal abrufen, Ergebnisse abgleichen, lib/data.ts aktualisieren</td></tr>
+        <tr><td>pbced-publish</td><td><code>/pbced-publish</code></td><td>Build, Deployment und GitHub-Push</td></tr>
+        <tr><td>pbced-anpassungen</td><td><code>/pbced-anpassungen</code></td><td>Anpassungen.md + .html fortschreiben</td></tr>
+      </tbody>
+    </table>
+
+    <h3>CLAUDE.md – Projektwissen für Claude</h3>
+    <p>Die Datei <code>CLAUDE.md</code> im Projektverzeichnis enthält dauerhaftes Projektwissen
+    (Design-System, Dateistruktur, Deployment-Befehle). Claude liest sie automatisch beim
+    Start jeder Sitzung.</p>
+  </div>
+
+  <hr>
+
+  <!-- 7. Framework & Abhängigkeiten -->
+  <div class="section" id="framework">
+    <h2>7 · Framework &amp; Abhängigkeiten</h2>
+
+    <h3>Kern-Abhängigkeiten</h3>
+    <table>
+      <thead><tr><th>Paket</th><th>Version</th><th>Zweck</th></tr></thead>
+      <tbody>
+        <tr><td><strong>next</strong></td><td><span class="ver">16.1.6</span></td><td>React-Framework mit App Router, statischer Export</td></tr>
+        <tr><td><strong>react</strong></td><td><span class="ver">19.2.3</span></td><td>UI-Bibliothek</td></tr>
+        <tr><td><strong>react-dom</strong></td><td><span class="ver">19.2.3</span></td><td>React DOM-Rendering</td></tr>
+        <tr><td><strong>typescript</strong></td><td><span class="ver">^5</span></td><td>Typisiertes JavaScript</td></tr>
+        <tr><td><strong>tailwindcss</strong></td><td><span class="ver">^4</span></td><td>Utility-first CSS-Framework</td></tr>
+        <tr><td><strong>framer-motion</strong></td><td><span class="ver">^12.36</span></td><td>Animationen (Hero, Stats, MembershipCTA)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Dev-Abhängigkeiten</h3>
+    <table>
+      <thead><tr><th>Paket</th><th>Zweck</th></tr></thead>
+      <tbody>
+        <tr><td><code>@types/react</code>, <code>@types/node</code></td><td>TypeScript-Typdefinitionen</td></tr>
+        <tr><td><code>eslint</code>, <code>eslint-config-next</code></td><td>Code-Qualitätsprüfung</td></tr>
+        <tr><td><code>@tailwindcss/postcss</code></td><td>PostCSS-Integration für Tailwind 4</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Konfigurationsdateien</h3>
+    <table>
+      <thead><tr><th>Datei</th><th>Zweck</th></tr></thead>
+      <tbody>
+        <tr><td><code>next.config.ts</code></td><td>basePath, output: export, Bildoptimierung deaktiviert</td></tr>
+        <tr><td><code>tsconfig.json</code></td><td>TypeScript-Konfiguration, Pfad-Aliase (<code>@/</code>)</td></tr>
+        <tr><td><code>postcss.config.mjs</code></td><td>Tailwind CSS 4 via PostCSS</td></tr>
+        <tr><td><code>.eslintrc.json</code></td><td>ESLint-Regeln (Next.js-Preset)</td></tr>
+        <tr><td><code>.gitignore</code></td><td>Ausschlüsse: <code>out/</code>, <code>node_modules/</code>, <code>.claude/</code></td></tr>
+        <tr><td><code>CLAUDE.md</code></td><td>Dauerhaftes Projektwissen für Claude Code</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+
+  <!-- 8. Deployment -->
+  <div class="section" id="deployment">
+    <h2>8 · Deployment-Werkzeuge</h2>
+
+    <h3>Robocopy (Windows-integriert)</h3>
+    <p>Synchronisiert den Build-Output (<code>out/</code>) in das lokale weberding-Projekt:</p>
+    <pre>powershell -Command "robocopy 'C:\Daten\Projects\pbc-erding2\out' 'C:\Daten\Projects\weberding\pbced\pbced2' /MIR /NFL /NDL /NJH /NJS"</pre>
+    <p>Exit-Code 1 = Dateien erfolgreich kopiert (kein Fehler). Exit-Code ≥ 8 = echter Fehler.</p>
+
+    <h3>FTP-Client (für Produktionsserver)</h3>
+    <p>Für den Upload auf den IONOS-Webserver wird ein FTP-Client benötigt.</p>
+    <ul>
+      <li><strong>FileZilla</strong> (kostenlos) – <code>https://filezilla-project.org</code></li>
+      <li>Verbindungsdaten: IONOS-Kundenkonto → Hosting → FTP-Zugangsdaten</li>
+      <li>Zielverzeichnis Entwurf: <code>/pbced/pbced2/</code></li>
+      <li>Zielverzeichnis Produktion: Wurzelverzeichnis <code>/</code></li>
+    </ul>
+
+    <h3>Webserver (Produktion)</h3>
+    <table>
+      <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+      <tbody>
+        <tr><td>Hoster</td><td>IONOS SE, Elgendorfer Straße 57, 56410 Montabaur</td></tr>
+        <tr><td>Server</td><td>Apache (Linux), deutsche Rechenzentren (Frankfurt, Berlin)</td></tr>
+        <tr><td>Entwurfs-URL</td><td><code>weberding.de/pbced/pbced2</code></td></tr>
+        <tr><td>Produktions-URL</td><td><code>pbc-erding.de</code> (geplant)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+
+  <!-- 9. Installations-Reihenfolge -->
+  <div class="section" id="installation">
+    <h2>9 · Installations-Reihenfolge (Neuaufsetzen)</h2>
+
+    <p>Bei einem Neuaufsetzen der Entwicklungsumgebung diese Reihenfolge einhalten:</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Git for Windows installieren</div>
+          <div class="step-desc"><code>https://git-scm.com/download/win</code> → liefert Git, Git Bash und Credential Manager. Bei Installation „Add to PATH" aktivieren.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">GitHub CLI installieren</div>
+          <div class="step-desc"><code>winget install --id GitHub.cli</code> → ermöglicht GitHub-Operationen direkt aus dem Terminal. Anmeldung einmalig via <code>gh auth login --web</code>. Damit kann Claude Code Repo-Beschreibungen, Issues und PRs automatisch verwalten – ohne Browser-Umwege.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Node.js (LTS) installieren</div>
+          <div class="step-desc"><code>https://nodejs.org</code> → LTS-Installer für Windows. Installiert Node.js und npm automatisch. Prüfen: <code>node --version</code></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">Visual Studio Code installieren</div>
+          <div class="step-desc"><code>https://code.visualstudio.com</code> → Option „In PATH aufnehmen" aktivieren für <code>code .</code>-Befehl im Terminal.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title">VS-Code-Erweiterungen installieren</div>
+          <div class="step-desc">Claude Code, Tailwind CSS IntelliSense, ESLint, Prettier via Marketplace oder Sammel-Installationsbefehl aus Abschnitt 5.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="step-title">Repository klonen</div>
+          <div class="step-desc"><code>git clone https://github.com/chrisgitti/pbc-erding2.git</code> → in gewünschtes Verzeichnis (z. B. <code>C:\Daten\Projects\</code>)</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <div class="step-title">Abhängigkeiten installieren</div>
+          <div class="step-desc"><code>cd pbc-erding2 &amp;&amp; npm install</code> → installiert alle Pakete aus <code>package.json</code> (ca. 300 MB in node_modules).</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">8</div>
+        <div class="step-body">
+          <div class="step-title">Entwicklungsserver starten</div>
+          <div class="step-desc"><code>npm run dev</code> → öffnet <code>http://localhost:3002</code> im Browser. Hot-Reload aktiv.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">9</div>
+        <div class="step-body">
+          <div class="step-title">FTP-Client einrichten (optional)</div>
+          <div class="step-desc">FileZilla installieren und IONOS-FTP-Zugangsdaten aus dem Kundenkonto hinterlegen.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 10. Empfohlene Konfiguration -->
+  <div class="section" id="konfiguration">
+    <h2>10 · Empfohlene VS-Code-Konfiguration</h2>
+
+    <p>Diese Einstellungen in <code>.vscode/settings.json</code> im Projektverzeichnis ablegen
+    (wird nicht in Git eingecheckt, da in <code>.gitignore</code>):</p>
+
+    <pre>{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "editor.rulers": [100],
+  "files.eol": "\n",
+  "terminal.integrated.defaultProfile.windows": "Git Bash",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "tailwindCSS.experimental.classRegex": [
+    ["clsx\\(([^)]*)\\)", "'([^']*)'"],
+    ["cn\\(([^)]*)\\)", "'([^']*)'"]
+  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"]
+}</pre>
+
+    <h3>Port-Übersicht (alle lokalen Projekte)</h3>
+    <table>
+      <thead><tr><th>Projekt</th><th>Port</th><th>Typ</th><th>Starten</th></tr></thead>
+      <tbody>
+        <tr><td>weberding</td><td><code>3000</code></td><td>Node.js</td><td><code>node server.js</code></td></tr>
+        <tr><td>pbc-erding1</td><td><code>3001</code></td><td>Statisch</td><td><code>npm start</code></td></tr>
+        <tr><td><strong>pbc-erding2</strong></td><td><code>3002</code></td><td>Next.js</td><td><code>npm run dev</code></td></tr>
+        <tr><td>pbc-erding3</td><td><code>3003</code></td><td>Statisch</td><td><code>npm start</code></td></tr>
+        <tr><td>pbc-pool-app</td><td><code>3004</code></td><td>Statisch</td><td><code>npm start</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="hint">
+      <strong>Alle Server starten:</strong> Doppelklick auf <code>C:\Daten\Projects\start-servers.bat</code>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    Pool Billard Club Erding e.V. · pbc-erding2 · Entwicklungsumgebung · Stand Mai 2026
+  </div>
+
+</div>
+</body>
+</html>

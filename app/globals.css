@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* ── Farben ── */
+  --color-charcoal-950: #0a0a0b;
+  --color-charcoal-900: #111113;
+  --color-charcoal-800: #1a1a1e;
+  --color-charcoal-700: #242429;
+  --color-charcoal-600: #2e2e35;
+
+  --color-green-900: #0a2010;
+  --color-green-800: #0d2e17;
+  --color-green-700: #134d22;
+  --color-green-600: #1a6b2f;
+  --color-green-500: #1f8c3b;
+  --color-green-300: #6ee79a;
+
+  --color-gold-400: #e2b96f;
+  --color-gold-500: #d4a043;
+  --color-gold-600: #b8852e;
+
+  /* ── Schriften ── */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-bebas-neue), system-ui, sans-serif;
+
+  /* ── Spacing ── */
+  --section-py: 5rem;        /* py-20 */
+  --section-py-lg: 6rem;     /* py-24 */
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem; /* 4rem fixed header + 1rem Atemraum */
+    overflow-x: hidden;
+  }
+
+  /* Reduzierte Animationen respektieren (OS-Einstellung) */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  body {
+    background-color: var(--color-charcoal-950);
+    color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* Fokus-Ring für Accessibility */
+  :focus-visible {
+    outline: 2px solid var(--color-gold-500);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-gold-500) 30%, transparent);
+    color: #ffffff;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-charcoal-950);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-charcoal-700);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-charcoal-600);
+  }
+}

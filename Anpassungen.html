@@ -1,0 +1,2098 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PBC Erding 2 – Anpassungen</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0a0a0b;
+      color: rgba(255,255,255,0.80);
+      line-height: 1.75;
+      font-size: 0.95rem;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .wrap {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .page-header .label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #d4a043;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .meta-table {
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-top: 1.25rem;
+    }
+
+    .meta-table td {
+      padding: 0.3rem 1rem 0.3rem 0;
+      color: rgba(255,255,255,0.55);
+      vertical-align: top;
+    }
+
+    .meta-table td:first-child {
+      color: rgba(255,255,255,0.35);
+      white-space: nowrap;
+      padding-right: 1.5rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Phasen (aufklappbar) ── */
+    details.phase {
+      margin-bottom: 0.5rem;
+    }
+
+    details.phase > summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      list-style: none;
+      font-size: 1.05rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #d4a043;
+      padding: 0.65rem 1rem;
+      background: rgba(212,160,67,0.07);
+      border-left: 3px solid #d4a043;
+      border-radius: 0 0.5rem 0.5rem 0;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    details.phase > summary::-webkit-details-marker { display: none; }
+    details.phase > summary::marker { content: ''; }
+
+    details.phase > summary .summary-text {
+      flex: 1;
+    }
+
+    details.phase > summary::after {
+      content: '▸';
+      font-size: 0.78rem;
+      opacity: 0.65;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    details.phase[open] > summary::after {
+      content: '▾';
+    }
+
+    details.phase > summary:hover {
+      background: rgba(212,160,67,0.13);
+    }
+
+    .phase-body {
+      padding-top: 1.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .date {
+      font-size: 0.72em;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: 0;
+      opacity: 0.80;
+    }
+
+    h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.90);
+      margin: 2rem 0 0.75rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    h4 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.70);
+      margin: 1.25rem 0 0.4rem;
+    }
+
+    p {
+      margin-bottom: 0.75rem;
+      color: rgba(255,255,255,0.72);
+    }
+
+    strong {
+      color: rgba(255,255,255,0.90);
+      font-weight: 600;
+    }
+
+    em {
+      color: rgba(255,255,255,0.50);
+      font-style: italic;
+    }
+
+    code {
+      font-family: 'Consolas', 'Menlo', monospace;
+      font-size: 0.82em;
+      background: rgba(255,255,255,0.07);
+      color: #d4a043;
+      padding: 0.1em 0.4em;
+      border-radius: 0.25rem;
+    }
+
+    /* ── Listen ── */
+    ul {
+      list-style: none;
+      margin: 0.5rem 0 0.75rem 0;
+      padding: 0;
+    }
+
+    ul li {
+      padding: 0.2rem 0 0.2rem 1.25rem;
+      color: rgba(255,255,255,0.72);
+      position: relative;
+    }
+
+    ul li::before {
+      content: '–';
+      position: absolute;
+      left: 0;
+      color: #d4a043;
+    }
+
+    /* ── Tabellen ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin: 0.75rem 0 1rem;
+    }
+
+    th {
+      text-align: left;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.40);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    td {
+      padding: 0.5rem 0.75rem;
+      color: rgba(255,255,255,0.70);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Blockquote / Hinweis ── */
+    blockquote {
+      border-left: 3px solid rgba(212,160,67,0.5);
+      background: rgba(212,160,67,0.05);
+      padding: 0.75rem 1rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin: 0.75rem 0 1rem;
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.60);
+    }
+
+    blockquote strong { color: #d4a043; }
+
+    /* ── Trennlinie ── */
+    hr {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      margin: 1rem 0;
+    }
+
+    /* ── Sonstiges-Box ── */
+    .sonstiges {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 1rem;
+      padding: 1.5rem 1.75rem;
+      margin-top: 1rem;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.25);
+      text-align: center;
+    }
+
+    /* ── Gruppen (Website / Billard App) ── */
+    details.group {
+      margin-bottom: 2rem;
+    }
+
+    details.group > summary {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      list-style: none;
+      font-size: 1.3rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #fff;
+      padding: 0.9rem 1.25rem;
+      background: rgba(255,255,255,0.04);
+      border-left: 4px solid rgba(212,160,67,0.6);
+      border-radius: 0 0.75rem 0.75rem 0;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+      margin-bottom: 0.75rem;
+    }
+
+    details.group > summary::-webkit-details-marker { display: none; }
+    details.group > summary::marker { content: ''; }
+
+    details.group > summary::after {
+      content: '▸';
+      font-size: 0.85rem;
+      opacity: 0.55;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    details.group[open] > summary::after {
+      content: '▾';
+    }
+
+    details.group > summary:hover {
+      background: rgba(255,255,255,0.07);
+    }
+
+    details.group > summary .group-label {
+      flex: 1;
+    }
+
+    details.group .group-body {
+      padding-left: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="page-header">
+    <p class="label">Pool Billard Club Erding e.V.</p>
+    <h1>PBC Erding 2 – Anpassungen</h1>
+    <p>Dokumentiert alle wesentlichen Änderungen an der Next.js-Website des Pool Billard Club Erding e.V.</p>
+    <table class="meta-table">
+      <tr><td>Repository</td><td><code>pbc-erding2</code></td></tr>
+      <tr><td>Deployment</td><td><code>/pbced/pbced2</code> (Entwurf) / Root (Produktion)</td></tr>
+      <tr><td>Technologie</td><td>Next.js 16, React 19, Tailwind CSS 4, TypeScript</td></tr>
+    </table>
+  </div>
+
+  <!-- Gruppe Website -->
+  <details class="group">
+    <summary><span class="group-label">Website – Phasen 1–13</span></summary>
+    <div class="group-body">
+
+  <!-- Phase 1 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 1 – Vorstand-Feedback (Robert) zur Startseite</span></summary>
+    <div class="phase-body">
+      <p>Umgesetzte Anregungen zur Startseite.</p>
+      <blockquote>
+        <strong>Hinweis:</strong> Aktuell nur teilweise umgesetzt. Noch ausstehend: Rückbau „Mitglied werden" nur auf Startseite.
+        Bereits erledigt: Galerie-Erweiterung, Downloads vervollständigt, Verlinkungen korrigiert, Bezeichnungen auf „Schnuppertraining" vereinheitlicht.
+      </blockquote>
+
+      <h3>1.1 &nbsp;Section-Reihenfolge Startseite</h3>
+      <p><strong>Datei:</strong> <code>app/page.tsx</code></p>
+      <p>Events-Section vor die About-Section gezogen, damit aktuelle Informationen (News + Events) früher erscheinen.</p>
+      <p>Neue Reihenfolge: <code>Hero → Stats → News → Events → About → Sponsors → MembershipCTA</code></p>
+
+      <h3>1.2 &nbsp;Hero-Eyebrow Typografie</h3>
+      <p><strong>Datei:</strong> <code>components/sections/HeroSection.tsx</code></p>
+      <p>Vereinsname auf zwei Zeilen aufgeteilt (weiß statt gold):</p>
+      <ul>
+        <li>Zeile 1: „Pool Billard Club" (text-2xl/3xl)</li>
+        <li>Zeile 2: „Erding e.V." (text-3xl/4xl, etwas größer)</li>
+      </ul>
+      <p>Subtext „Im Bowling Castle seit 2026" bleibt gold und unverändert.</p>
+
+      <h3>1.3 &nbsp;Hero-CTA: Schnuppertraining als primärer Button</h3>
+      <p><strong>Datei:</strong> <code>components/sections/HeroSection.tsx</code></p>
+      <p>Primärer CTA-Button von „Mitglied werden" auf „Schnuppertraining anfragen" umgestellt. Link: <code>/kontakt?betreff=training</code></p>
+      <p>„Mitglied werden" ist weiterhin im Header und in der MembershipCTA-Section vorhanden.</p>
+
+      <h3>1.4 &nbsp;Kontaktformular – Betreff-Option Schnuppertraining</h3>
+      <p><strong>Datei:</strong> <code>app/kontakt/KontaktForm.tsx</code></p>
+      <p>Option <code>value='training'</code> / <code>label='Schnuppertraining'</code> zu <code>BETREFF_OPTIONS</code> ergänzt, damit der Hero-Link die Vorauswahl korrekt setzt.</p>
+
+      <h3>1.5 &nbsp;AboutSection – Trainingszeiten korrigiert</h3>
+      <p><strong>Datei:</strong> <code>components/sections/AboutSection.tsx</code></p>
+      <p>Highlight „Offen für Einsteiger": Sonntag-Uhrzeit von 13–17 Uhr auf 13–16 Uhr korrigiert.</p>
+      <p>Vollständig: „Schnuppertraining ist sonntags von 13 bis 16 Uhr sowie dienstags und donnerstags von 18 bis 21 Uhr möglich."</p>
+
+      <h3>1.6 &nbsp;Hero-Hintergrundbild</h3>
+      <p><strong>Datei:</strong> <code>public/images/billardhalle.jpg</code></p>
+      <p>KI-generiertes Platzhalterfoto durch echtes Panoramafoto der Billardhalle im Bowling Castle ersetzt. Bild auf 1920 × 823 px skaliert.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 2 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 2 – Änderungen vom 24. April 2026</span></summary>
+    <div class="phase-body">
+      <p>Umfangreiche Erweiterung: Galerie mit echten Fotos, Chronik auf Verein-Seite, neue News-Artikel, BBV-Skill, Ligaspieltage auf Turniere-Seite und Deployment-Konsolidierung.</p>
+
+      <h3>2.1 &nbsp;Galerie – echte Vereinsfotos und Lightbox</h3>
+      <p><strong>Dateien:</strong> <code>app/galerie/GalerieGrid.tsx</code> (neu), <code>app/galerie/page.tsx</code></p>
+      <p>13 echte Vereinsfotos integriert:</p>
+      <ul>
+        <li><code>erding2.jpg</code>, <code>erding3.jpg</code> – Mannschaftsfotos</li>
+        <li><code>spieler1.jpg</code> bis <code>spieler10.jpg</code> – Spielszenen und Trainingsmomente</li>
+        <li><code>billardhalle.jpg</code> – Spielsaal beim laufenden Spieltag (Label: Spielstätte)</li>
+      </ul>
+      <p>Neue Client-Komponente <code>GalerieGrid.tsx</code>: responsives CSS-Grid (2/3/4 Spalten je Viewport), Hover-Effekt mit Label-Einblendung, Lightbox mit ESC-Taste und Klick-außerhalb-Schließen, Scroll-Lock während Lightbox aktiv.</p>
+
+      <h3>2.2 &nbsp;Verein-Seite – Chronik (aufklappbar)</h3>
+      <p><strong>Dateien:</strong> <code>app/verein/Chronik.tsx</code> (neu), <code>app/verein/page.tsx</code>, <code>lib/data.ts</code></p>
+      <p>Neue Section <code>id=chronik</code> am Ende der Verein-Seite (nach Trainingszeiten).</p>
+      <p>Client-Komponente <code>Chronik.tsx</code>: zweistufig aufklappbar nach Jahr (neuestes offen) und Monat (neuester offen). Einträge innerhalb eines Monats aufsteigend nach Tag sortiert. Jeder Eintrag ist direkter Link auf die News-Detailseite.</p>
+      <p>Neuer Typ <code>ChronikEntry</code> und Array <code>chronik</code> in <code>lib/data.ts</code>. Startbestand:</p>
+      <ul>
+        <li>05.04.2026 – Spieltag im Bowling Castle</li>
+        <li>25.03.2026 – Mittwoch-Cup 2. Abend</li>
+        <li>20.12.2025 – Umzug ins Bowling Castle</li>
+        <li>20.12.2025 – Herzlichen Dank an das Stardust-Team</li>
+        <li>01.12.2025 – Mittwochsturnier – offenes Turnier</li>
+      </ul>
+
+      <h3>2.3 &nbsp;NewsSection – Link „Alle Nachrichten" korrigiert</h3>
+      <p><strong>Datei:</strong> <code>components/sections/NewsSection.tsx</code></p>
+      <p>Button „Alle Nachrichten" verlinkt jetzt auf <code>/verein#chronik</code> statt auf <code>/verein</code> (springt direkt zur Chronik-Section).</p>
+
+      <h3>2.4 &nbsp;Neue News-Artikel</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p><strong>Artikel A</strong> – Spieltag im Bowling Castle (05.04.2026, Kategorie: Liga)<br>
+      Slug: <code>heimspieltag-bowling-castle-april-2026</code><br>
+      Basiert auf Foto eines Spieltags mit 4 parallelen Tischen und Zuschauern.</p>
+      <p><strong>Artikel B</strong> – Mittwoch-Cup: Zweiter Abend der Serie (25.03.2026, Kategorie: Turnier)<br>
+      Slug: <code>mittwoch-cup-zweiter-abend-maerz-2026</code><br>
+      16 Spieler, 10-Ball auf 4 Gewonnene, 4 Vierergruppen.<br>
+      Ergebnisse: Platz 1 Huetti, Platz 2 Leon Bozbel, Platz 3/4 Andy Galsterer und Markus Bauer.<br>
+      Nächster Termin: 29. April 2026. Anmeldung: turnier@pbc-erding.de.</p>
+
+      <h3>2.5 &nbsp;Ergebnisse – zwei neue Spielergebnisse eingetragen</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code> (vormals <code>app/ergebnisse/page.tsx</code>)</p>
+      <table>
+        <thead><tr><th>Begegnung</th><th>Ergebnis</th><th>Wertung</th><th>Datum</th></tr></thead>
+        <tbody>
+          <tr><td>PBC Erding I – BC Mainburg II</td><td>4:6</td><td>Niederlage</td><td>18.04.2026</td></tr>
+          <tr><td>PBC Erding II – BSV PB München III</td><td>6:4</td><td>Sieg</td><td>11.04.2026</td></tr>
+        </tbody>
+      </table>
+      <p>Teamstatistiken aktualisiert:</p>
+      <ul>
+        <li>Erding I: 5S / 1U / 3N, Frames 44:46, Punkte 11:7</li>
+        <li>Erding II: 9S / 0U / 0N, Frames 64:26, Punkte 18:0</li>
+      </ul>
+      <p>Stand-Datum: 24.04.2026</p>
+
+      <h3>2.6 &nbsp;BBV-Skill <code>/bbv-ergebnisse</code></h3>
+      <p><strong>Datei:</strong> <code>.claude/skills/bbv-ergebnisse/SKILL.md</code> (neu)</p>
+      <p>Wiederverwendbarer Claude-Code-Skill für den automatischen Abruf von Spielergebnissen vom BBV-Portal.</p>
+      <ul>
+        <li><code>group=990</code> – Erding I, Bezirksliga Oberbayern-Nord</li>
+        <li><code>group=1011</code> – Erding II + III, Kreisliga Oberbayern D</li>
+      </ul>
+      <p>Ablauf: Erding-Zeilen filtern → mit <code>lib/data.ts</code> abgleichen → Änderungen zur Bestätigung vorlegen → Teamstatistiken neu berechnen → Build ausführen.</p>
+
+      <h3>2.7 &nbsp;Turniere-Seite – Ligaspieltage Saison 2025/26</h3>
+      <p><strong>Datei:</strong> <code>app/turniere/page.tsx</code></p>
+      <p>Neue Section „Ligaspieltage 2025/26" unterhalb des Monatskalenders. Vollständiger BBV-Spielplan (je 10 Spiele) für alle 3 Mannschaften, statisch eingebaut.</p>
+      <p>Design: Drei Team-Blöcke mit Mannschaftsname, Liga, S/U/N-Bilanz und Spielzähler im Header. Vergangene Spiele zeigen Ergebnis + farbigen Punkt (grün = Sieg, rot = Niederlage, gold = Unentschieden). Ausstehende Spiele zeigen Uhrzeit.</p>
+
+      <h3>2.8 &nbsp;Downloads-Seite – Links und Dateien des bisherigen Internetauftritts</h3>
+      <p>Links und Dateien des bisherigen Internetauftritts integriert (z. T. Aktualisierungen noch erforderlich).</p>
+
+      <h3>2.9 &nbsp;Deployment-Konsolidierung</h3>
+      <p><strong>Dateien:</strong> <code>next.config.ts</code>, <code>C:\Daten\Projects\index.html</code></p>
+      <p><code>next.config.ts</code>: <code>basePath</code> über Umgebungsvariable <code>BASE_PATH</code> konfigurierbar. Vergleichs-Deployment <code>pbced21</code> eingestellt; einzige aktive Version wieder <code>pbced2</code>.</p>
+      <p><code>index.html</code> im Projektordner: nur noch ein Button „Entwurf ansehen" auf <code>/pbced/pbced2</code>.</p>
+
+      <h3>2.10 &nbsp;Galerie-Lightbox: Navigation, Diashow und Touch-Swipe</h3>
+      <p><strong>Datei:</strong> <code>app/galerie/GalerieGrid.tsx</code> (vollständig überarbeitet)</p>
+      <ul>
+        <li>Prev/Next-Pfeile: Klick und Tastatur-Pfeiltasten links/rechts</li>
+        <li>Diashow: Play/Pause-Button und Leertaste; automatische Weiterschaltung alle 4 Sekunden</li>
+        <li>Dot-Indikatoren: aktives Bild gold hervorgehoben, direkt anklickbar</li>
+        <li>Bildnummer-Zähler (z. B. 3 / 14) unterhalb der Dots</li>
+        <li>Touch-Swipe für Mobile (Wischgeste links/rechts)</li>
+        <li>ESC-Taste und Klick auf Hintergrund schließt die Lightbox</li>
+      </ul>
+
+      <h3>2.11 &nbsp;Downloads-Seite – echte Dateien und Links</h3>
+      <p><strong>Dateien:</strong> <code>public/downloads/</code> (neu), <code>app/downloads/page.tsx</code>, <code>lib/data.ts</code></p>
+      <p>9 PDFs kopiert und verlinkt:</p>
+      <ul>
+        <li><code>PBC-Erding_Satzung.pdf</code></li>
+        <li><code>PBC-Erding_Aufnahmeantrag.pdf</code></li>
+        <li><code>PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.pdf</code></li>
+        <li><code>PBC-Erding_Informationsblatt_2024-01.pdf</code></li>
+        <li><code>PBC-Erding_Fahrtkostenzuschuss-2024-2025.pdf</code></li>
+        <li><code>Spielregeln-Pool_DBU_Stand-2009-03.pdf</code></li>
+        <li><code>Sport-und-Turnierordnung-Pool_DBU_Stand-2009-05.pdf</code></li>
+        <li><code>BBV_Vorlage-Spielbericht-Pool.pdf</code></li>
+        <li><code>14-1-Endlos_Vorlage.pdf</code></li>
+      </ul>
+      <p>Zusätzlich: <code>SchweizerSystem_XLSM.zip</code> (Excel-Anwendung Turnier im Schweizer System).</p>
+      <p>4 Turnierpläne (16er/32er/64er/128er Doppel-KO) als lokale ZIP-Dateien eingebunden.</p>
+      <p>Download-Karten sind echte Hyperlinks mit Download-Icon (PDF/ZIP) bzw. Extern-Icon für externe Links.</p>
+
+      <h3>2.12 &nbsp;Stat-Karten Startseite – Verlinkung und Umbenennung</h3>
+      <p><strong>Dateien:</strong> <code>components/sections/StatsSection.tsx</code>, <code>lib/data.ts</code></p>
+      <p>Alle vier Stat-Karten sind klickbare Links:</p>
+      <ul>
+        <li>Gründung (2008) → <code>/verein</code></li>
+        <li>Neue Spielstätte (2026) → <code>/galerie</code></li>
+        <li>Schnuppertraining (3 Termine) → <code>/kontakt?betreff=training</code></li>
+        <li>Downloads (9+) → <code>/downloads</code></li>
+      </ul>
+      <p>Label „Probetraining" in „Schnuppertraining" umbenannt. Hover-Effekt: goldener Rahmen und goldenes Label.</p>
+
+      <h3>2.13 &nbsp;Hero-CTA: Button-Text vereinheitlicht</h3>
+      <p><strong>Datei:</strong> <code>components/sections/HeroSection.tsx</code></p>
+      <p>Button-Text von „Probetraining anfragen" auf „Schnuppertraining anfragen" geändert. Link <code>/kontakt?betreff=training</code> war bereits korrekt (unverändert).</p>
+
+      <h3>2.14 &nbsp;SponsorsSection – „Jetzt anfragen" korrekt verlinkt</h3>
+      <p><strong>Datei:</strong> <code>components/sections/SponsorsSection.tsx</code></p>
+      <p>Link bei „Interesse an einer Partnerschaft?" war <code>/sponsoren</code>; jetzt <code>/kontakt?betreff=sponsoring</code>. Auf Next.js <code>&lt;Link&gt;</code>-Komponente umgestellt (<code>basePath /pbced/pbced2</code> wird automatisch ergänzt).</p>
+
+      <h3>2.15 &nbsp;index.html – Änderungshistorie-Link und Bereinigung</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\index.html</code></p>
+      <p>Link auf Änderungshistorie-PDF hinzugefügt. Hinweis „Noch nicht realisiert" (Mitglied werden / Kontaktformular) entfernt.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 3 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 3 – Änderungen vom 25. April 2026</span></summary>
+    <div class="phase-body">
+      <p>Weitere Detailverbesserungen: Datenschutz, Footer, Downloads, Navigation, Galerie.</p>
+
+      <h3>3.1 &nbsp;Datenschutzseite – Kontaktformular korrekt beschrieben</h3>
+      <p><strong>Datei:</strong> <code>app/datenschutz/page.tsx</code></p>
+      <p>Abschnitt 6 vollständig neu geschrieben: Erklärt das mailto-Formular korrekt. Daten werden nur lokal im Browser verarbeitet, keine Übertragung an den Webserver. Ein Klick öffnet das E-Mail-Programm mit vorausgefüllter Nachricht; Übertragung erst beim aktiven Absenden durch den Nutzer.</p>
+      <p>Abschnitt 4 um „Bebas Neue" als zweite Schriftart ergänzt. Abschnitt 5 umbenannt zu „Kontaktaufnahme per E-Mail oder Telefon". Stand auf April 2026 aktualisiert. Alle Umlaute korrigiert.</p>
+
+      <h3>3.2 &nbsp;Footer – Facebook-Link ergänzt</h3>
+      <p><strong>Datei:</strong> <code>components/layout/Footer.tsx</code></p>
+      <p>Facebook-Icon-Link mit SVG-Icon unter der E-Mail-Adresse im Footer-Brand-Block ergänzt. Ziel: <code>https://www.facebook.com/billard.erding</code> (öffnet in neuem Tab).</p>
+
+      <h3>3.3 &nbsp;Downloads – Turnierpläne als lokale ZIP-Dateien</h3>
+      <p><strong>Dateien:</strong> <code>lib/data.ts</code>, <code>public/downloads/</code></p>
+      <p>4 Turnierpläne als ZIP-Dateien eingebunden (vorher externe Links auf pbc-erding.de):</p>
+      <ul>
+        <li><code>16er-Feld-Doppel-KO.zip</code></li>
+        <li><code>32er-Feld-Doppel-KO.zip</code></li>
+        <li><code>64er-Feld-Doppel-KO.zip</code></li>
+        <li><code>128er-Feld-Doppel-KO.zip</code></li>
+      </ul>
+
+      <h3>3.4 &nbsp;Downloads-Karten – Anker-Navigation</h3>
+      <p><strong>Datei:</strong> <code>app/downloads/page.tsx</code></p>
+      <p>Die drei Kategorie-Karten sind jetzt klickbare Anker-Links:</p>
+      <ul>
+        <li>„Für Neumitglieder" → <code>#verein</code></li>
+        <li>„Für Mannschaften" → <code>#liga</code></li>
+        <li>„Regelwerk &amp; Vorlagen" → <code>#regelwerk</code></li>
+      </ul>
+      <p>Jede Sektion hat eine entsprechende <code>id</code> erhalten.</p>
+
+      <h3>3.5 &nbsp;Navigation – „Turniere" → „Veranstaltungen"</h3>
+      <p><strong>Dateien:</strong> <code>lib/navigation.ts</code>, <code>app/turniere/page.tsx</code></p>
+      <p>Menüpunkt „Turniere" in „Veranstaltungen" umbenannt (URL <code>/turniere</code> unverändert). Seitenüberschrift auf „Liga, Turniere, Training &amp; Kalender" geändert.</p>
+
+      <h3>3.6 &nbsp;Galerie – Billard-Zitate als Bildbeschriftungen</h3>
+      <p><strong>Dateien:</strong> <code>app/galerie/GalerieGrid.tsx</code>, <code>app/galerie/page.tsx</code></p>
+      <p>Optionales Feld <code>quote?: string</code> im <code>Photo</code>-Typ ergänzt. Allen 14 Fotos ein Zitat zugewiesen (Spieler-Fotos: 10 rotierende Billard-Zitate, Spielstätten-Fotos und Mannschaftsfotos: individuelle Zitate). Darstellung: kursive Caption unter dem Bild im Grid + in der Lightbox über den Dots.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 4 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 4 – Downloads aktualisiert, index.html-Layout, Git-Identität <span class="date">(25. April 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Vorlagen und Regelwerk auf aktuelle Versionen gebracht, Einstiegsseite index.html
+      übersichtlicher gestaltet, Git-E-Mail-Adresse auf GitHub-noreply umgestellt.</p>
+
+      <h3>4.1 Downloads – Sport- und Turnierordnung BBV-Pool</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code>, <code>public/downloads/</code></p>
+      <p>Eintrag „Sport- und Turnierordnung Pool" (DBU, Stand 2009) durch „Sport- und Turnierordnung BBV-Pool"
+      (Stand 01.04.2024) ersetzt.</p>
+      <table>
+        <tr><th></th><th>Vorher</th><th>Nachher</th></tr>
+        <tr><td>Titel</td><td>Sport- und Turnierordnung Pool</td><td>Sport- und Turnierordnung BBV-Pool</td></tr>
+        <tr><td>Datei</td><td><code>Sport-und-Turnierordnung-Pool_DBU_Stand-2009-05.pdf</code></td><td><code>Aktuelle_Sportordnung_BBV-Pool_24-04-01.pdf</code></td></tr>
+      </table>
+
+      <h3>4.2 Downloads – Spielberichtsvorlage BBV aktualisiert und selbstrechnende Version ergänzt</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code>, <code>public/downloads/</code></p>
+      <p><code>BBV_Vorlage-Spielbericht-Pool.pdf</code> durch aktuelle Version ersetzt.
+      Neuer Eintrag „Spielberichtsvorlage Pool BBV (selbstrechnend)" mit
+      <code>BBV_Vorlage-Spielbericht-Pool_selbstrechnend.pdf</code> in der Vorlagen-Gruppe ergänzt.</p>
+
+      <h3>4.3 Downloads – Turnierpläne Doppel-KO zusammengefasst</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code>, <code>public/downloads/</code></p>
+      <p>Die drei Einzeleinträge 16er, 32er und 64er Doppel-KO durch einen kombinierten Link ersetzt.
+      128er Doppel-KO-Turnierplan ersatzlos entfernt.</p>
+      <table>
+        <tr><th></th><th>Vorher</th><th>Nachher</th></tr>
+        <tr><td>Einträge</td><td>4 separate Links (16er / 32er / 64er / 128er)</td><td>1 Link (16er, 32er und 64er kombiniert)</td></tr>
+        <tr><td>Datei</td><td>je eigene ZIP</td><td><code>Turnierplan-dko_16_32_64.zip</code></td></tr>
+      </table>
+
+      <h3>4.4 index.html – Button-Layout dreizeilig</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\index.html</code></p>
+      <p>Die vier Buttons in der Einstiegsseite wurden in drei separate Zeilen aufgeteilt:</p>
+      <ul>
+        <li>Zeile 1 (mittig): „Entwurf ansehen" (primär, allein)</li>
+        <li>Zeile 2 (mittig, umbrechend): „Anpassungen" · „Änderungshistorie"</li>
+        <li>Zeile 3 (mittig): „Entwicklungsumgebung" (allein)</li>
+      </ul>
+      <p>Zuvor waren alle Buttons in einer einzigen <code>flex-wrap</code>-Zeile gemischt.
+      Der Entwicklungsumgebung-Link wurde dabei auch von rechts-unten auf mittig (eigene Zeile) verschoben.</p>
+
+      <h3>4.5 Git-Identität – noreply-E-Mail</h3>
+      <p>Die globale Git-E-Mail-Adresse wurde von <code>gitti@weberding.de</code> auf
+      <code>chrisgitti@users.noreply.github.com</code> umgestellt, damit die private Adresse
+      nicht mehr in öffentlichen Commit-Metadaten erscheint.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 5 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 5 – „Schnuppertraining" seitenübergreifend vereinheitlicht <span class="date">(25. April 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Der Begriff „Probetraining" wurde in allen verbleibenden Stellen durch „Schnuppertraining" ersetzt.
+      Betroffen waren 7 Dateien mit insgesamt 12 Vorkommen.</p>
+
+      <h3>5.1 „Probetraining" → „Schnuppertraining" – vollständige Bereinigung</h3>
+      <p><strong>Dateien:</strong> <code>lib/site-config.ts</code>, <code>lib/data.ts</code>,
+      <code>components/sections/HeroSection.tsx</code>, <code>components/sections/AboutSection.tsx</code>,
+      <code>app/verein/page.tsx</code>, <code>app/turniere/page.tsx</code>, <code>app/kontakt/page.tsx</code></p>
+      <p>Der Begriff „Probetraining" war in früheren Phasen bereits im Hero-Button und in einzelnen Labels
+      umbenannt worden, kam aber noch in mehreren Fließtexten, Badges und Datentabellen vor.
+      Alle verbliebenen Vorkommen wurden nun durch „Schnuppertraining" ersetzt:</p>
+      <table>
+        <thead><tr><th>Datei</th><th>Kontext</th></tr></thead>
+        <tbody>
+          <tr><td><code>lib/site-config.ts</code></td><td>SEO-Beschreibung (meta description)</td></tr>
+          <tr><td><code>lib/data.ts</code></td><td>News-Text „Umzug", Mannschafts-News, Events-Datensatz</td></tr>
+          <tr><td><code>components/sections/HeroSection.tsx</code></td><td>Hero-Fließtext</td></tr>
+          <tr><td><code>components/sections/AboutSection.tsx</code></td><td>Highlight-Karte „Offen für Einsteiger"</td></tr>
+          <tr><td><code>app/verein/page.tsx</code></td><td>Trainingszeiten-Tabelle (Sonntag-Zeile)</td></tr>
+          <tr><td><code>app/turniere/page.tsx</code></td><td>Kalender-Titel, Badge-Label, Info-Karte Wochenprogramm</td></tr>
+          <tr><td><code>app/kontakt/page.tsx</code></td><td>Section-Subtitle</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 6 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 6 – Laufzeit-Kalender, Ergebnisse Erding III, Liga-Links <span class="date">(26. April 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Drei unabhängige Verbesserungen: dynamische Datumsberechnung auf der Startseite,
+      aktuelles Spielergebnis für Erding III sowie Liga-Verlinkung auf der Ergebnisse-Seite.</p>
+
+      <h3>6.1 EventsSection – Datumsberechnung zur Laufzeit im Browser</h3>
+      <p><strong>Datei:</strong> <code>components/sections/EventsSection.tsx</code></p>
+      <p>Die Section „Kommende Veranstaltungen" auf der Startseite berechnete Datum und
+      Filterung bisher zur Build-Zeit (Server Component). Dadurch wurden vergangene
+      Liga-Spieltage noch als kommende Veranstaltungen angezeigt, wenn seit dem letzten
+      Build ein neuer Tag begonnen hatte.</p>
+      <p>Die Komponente wurde auf <code>'use client'</code> umgestellt. Die gesamte Datumslogik
+      (Trainingstage, Mittwochsturnier, nächster offener Spieltag je Mannschaft) läuft
+      jetzt im Browser des Besuchers. Die Liste ist damit täglich automatisch aktuell,
+      unabhängig vom Build-Zeitpunkt. Beim ersten Render erscheinen kurz vier pulsierende
+      Platzhalter-Kacheln, bevor die korrekte Liste eingeblendet wird (Ladezeit &lt; 1 s).</p>
+
+      <h3>6.2 Ergebnisse Erding III – Spieltag 25. April 2026</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Spieltag vom 25. April 2026 eingetragen: PBC Erding III – PBC Markt Schwaben II <strong>1:9</strong>
+      (Niederlage). Teamstatistiken aktualisiert:</p>
+      <table>
+        <thead><tr><th>Feld</th><th>Vorher</th><th>Nachher</th></tr></thead>
+        <tbody>
+          <tr><td>Niederlagen</td><td>7</td><td>8</td></tr>
+          <tr><td>Spiele</td><td>31:49</td><td>32:58</td></tr>
+          <tr><td>Differenz</td><td>−18</td><td>−26</td></tr>
+          <tr><td>Punkte</td><td>2:14</td><td>2:16</td></tr>
+        </tbody>
+      </table>
+      <p>Stand-Datum in <code>app/ergebnisse/page.tsx</code> auf 26.04.2026 gesetzt.</p>
+
+      <h3>6.3 Liga-Link-Pfeile auf der Ergebnisse-Seite</h3>
+      <p><strong>Dateien:</strong> <code>lib/data.ts</code>, <code>app/ergebnisse/TeamSection.tsx</code></p>
+      <p>Analog zur Mannschaften-Seite wurde im Mannschafts-Header der Ergebnisse-Seite
+      ein kleiner Pfeil-Link (→) neben dem Liga-Namen ergänzt, der direkt zur BBV-Ligatabelle
+      führt. Dazu wurde der Typ <code>Mannschaft</code> um das optionale Feld <code>ligaUrl</code>
+      erweitert und für alle drei Mannschaften befüllt. Der Klick auf den Pfeil öffnet das
+      BBV-Portal in einem neuen Tab und löst nicht das Aufklappen der Karte aus
+      (<code>e.stopPropagation()</code>).</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 7 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 7 – Galerie-Aktualisierungen <span class="date">(26. April 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Vier Galerie-Verbesserungen: Bild-Austausch, Quote-Korrekturen, neuer Facebook-Link
+      und gekürzter Untertitel.</p>
+
+      <h3>7.1 Galerie – Bild 11 (spieler7.jpg) ausgetauscht</h3>
+      <p><strong>Datei:</strong> <code>public/images/galerie/spieler7.jpg</code></p>
+      <p>Das bisherige Platzhalterbild wurde durch ein aktuelles Foto aus dem Vereinsbestand
+      ersetzt. Die Quelldatei lag unter <code>c:\temp\images\szenen\spieler7.jpg</code>.</p>
+
+      <h3>7.2 Galerie – Quotes Bild 12 und 13 aktualisiert</h3>
+      <p><strong>Datei:</strong> <code>app/galerie/page.tsx</code></p>
+      <ul>
+        <li><strong>Bild 12 (spieler8.jpg):</strong> Der Halbsatz „für Menschen" wurde entfernt.
+        Neu: „Billard ist nicht nur Zeitvertreib. Es ist ein Spiel mit Blick fürs Detail."</li>
+        <li><strong>Bild 13 (spieler9.jpg):</strong> Gesamter Quote-Text ersetzt durch:
+        „Jeder Stoß ist eine kleine Entscheidung zwischen Gefühl, Technik und Strategie."</li>
+      </ul>
+
+      <h3>7.3 Galerie – Facebook-Link „Mehr Bilder auf Facebook" ergänzt</h3>
+      <p><strong>Datei:</strong> <code>app/galerie/page.tsx</code></p>
+      <p>Unterhalb des Bildgitters wurde ein zentrierter Pill-Link zum Facebook-Auftritt des
+      Vereins ergänzt. Die URL stammt aus <code>siteConfig.social.facebook</code> in
+      <code>lib/site-config.ts</code>. Gestaltung: Outline-Pill mit kleinem Facebook-Icon (SVG 16×16),
+      gold-farbiger Hover-Effekt, öffnet in neuem Tab.</p>
+
+      <h3>7.4 Galerie – Untertitel gekürzt</h3>
+      <p><strong>Datei:</strong> <code>app/galerie/page.tsx</code></p>
+      <p>Der Seiten-Untertitel wurde auf den kompakten Satz „Eindrücke rund um den PBC Erding."
+      gekürzt, da der Großteil der Galerie auf Facebook hinterlegt wird.</p>
+
+      <h3>7.5 Galerie – Vier Bilder ausgetauscht (Next.js + Fallback)</h3>
+      <p><strong>Dateien:</strong> <code>public/images/galerie/</code>, <code>Fallback/images/galerie/</code></p>
+      <p>Bilder 6, 8, 9 und 13 wurden durch aktuelle Fotos aus dem Vereinsbestand ersetzt:</p>
+      <table>
+        <tr><th>Bild</th><th>Dateiname</th><th>Ersetzt durch</th></tr>
+        <tr><td>6</td><td>spieler2.jpg</td><td>neues Vereinsfoto</td></tr>
+        <tr><td>8</td><td>spieler4.jpg</td><td>neues Vereinsfoto</td></tr>
+        <tr><td>9</td><td>spieler5.jpg</td><td>neues Vereinsfoto</td></tr>
+        <tr><td>13</td><td>spieler9.jpg</td><td>neues Vereinsfoto</td></tr>
+      </table>
+      <p>Die Quelldateien lagen unter <code>C:\temp\images\szenen\</code>. Der Austausch erfolgte
+      in beiden Versionen gleichzeitig – Next.js (<code>public/images/galerie/</code>) und
+      Fallback (<code>Fallback/images/galerie/</code>).</p>
+
+      <h3>7.6 Galerie – Zitat-Texte vergrößert und besser lesbar</h3>
+      <p><strong>Datei:</strong> <code>app/galerie/GalerieGrid.tsx</code></p>
+      <p>Die Zitat-Texte unter den Galerie-Bildern wurden in beiden Ansichten deutlich lesbarer gestaltet:</p>
+      <ul>
+        <li><strong>Thumbnail-Zitate</strong> (unter jedem Rasterbild): Schriftgröße von <code>0.7rem</code> auf
+        <code>0.85rem</code> erhöht, Opazität von <code>white/55</code> auf <code>white/80</code> erhöht,
+        dezenter Hintergrund (<code>bg-white/5</code>, <code>rounded-xl</code>) ergänzt.</li>
+        <li><strong>Lightbox-Zitate</strong> (Beschriftung beim Vollbild): Von unauffälligem transparenten Text
+        auf eine dunkle „Plakette" umgestellt (<code>bg-black/70</code>, <code>border-white/10</code>,
+        <code>rounded-xl</code>), die über jedem Bildinhalt gut lesbar ist.</li>
+      </ul>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 8 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 8 – Fallback-Website erstellt <span class="date">(26. April 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Vollständige HTML/CSS/JS-Fallback-Website als pflegbare Notfallversion angelegt. Ergänzend wurden kleinere Anpassungen an der Fallback-Startseite vorgenommen.</p>
+
+      <h3>8.1 &nbsp;Fallback-Website – vollständige HTML/CSS/JS-Version</h3>
+      <p><strong>Dateien:</strong> <code>Fallback/</code> (neu, 22 Dateien)</p>
+      <p>Unter <code>Fallback/</code> wurde eine vollständige statische Version der pbc-erding2-Website angelegt – ohne Next.js, ohne Node.js, ohne Build-Prozess. Die Fallback-Website kann direkt im Browser geöffnet oder per FTP auf den Webserver geladen werden.</p>
+      <ul>
+        <li>12 HTML-Seiten (alle Routen der Next.js-Website)</li>
+        <li>6 News-Artikel als statische <code>.html</code>-Dateien in <code>Fallback/news/</code></li>
+        <li><code>css/style.css</code> (~1700 Zeilen, Dark Theme mit CSS Custom Properties)</li>
+        <li><code>js/nav.js</code> – Hamburger-Menü</li>
+        <li><code>js/events.js</code> – Datumsberechnung im Browser (Trainingstage, Mittwochsturnier, Ligaspieltage)</li>
+        <li><code>js/veranstaltungen.js</code> – dynamischer Monatskalender</li>
+        <li><code>js/galerie.js</code> – Lightbox via natives <code>&lt;dialog&gt;</code>-Element</li>
+      </ul>
+      <p>Bilder und Downloads werden über relative Pfade aus <code>../public/images/</code> und <code>../public/downloads/</code> geteilt – keine Duplikate.</p>
+      <p><strong>Deployment:</strong> FTP nach <code>/pbced/pbced2/fallback/</code> → <a href="https://weberding.de/pbced/pbced2/fallback/" target="_blank" rel="noopener noreferrer">weberding.de/pbced/pbced2/fallback/</a></p>
+
+      <h3>8.2 &nbsp;Skill <code>/pbced-fallback</code> erstellt</h3>
+      <p><strong>Datei:</strong> <code>.claude/skills/pbced-fallback/SKILL.md</code> (neu)</p>
+      <p>Wiederverwendbarer Claude-Code-Skill für die Pflege der Fallback-Website. Dokumentiert Dateistruktur, häufige Pflegeaufgaben (neue News, Ergebnisse, Trainingszeiten, Galerie, Vorstand), CSS-Klassen-Übersicht, JS-Pflege-Guide und die saisonale Aktualisierungscheckliste.</p>
+
+      <h3>8.3 &nbsp;Fallback-Startseite – Hero-Überschrift und Abstand</h3>
+      <p><strong>Dateien:</strong> <code>Fallback/index.html</code>, <code>Fallback/css/style.css</code></p>
+      <p><strong>8.3a Hero-Überschrift:</strong> <code>&lt;h1&gt;Billard&lt;/h1&gt;</code> ersetzt durch dreizeiligen Text:</p>
+      <ul>
+        <li>„Spiel." (weiß)</li>
+        <li>„Leidenschaft." (gold, <code>color:var(--gold)</code>)</li>
+        <li>„Gemeinschaft." (weiß)</li>
+      </ul>
+      <p><strong>8.3b Abstand Header → Hero-Inhalt:</strong> <code>padding-top</code> in <code>.hero-content</code> von <code>6rem</code> auf <code>3rem</code> reduziert; <code>padding-bottom</code> bleibt bei <code>6rem</code>.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 9 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 9 – Chronik-Erweiterung: Vereinsgeschichte seit 2010 <span class="date">(29. April 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Alle archivierten Beiträge von pbc-erding.de (November 2010 bis April 2024) wurden gesichtet, überarbeitet und als Chronik-Einträge in die Vereinsseite integriert. Technisch wurde der Datentyp <code>ChronikEntry</code> erweitert, damit Einträge wahlweise intern, extern oder ohne Link angezeigt werden können.</p>
+
+      <h3>9.1 &nbsp;Chronik – 26 historische Artikel ergänzt</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Aus dem Archiv von pbc-erding.de wurden 26 Beiträge aus den Jahren 2010 bis 2024 in das <code>chronik</code>-Array aufgenommen. Die Einträge wurden gesichtet und mit sprachlich überarbeiteten Titeln versehen. Reine Bild-Posts ohne Nachrichtenwert sowie die statische Kontaktseite wurden übersprungen.</p>
+      <table>
+        <tr><th>Zeitraum</th><th>Einträge</th><th>Themen (Beispiele)</th></tr>
+        <tr><td>2010–2011</td><td>10</td><td>Saisonstart, Aufstiege, Bayerischer Meister, Dienstags-Cup</td></tr>
+        <tr><td>2012–2013</td><td>6</td><td>Lokalwechsel ins Stardust, neue Turnierserien, Aufstieg Landesliga</td></tr>
+        <tr><td>2021–2022</td><td>3</td><td>Neustart Turnierserie, Neujahrsturnier</td></tr>
+        <tr><td>2023–2024</td><td>5</td><td>Stardust Open, DiCup, Spieltag Dingolfing, Bezirksmeisterschaft</td></tr>
+      </table>
+      <p>Einträge mit vorhandener interner News-Seite (z. B. <code>spieltag-gegen-dingolfing</code>) verweisen weiterhin intern; alle anderen verlinken auf den Originalbeitrag auf pbc-erding.de.</p>
+
+      <h3>9.2 &nbsp;ChronikEntry – Typ um optionales <code>url</code>-Feld erweitert</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Der Typ <code>ChronikEntry</code> erhielt ein zusätzliches optionales Feld:</p>
+      <ul>
+        <li>Vorher: <code>{ title, date, slug: string }</code></li>
+        <li>Nachher: <code>{ title, date, slug?: string, url?: string }</code></li>
+      </ul>
+      <p><code>slug</code> (intern) und <code>url</code> (extern) schließen sich inhaltlich aus; beide Felder sind optional, sodass ein Eintrag ohne Link als reiner Text angezeigt werden kann.</p>
+
+      <h3>9.3 &nbsp;Chronik.tsx – Drei Darstellungsmodi</h3>
+      <p><strong>Datei:</strong> <code>app/verein/Chronik.tsx</code></p>
+      <p>Die Komponente rendert jeden Eintrag in einem von drei Modi:</p>
+      <ul>
+        <li><strong>Interner Link</strong> (<code>slug</code> vorhanden): Next.js <code>&lt;Link&gt;</code> → <code>/news/[slug]</code></li>
+        <li><strong>Externer Link</strong> (<code>url</code> vorhanden): <code>&lt;a target="_blank" rel="noopener noreferrer"&gt;</code> → pbc-erding.de</li>
+        <li><strong>Kein Link</strong> (weder <code>slug</code> noch <code>url</code>): Plain-Text-<code>&lt;li&gt;</code> ohne Interaktionselement</li>
+      </ul>
+      <p>Das Pfeil-Symbol → erscheint nur bei verlinkten Einträgen.</p>
+
+      <h3>9.4 &nbsp;Fallback – Chronik-Bilder anklickbar (Lightbox)</h3>
+      <p><strong>Dateien:</strong> <code>Fallback/js/chronik-lightbox.js</code> (neu), <code>Fallback/css/style.css</code>, <code>Fallback/news/*.html</code> (17 Artikel)</p>
+      <p>In der Fallback-Website waren die Fotos in den Chronik-Artikeln bisher nur statisch angezeigt. Das neue Script <code>chronik-lightbox.js</code> macht alle <code>.article-photo</code>-Bilder anklickbar: per Klick öffnet sich ein modaler <code>&lt;dialog&gt;</code> mit dem Bild in voller Breite. Der Dialog wird dynamisch erzeugt und nutzt die bereits vorhandenen Lightbox-CSS-Klassen.</p>
+      <ul>
+        <li>Bei mehreren Bildern auf einer Seite: Prev/Next-Buttons und Zähler</li>
+        <li>Bei einem einzigen Bild: keine Navigationselemente</li>
+        <li>Tastaturnavigation: ←/→ für Prev/Next, Esc zum Schließen</li>
+        <li>Klick auf den Hintergrund (Backdrop) schließt ebenfalls</li>
+        <li><code>cursor: pointer</code> in <code>style.css</code> ergänzt</li>
+        <li>Script-Tag in alle 17 Artikel mit Bildgalerien eingefügt; Artikel ohne Bilder bleiben unberührt</li>
+      </ul>
+
+      <h3>9.5 &nbsp;Next.js – Chronik-Bilder anklickbar (Lightbox)</h3>
+      <p><strong>Dateien:</strong> <code>app/news/NewsGallery.tsx</code> (neu), <code>app/news/[slug]/page.tsx</code></p>
+      <p>In der Next.js-Version waren die Fotos in den Chronik-Artikeln ebenfalls nur statisch dargestellt. Da <code>page.tsx</code> einen <code>metadata</code>-Export enthält und daher nicht mit <code>'use client'</code> annotiert werden kann, wurde das Lightbox-Verhalten in eine separate Client-Komponente <code>NewsGallery.tsx</code> ausgelagert — dasselbe Muster wie bei <code>TeamSection.tsx</code>.</p>
+      <ul>
+        <li>Thumbnail-Rasteransicht (1- oder 2-spaltig, Span-Logik bei 3 Bildern)</li>
+        <li><code>cursor-pointer</code> und Hover-Opacity als visuelles Signal</li>
+        <li>Vollbild-Overlay (<code>fixed inset-0</code>) mit dem angeklickten Bild</li>
+        <li>Prev/Next-Buttons und Zähler bei mehreren Bildern; kein Navigation bei einem einzigen Bild</li>
+        <li>Tastaturnavigation: ←/→ für Prev/Next, Esc zum Schließen (via <code>useEffect</code>)</li>
+        <li>Klick auf den Hintergrund schließt das Overlay</li>
+      </ul>
+      <p><code>page.tsx</code> ersetzt den bisherigen statischen Bilder-Block durch <code>&lt;NewsGallery images={item.images} /&gt;</code>.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 10 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 10 – Bilder-Integration, Chronik-UX und Fallback-Erweiterung <span class="date">(29. April 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Historische Vereinsfotos wurden als Bildgalerien in News-Artikel integriert – sowohl in der Next.js-Version als auch in der Fallback-Website. Ergänzend wurden zwei UX-Verbesserungen für die Chronik umgesetzt: ein kontextbewusster Zurück-Link und persistente Accordion-Zustände.</p>
+
+      <h3>10.1 &nbsp;NewsImage-Typ + Fotogalerie in News-Artikeln</h3>
+      <p><strong>Dateien:</strong> <code>lib/data.ts</code>, <code>app/news/[slug]/page.tsx</code>, <code>public/images/chronik/</code></p>
+      <p>Der Datentyp <code>NewsImage</code> wurde neu eingeführt und auf <code>NewsItem</code> ergänzt:</p>
+      <ul>
+        <li><code>NewsImage</code>: <code>{ src: string; alt: string; span?: boolean }</code> – optionales <code>span</code> für das erste Bild im 3-Spalten-Grid</li>
+        <li><code>NewsItem</code>: neues optionales Feld <code>images?: NewsImage[]</code></li>
+      </ul>
+      <p>21 historische Fotos aus dem Vereinsarchiv (2011–2026) wurden in <code>public/images/chronik/</code> abgelegt und 19 der 25 News-Artikel damit verknüpft. Zwei Artikel (<code>erdinger-stadtmeisterschaft-2011</code>, <code>dienstags-cup-8-runde-2011</code>) bleiben ohne Bild, da dafür keine Originale vorlagen.</p>
+      <p><code>app/news/[slug]/page.tsx</code> rendert die Bilder vor dem Artikeltext als responsives Grid: 1 Bild → einspaltig, 2 Bilder → zweispaltig, 3+ Bilder → dreispaltig (erstes Bild <code>col-span-2</code> wenn <code>span: true</code>).</p>
+
+      <h3>10.2 &nbsp;Kontextbewusster Zurück-Link (NewsBackLink)</h3>
+      <p><strong>Datei:</strong> <code>app/news/NewsBackLink.tsx</code> (neu)</p>
+      <p>Die Zurück-Schaltfläche in News-Artikeln erkennt nun den Aufruf-Kontext über den Query-Parameter <code>?from=chronik</code>:</p>
+      <ul>
+        <li><code>?from=chronik</code> → Link auf <code>/verein#chronik</code> (Accordion bleibt offen dank sessionStorage)</li>
+        <li>Kein Parameter → Link auf <code>/#news</code> (Startseiten-News-Section)</li>
+      </ul>
+      <p>Die Komponente ist <code>'use client'</code> und nutzt <code>useSearchParams()</code>. Da Next.js <code>useSearchParams()</code> eine <code>&lt;Suspense&gt;</code>-Grenze erfordert, ist sie in <code>app/news/[slug]/page.tsx</code> entsprechend eingebettet.</p>
+
+      <h3>10.3 &nbsp;Chronik-Accordion-Persistenz (sessionStorage)</h3>
+      <p><strong>Datei:</strong> <code>app/verein/Chronik.tsx</code></p>
+      <p>Der Aufklappreiszt der Chronik-Jahres- und Monats-Akkordeons wird nun via <code>sessionStorage</code> gespeichert:</p>
+      <ul>
+        <li><code>STORAGE_YEARS</code> / <code>STORAGE_MONTHS</code> – Schlüssel für <code>openYears</code> und <code>openMonths</code></li>
+        <li>Beim Laden der Seite werden gespeicherte Zustände wiederhergestellt</li>
+        <li>Ein <code>ready</code>-Flag verhindert, dass der leere Initialzustand die gespeicherten Daten überschreibt</li>
+        <li>Beim Navigieren Chronik → Artikel → Zurück bleiben alle Akkordeons im selben Zustand</li>
+      </ul>
+
+      <h3>10.4 &nbsp;Fallback-Website – Fotos und neue Artikel</h3>
+      <p><strong>Dateien:</strong> <code>Fallback/css/style.css</code>, <code>Fallback/news/*.html</code>, <code>Fallback/images/chronik/</code>, <code>Fallback/verein.html</code></p>
+      <p>Alle 13 bereits vorhandenen News-Artikel der Fallback-Website erhielten Fotoblöcke (<code>.article-photos &gt; .article-photos-grid</code>). Vier neue Artikel wurden erstellt:</p>
+      <table>
+        <tr><th>Datei</th><th>Datum</th><th>Kategorie</th></tr>
+        <tr><td><code>turnierserie-2022.html</code></td><td>20.01.2022</td><td>Turnier</td></tr>
+        <tr><td><code>vereinsabend-stardust-2025.html</code></td><td>18.02.2025</td><td>Verein</td></tr>
+        <tr><td><code>starte-durch-pbc-erding.html</code></td><td>16.01.2026</td><td>Verein</td></tr>
+        <tr><td><code>mittwoch-cup-ankuendigung-2026.html</code></td><td>16.01.2026</td><td>Turnier</td></tr>
+      </table>
+      <p>Die 21 Chronik-Fotos wurden als eigenständige Kopien in <code>Fallback/images/chronik/</code> abgelegt. In <code>Fallback/verein.html</code> wurden die vier neuen Artikel als Chronik-Einträge ergänzt (Jahresgruppen 2022, 2025, 2026).</p>
+      <p><code>Fallback/css/style.css</code> erhielt neue Klassen: <code>.article-photos</code>, <code>.article-photos-grid</code>, <code>.cols-1 / .cols-2 / .cols-3</code>, <code>.article-photo</code>, <code>.photo-span-2</code>.</p>
+
+      <h3>10.5 &nbsp;Bug-Fix: fehlendes Bild für <code>aufstieg-verbandsliga-2011</code></h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Der Artikel <code>aufstieg-verbandsliga-2011</code> hatte trotz vorhandenem Foto (<code>2011-05-04.jpg</code>) kein <code>images</code>-Feld in <code>lib/data.ts</code>. Das Feld wurde ergänzt. Das Foto war bereits in <code>public/images/chronik/</code> und <code>Fallback/images/chronik/</code> vorhanden.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 11 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 11 – npm audit fix: Sicherheitslücken behoben <span class="date">(29. April 2026)</span></span></summary>
+    <div class="phase-body">
+      <p><code>npm audit</code> meldete 5 Sicherheitslücken (2 moderate, 3 high). Alle behebbaren Lücken wurden in zwei Schritten geschlossen; zwei moderate postcss-CVEs verbleiben ohne Breaking Change nicht behebbar.</p>
+
+      <h3>11.1 &nbsp;Ausgangslage: 5 Lücken identifiziert</h3>
+      <p><strong>Dateien:</strong> <code>package.json</code>, <code>package-lock.json</code></p>
+      <table>
+        <tr><th>Paket</th><th>Schwere</th><th>Details</th></tr>
+        <tr><td><code>brace-expansion</code></td><td>moderate</td><td>RegExp-Denial-of-Service</td></tr>
+        <tr><td><code>flatted</code></td><td>high</td><td>Prototype Pollution</td></tr>
+        <tr><td><code>picomatch</code></td><td>high</td><td>RegExp-Denial-of-Service</td></tr>
+        <tr><td><code>postcss</code></td><td>moderate</td><td>Schwachstelle in Stylesheet-Parsing</td></tr>
+        <tr><td><code>next</code></td><td>high</td><td>HTTP Request Smuggling / CSRF / DoS</td></tr>
+      </table>
+
+      <h3>11.2 &nbsp;Schritt 1: <code>npm audit fix</code> (sicher, kein Breaking Change)</h3>
+      <p>Behebt <code>brace-expansion</code> (moderate), <code>flatted</code> (high), <code>picomatch</code> (high). Danach: 2 verbleibende Lücken (beide moderate, nur postcss).</p>
+
+      <h3>11.3 &nbsp;Schritt 2: <code>npm audit fix --force</code> (Next.js-Update)</h3>
+      <p>Aktualisiert Next.js <strong>16.1.6 → 16.2.4</strong> und behebt die next-CVEs (HTTP Request Smuggling, CSRF, DoS).</p>
+      <p><strong>Verbleibend nach beiden Schritten:</strong> 2 moderate postcss-CVEs. <code>postcss</code> ist innerhalb von Next.js gebündelt und wäre nur durch Downgrade auf <code>next@9.3.3</code> fixierbar — ein Breaking Change, der nicht durchgeführt wurde. Für dieses Projekt nicht ausnutzbar: statischer Export, kein laufender Node.js-Server in Produktion.</p>
+      <p>Build nach dem Update: <strong>51 Seiten</strong> — weiterhin fehlerfrei.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 12 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 12 – BBV-Ergebnisupdate und dynamischer Veranstaltungskalender <span class="date">(9. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Neues Spielergebnis für PBC Erding I eingetragen (letzter Spieltag der Saison) sowie die Veranstaltungsseite um eine clientseitige Filterung erweitert, sodass vergangene Kalendertermine immer – unabhängig vom Build-Zeitpunkt – ausgeblendet werden.</p>
+
+      <h3>12.1 &nbsp;BBV-Ergebnisupdate: PBC Erding I – Sieg 8:2 gegen 1. PBC Freising III (09.05.2026)</h3>
+      <p><strong>Dateien:</strong> <code>lib/data.ts</code>, <code>app/veranstaltungen/page.tsx</code>, <code>Fallback/ergebnisse.html</code>, <code>Fallback/veranstaltungen.html</code>, <code>Fallback/js/events.js</code></p>
+      <p>Das Ergebnis des letzten Heimspiels der Saison wurde eingetragen.</p>
+      <table>
+        <thead><tr><th>Feld</th><th>Vorher</th><th>Nachher</th></tr></thead>
+        <tbody>
+          <tr><td><code>ergebnis</code></td><td><code>null</code></td><td><code>'8:2'</code></td></tr>
+          <tr><td><code>wertung</code></td><td><code>'offen'</code></td><td><code>'sieg'</code></td></tr>
+          <tr><td><code>siege</code></td><td>5</td><td>6</td></tr>
+          <tr><td><code>spiele</code></td><td><code>'44:46'</code></td><td><code>'52:48'</code></td></tr>
+          <tr><td><code>diff</code></td><td><code>'-2'</code></td><td><code>'+4'</code></td></tr>
+          <tr><td><code>punkte</code></td><td><code>'11:7'</code></td><td><code>'13:7'</code></td></tr>
+        </tbody>
+      </table>
+      <p>In den Fallback-Dateien wurden die Spielzeile, die Statistik-Pills, die Summary-Zeile und das Stand-Datum auf den 09.05.2026 aktualisiert. Der Erding-I-Eintrag wurde aus <code>Fallback/js/events.js</code> (Spielplan offener Spiele) entfernt. PBC Erding II und III waren bereits aktuell.</p>
+
+      <h3>12.2 &nbsp;Dynamisches Ausblenden vergangener Kalendertermine (Next.js)</h3>
+      <p><strong>Dateien:</strong> <code>app/veranstaltungen/HidePastCalendarEvents.tsx</code> <em>(neu)</em>, <code>app/veranstaltungen/page.tsx</code></p>
+      <p>Der Monatskalender auf der Veranstaltungsseite filterte Termine bisher nur zur Build-Zeit. Lag der Build mehrere Tage zurück, wurden bereits vergangene Trainings- und Turniertage dem Besucher weiterhin als „kommend" angezeigt.</p>
+      <p>Lösung: Jede Kalenderzeile im <code>EventRow</code>-Component erhielt das Attribut <code>data-cal-date="YYYY-MM-DD"</code>. Eine neue <code>'use client'</code>-Komponente <code>HidePastCalendarEvents</code> läuft nach dem Laden im Browser, liest das echte Tagesdatum und setzt <code>display: none</code> auf alle Zeilen, deren Datum bereits vergangen ist. Die Liga-Spielplan-Sektion (gesonderte Übersicht aller Saisonspiele) bleibt davon unberührt.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 13 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 13 – Seite „Turniere" in „Veranstaltungen" umbenannt <span class="date">(9. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Browser-Tab-Titel der Veranstaltungsseite angepasst, Route <code>/turniere</code> in <code>/veranstaltungen</code> umbenannt sowie alle Verweise in Next.js, Fallback-Dateien, Skills und Dokumentation aktualisiert.</p>
+
+      <h3>13.1 &nbsp;Browser-Tab-Titel korrigiert</h3>
+      <p><strong>Datei:</strong> <code>app/veranstaltungen/page.tsx</code></p>
+      <p>Der <code>metadata</code>-Export enthielt noch den alten Titel <code>'Turniere &amp; Trainingstage'</code>. Er wurde auf <code>'Veranstaltungen'</code> geändert, sodass der Browser-Tab nun „Veranstaltungen | PBC Erding" zeigt.</p>
+
+      <h3>13.2 &nbsp;Route umbenannt: /turniere → /veranstaltungen</h3>
+      <p><strong>Dateien:</strong> <code>app/veranstaltungen/</code> <em>(Ordner umbenannt)</em>, <code>lib/navigation.ts</code>, <code>app/sitemap.ts</code>, <code>components/sections/EventsSection.tsx</code>, <code>CLAUDE.md</code>, <code>README.md</code>, <code>Plan_Webredaktion.md</code>, <code>.claude/skills/bbv-ergebnisse/SKILL.md</code></p>
+      <p>Der Ordner <code>app/turniere/</code> wurde in <code>app/veranstaltungen/</code> umbenannt – damit änderte sich die URL-Route von <code>/turniere</code> auf <code>/veranstaltungen</code>. Alle internen Verweise wurden aktualisiert. Der <code>.next</code>-Cache musste nach der Umbenennung gelöscht werden (<code>rm -rf .next</code>), da Next.js sonst noch auf den alten Modulpfad zugriff.</p>
+
+      <h3>13.3 &nbsp;Fallback bereinigt</h3>
+      <p><strong>Dateien:</strong> <code>Fallback/turniere.html</code> → <code>Fallback/veranstaltungen.html</code>, <code>Fallback/js/turniere.js</code> → <code>Fallback/js/veranstaltungen.js</code>, alle ~50 HTML-Seiten in <code>Fallback/</code>, <code>.claude/skills/pbced-fallback/SKILL.md</code></p>
+      <p>Die Fallback-Seite und das zugehörige JS-Modul wurden entsprechend umbenannt. Der <code>&lt;script&gt;</code>-Verweis in <code>veranstaltungen.html</code> wurde von <code>js/turniere.js</code> auf <code>js/veranstaltungen.js</code> angepasst. Alle Navigationsverlinkungen (<code>turniere.html</code>) in den ~50 HTML-Dateien des Fallback wurden per <code>sed</code> in einem Schritt auf <code>veranstaltungen.html</code> aktualisiert. Der Fallback-Skill wurde auf die neuen Dateinamen angepasst.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Architektur -->
+  <details class="phase">
+    <summary><span class="summary-text">Architektur &amp; Seitenstruktur <span class="date">(Stand: April 2026)</span></span></summary>
+    <div class="phase-body">
+
+      <h3>Technologie-Stack</h3>
+      <table>
+        <thead><tr><th>Ebene</th><th>Technologie</th></tr></thead>
+        <tbody>
+          <tr><td>Framework</td><td>Next.js 16 (App Router, <code>output: 'export'</code>)</td></tr>
+          <tr><td>UI</td><td>React 19, Tailwind CSS 4, TypeScript</td></tr>
+          <tr><td>Animationen</td><td>framer-motion (nur Hero, Stats, MembershipCTA)</td></tr>
+          <tr><td>Schriften</td><td>Inter (Body), Bebas Neue (Display) via next/font</td></tr>
+          <tr><td>Deployment</td><td>Statischer Export → robocopy → Apache / IONOS</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Seiten (Routen)</h3>
+      <pre style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:0.75rem; padding:1.25rem 1.5rem; font-size:0.78rem; line-height:1.8; overflow-x:auto; color:rgba(255,255,255,0.72); font-family:'Consolas','Menlo',monospace;">pbc-erding2/
+│
+├── /                        Startseite
+├── /verein                  Vereinsseite mit Chronik
+├── /mannschaften            Mannschaftsübersicht
+├── /veranstaltungen         Veranstaltungskalender + Ligaspieltage
+├── /ergebnisse              BBV-Spielergebnisse aller 3 Teams
+├── /news/[slug]             Dynamische News-Detailseite
+├── /galerie                 Fotogalerie mit Lightbox
+├── /downloads               Vereinsunterlagen &amp; Vorlagen
+├── /links                   Externe Links (Verbände, Partner)
+├── /sponsoren               Sponsorenübersicht
+├── /kontakt                 Kontaktformular (mailto)
+├── /impressum               Impressum
+├── /datenschutz             Datenschutzerklärung
+└── /sitemap.xml             Automatisch generierte Sitemap</pre>
+
+      <h3>Startseite – Aufbau</h3>
+      <pre style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:0.75rem; padding:1.25rem 1.5rem; font-size:0.78rem; line-height:1.9; overflow-x:auto; color:rgba(255,255,255,0.72); font-family:'Consolas','Menlo',monospace;">┌─────────────────────────────────────────┐
+│  Header  (Navigation + Mitglied werden) │
+├─────────────────────────────────────────┤
+│  HeroSection                            │
+│  Panoramafoto · Vereinsname · CTAs      │
+├─────────────────────────────────────────┤
+│  StatsSection                           │
+│  4 klickbare Kennzahlen-Karten          │
+├─────────────────────────────────────────┤
+│  NewsSection                            │
+│  Letzte 3 News-Artikel                  │
+├─────────────────────────────────────────┤
+│  EventsSection                          │
+│  Nächste Termine: Training · Turnier    │
+│  + nächster Ligaspieltag je Mannschaft  │
+├─────────────────────────────────────────┤
+│  AboutSection                           │
+│  Vereinsbeschreibung · Highlights       │
+├─────────────────────────────────────────┤
+│  SponsorsSection                        │
+│  Gold-/Silber-Sponsoren · Partnerlink   │
+├─────────────────────────────────────────┤
+│  MembershipCTASection                   │
+│  Mitglied werden CTA                    │
+├─────────────────────────────────────────┤
+│  Footer                                 │
+│  Adresse · Navigation · Facebook        │
+│  Impressum · Datenschutz                │
+└─────────────────────────────────────────┘</pre>
+
+      <h3>Komponenten-Hierarchie</h3>
+      <pre style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:0.75rem; padding:1.25rem 1.5rem; font-size:0.78rem; line-height:1.8; overflow-x:auto; color:rgba(255,255,255,0.72); font-family:'Consolas','Menlo',monospace;">app/layout.tsx                    ← Root-Layout (Header, Footer, CookieBanner)
+│
+├── components/layout/
+│   ├── Header.tsx                Navigation + Hamburger-Menü (mobile)
+│   └── Footer.tsx                Adresse, Links, Facebook, Rechtliches
+│
+├── components/sections/          Nur auf der Startseite genutzt
+│   ├── HeroSection.tsx           framer-motion Entrance-Animation
+│   ├── StatsSection.tsx          Count-up via useInView
+│   ├── NewsSection.tsx           Letzte 3 Artikel aus lib/data.ts
+│   ├── EventsSection.tsx         Dynamische Terminberechnung (Laufzeit)
+│   ├── AboutSection.tsx          Statischer Vereinstext
+│   ├── SponsorsSection.tsx       Sponsoren aus lib/data.ts
+│   └── MembershipCTASection.tsx  framer-motion Orbs
+│
+├── components/ui/
+│   ├── Button.tsx                primary / outline / ghost
+│   ├── Badge.tsx                 gold / green / red / neutral
+│   ├── Container.tsx             max-w Wrapper
+│   ├── SectionHeading.tsx        label + title + subtitle
+│   ├── CookieBanner.tsx          DSGVO-Einwilligungsbanner
+│   └── ConsentManager.tsx        Einwilligung verwalten (localStorage)
+│
+└── Seiten-spezifische Komponenten
+    ├── app/ergebnisse/TeamSection.tsx   'use client' – Aufklapp-Karte
+    ├── app/galerie/GalerieGrid.tsx      'use client' – Grid + Lightbox
+    ├── app/news/NewsBackLink.tsx        'use client' – Kontextbewusster Zurück-Link
+    └── app/verein/Chronik.tsx           'use client' – Jahres-/Monatschronik</pre>
+
+      <h3>Datenschicht (lib/)</h3>
+      <pre style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:0.75rem; padding:1.25rem 1.5rem; font-size:0.78rem; line-height:1.8; overflow-x:auto; color:rgba(255,255,255,0.72); font-family:'Consolas','Menlo',monospace;">lib/
+├── data.ts              Zentrale Datendatei (statisch, kein CMS)
+│   ├── news[]           News-Artikel mit Volltext und Slug
+│   ├── mannschaften[]   3 Teams mit vollständigem Spielplan 2025/26
+│   ├── clubStats[]      4 Kennzahlen-Karten (mit href)
+│   ├── sponsors[]       Sponsorenliste (gold / silber)
+│   ├── downloads[]      Downloaddateien und externe Links
+│   ├── links[]          Links-Seite (Gruppen mit Items)
+│   └── chronik[]        Vereinschronik-Einträge
+│
+├── turnier-utils.ts     Datumslogik (Build-Zeit)
+│   ├── getNextMittwochsturnier()   letzter Mi im Monat
+│   └── getNextTrainingDays()       Di / Do / So Trainingstage
+│
+├── navigation.ts        Haupt-Navigation (mainNav[])
+└── site-config.ts       Vereinsstammdaten, Kontakt, Social</pre>
+
+      <h3>Build &amp; Deployment</h3>
+      <pre style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:0.75rem; padding:1.25rem 1.5rem; font-size:0.78rem; line-height:1.9; overflow-x:auto; color:rgba(255,255,255,0.72); font-family:'Consolas','Menlo',monospace;">Quellcode (pbc-erding2/)
+        │
+        ▼
+  npm run build
+  (Next.js statischer Export)
+        │
+        ▼
+     out/           ← Statische HTML/CSS/JS-Dateien
+        │
+        ├──▶  robocopy  ──▶  weberding/pbced/pbced2/   (lokal, Entwurf)
+        │                           │
+        │                           ▼
+        │                    weberding.de/pbced/pbced2  (nach FTP-Upload)
+        │
+        └──▶  git push  ──▶  github.com/chrisgitti/pbc-erding2</pre>
+
+      <table>
+        <thead><tr><th>Modus</th><th>Build-Befehl</th><th>basePath</th><th>URL</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Entwurf</td>
+            <td><code>npm run build</code></td>
+            <td><code>/pbced/pbced2</code></td>
+            <td>weberding.de/pbced/pbced2</td>
+          </tr>
+          <tr>
+            <td>Produktion</td>
+            <td><code>$env:BASE_PATH=''; npm run build</code></td>
+            <td><em>(leer)</em></td>
+            <td>eigene Domain</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Fallbackvariante</h3>
+      <p>Eigenständige HTML/CSS/JS-Version der Website unter <code>Fallback/</code> – ohne Framework, ohne Build-Prozess, für Pflege ohne Next.js-Kenntnisse.</p>
+      <table>
+        <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+        <tbody>
+          <tr><td>Verzeichnis</td><td><code>Fallback/</code> (innerhalb von pbc-erding2)</td></tr>
+          <tr><td>Technologie</td><td>Reines HTML, CSS Custom Properties, Vanilla JS (IIFE)</td></tr>
+          <tr><td>Deployment</td><td>FTP → <code>/pbced/pbced2/fallback/</code> → <a href="https://weberding.de/pbced/pbced2/fallback/" target="_blank" rel="noopener noreferrer">weberding.de/pbced/pbced2/fallback/</a></td></tr>
+          <tr><td>Seiten</td><td>12 HTML-Seiten + 17 News-Artikel in <code>news/</code></td></tr>
+          <tr><td>CSS</td><td><code>css/style.css</code> (~1700 Zeilen, ein File)</td></tr>
+          <tr><td>JS</td><td><code>nav.js</code> · <code>events.js</code> · <code>turniere.js</code> · <code>galerie.js</code></td></tr>
+          <tr><td>Bilder</td><td>Eigenständige Kopien in <code>images/</code>, <code>images/galerie/</code>, <code>images/chronik/</code></td></tr>
+          <tr><td>Downloads</td><td>Eigenständige Kopien in <code>downloads/</code></td></tr>
+          <tr><td>Pflege-Skill</td><td><code>/pbced-fallback</code></td></tr>
+          <tr><td>Stand</td><td>April 2026</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <hr>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Gruppe Billard App -->
+  <details class="group">
+    <summary><span class="group-label">Billard App – Phasen 1–11</span></summary>
+    <div class="group-body">
+
+  <!-- Phase 1 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 1 – Proof of Concept einer PBC Erding Billard-App integriert <span class="date">(1. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Eine browserbasierte Pool-Billard-App (8-Ball &amp; 9-Ball) wurde als Proof of Concept entwickelt, in beide Versionen der Website integriert, für mobile Geräte optimiert und auf WPA-konforme Tischgeometrie abgestimmt. Die App wird im eigenständigen Projekt <code>pbc-pool-app</code> gepflegt und per Skill <code>/pbced-billardapp</code> in die pbc-erding2-Website übertragen.</p>
+
+      <h3>1.1 &nbsp;App als statische Seite (Next.js)</h3>
+      <p><strong>Datei:</strong> <code>public/spiel-spass/billardapp/index.html</code> (neu)</p>
+      <p>Die fertige App-Datei wurde unter <code>public/spiel-spass/billardapp/</code> abgelegt. Next.js kopiert alle Dateien aus <code>public/</code> unverändert in das Build-Verzeichnis <code>out/</code>, sodass die App unter <code>/spiel-spass/billardapp/index.html</code> erreichbar ist — ohne eigene Route oder Komponente.</p>
+
+      <h3>1.2 &nbsp;Link auf der Startseite – Next.js (MembershipCTASection)</h3>
+      <p><strong>Datei:</strong> <code>components/sections/MembershipCTASection.tsx</code></p>
+      <p>Der Text „schaust du noch zu" in der CTA-Section verlinkt auf die App.</p>
+      <ul>
+        <li><code>basePath</code>-Prefix ergänzt (<code>NEXT_PUBLIC_BASE_PATH</code>), damit der Link im Production-Build auf <code>/pbced/pbced2/spiel-spass/billardapp/index.html</code> zeigt</li>
+        <li><code>target="_blank" rel="noopener noreferrer"</code> hinzugefügt, da die App kein eigenes Navigationsmenü hat und Besucher sonst ohne Zurück-Option verbleiben würden</li>
+      </ul>
+
+      <h3>1.3 &nbsp;Link in der Links-Seite – Next.js (Gruppe „Spiel &amp; Spaß")</h3>
+      <p><strong>Dateien:</strong> <code>lib/data.ts</code>, <code>app/links/page.tsx</code></p>
+      <p>In <code>lib/data.ts</code> wurde eine neue Gruppe „Spiel &amp; Spaß" mit dem App-Link angelegt. Der <code>LinkGroup</code>-Typ erhielt ein optionales <code>newTab?: boolean</code>-Feld, damit einzelne interne Links trotzdem in einem neuen Tab öffnen können. <code>links/page.tsx</code> berücksichtigt dieses Flag: <code>openNewTab = item.newTab || !isInternal</code>.</p>
+
+      <h3>1.4 &nbsp;Fallback-Website – App verlinkt</h3>
+      <p><strong>Dateien:</strong> <code>Fallback/links.html</code>, <code>Fallback/index.html</code></p>
+      <p>In der Fallback-Website wurde die App analog zur Next.js-Version an zwei Stellen verlinkt:</p>
+      <ul>
+        <li><code>Fallback/links.html</code>: neue Gruppe „Spiel &amp; Spaß" mit Link auf <code>spiel-spass/billardapp/index.html</code> (öffnet in neuem Tab)</li>
+        <li><code>Fallback/index.html</code>: Der Text „schaust du noch zu" in der MembershipCTA-Section verlinkt ebenfalls auf die App (neuer Tab)</li>
+      </ul>
+
+      <h3>1.5 &nbsp;Mobile-Optimierung der App (Touch-Support, CSS, Resize)</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code> (Commit 7a21c86)</p>
+      <p>Die App war auf Smartphones nicht bedienbar. Drei Problembereiche wurden behoben:</p>
+      <p><strong>Touch-Events:</strong></p>
+      <ul>
+        <li>Canvas-Maus-Handler in benannte Funktionen ausgelagert (<code>handleCanvasDown</code>, <code>handleCanvasMove</code>, <code>handleCanvasUp</code>)</li>
+        <li><code>touchstart</code> / <code>touchmove</code> / <code>touchend</code> auf <code>#gameCanvas</code> ergänzt (<code>{ passive: false }</code>)</li>
+        <li>SpinCanvas erhielt analog <code>touchstart</code> und <code>touchmove</code> (vorher nur <code>click</code>)</li>
+        <li>PowerBar nutzte bereits die Pointer-Events-API – kein Eingriff nötig</li>
+      </ul>
+      <p><strong>CSS:</strong> Neue Media Query <code>@media (max-width: 600px)</code>: <code>.brand-chip</code> ausgeblendet, <code>.center-info { min-width: 0 }</code> verhindert Scoreboard-Überlauf im Querformat, <code>#btnShoot</code> kleiner, <code>#spinCanvas</code> von 110 × 110 px auf 80 × 80 px reduziert, <code>.ctrl-hint</code> ausgeblendet.</p>
+      <p><strong>Resize-Handler:</strong> <code>window.addEventListener("resize", () =&gt; applyTableRotation())</code> ergänzt – Gerät drehen friert das Layout nicht mehr ein.</p>
+      <p>Nach der Optimierung wurde die App per <code>/pbced-billardapp next</code> in die Next.js-Website übertragen (Build: 51 Seiten).</p>
+
+      <h3>1.6 &nbsp;Skill <code>/pbced-billardapp</code> erstellt</h3>
+      <p><strong>Datei:</strong> <code>.claude/skills/pbced-billardapp/SKILL.md</code> (neu)</p>
+      <p>Wiederverwendbarer Claude-Code-Skill für die Übertragung der App aus <code>pbc-pool-app</code> in die pbc-erding2-Website. Die Übertragung nach Next.js und Fallback läuft bewusst getrennt:</p>
+      <table>
+        <thead><tr><th>Aufruf</th><th>Aktion</th></tr></thead>
+        <tbody>
+          <tr><td><code>/pbced-billardapp next</code></td><td>Kopie nach <code>public/</code>, Build, robocopy, git commit+push</td></tr>
+          <tr><td><code>/pbced-billardapp fallback</code></td><td>Kopie nach <code>Fallback/</code>, git commit+push, FTP-Hinweis</td></tr>
+        </tbody>
+      </table>
+      <p>Kein „beide"-Modus – jede Integration ist eine eigenständige, gezielt ausgelöste Aktion.</p>
+
+      <h3>1.7 &nbsp;Auto-Orientierung: Portrait auf Handy, Querformat auf Desktop</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code> (Commit 4d7cb5b)</p>
+      <p>Die App erkennt die Geräteausrichtung automatisch und wählt das passende Layout:</p>
+      <ul>
+        <li><strong>Handy im Hochformat</strong> (&lt; 768 px breit, Höhe &gt; Breite): Tisch dreht sich 90°, füllt die Bildschirmhöhe; Controls-Bar kompakt unter dem Canvas</li>
+        <li><strong>Desktop / Tablet</strong>: unverändertes Querformat-Layout</li>
+      </ul>
+      <p><strong>Neue JS-Funktion <code>isPortraitMode()</code>:</strong> Liefert <code>true</code>, wenn das Gerät im Hochformat ist oder der drill-15-Modus manuell gedreht wurde. Ersetzt die bisherige Bedingung <code>game.drill15Rotated</code> in <code>render()</code>, <code>mousePos()</code> und dem Canvas-Sizing.</p>
+      <p><strong><code>applyLayout()</code> ersetzt <code>applyTableRotation()</code>:</strong> Berechnet die Canvas-CSS-Größe dynamisch aus der tatsächlichen Scoreboard- und Controls-Höhe (<code>offsetHeight</code>). Setzt die CSS-Klasse <code>body.portrait-mode</code> für das kompakte Layout. <code>orientationchange</code>-Event ergänzt (100 ms Verzögerung, damit der Browser die Viewport-Maße aktualisiert hat).</p>
+      <p><strong>CSS <code>body.portrait-mode</code>:</strong></p>
+      <ul>
+        <li>Scoreboard: 3-spaltig (ohne Brand-Chip)</li>
+        <li><code>#controlPanel</code>: einzeilige Leiste — Power-Bar (flex: 1) | SpinCanvas (60 × 60 px) | Stoss-Button</li>
+        <li><code>.aim-section</code> zunächst ausgeblendet (→ in 1.8 wiederhergestellt)</li>
+        <li>Bottom-Controls: kleiner und zentriert</li>
+      </ul>
+
+      <h3>1.8 &nbsp;Portrait-Mode: Feinabstimmungs-Buttons wiederhergestellt</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Im Portrait-Modus war die <code>.aim-section</code> (◄/► Feinzielen-Buttons) vollständig ausgeblendet. Auf Touch-Geräten ist die Finger-Eingabe zu ungenau für exaktes Zielen; die Buttons sind daher auch auf dem Handy nötig.</p>
+      <p>Die CSS-Regel wurde angepasst: Die Aim-Section erscheint nun als zweite Zeile im Control-Panel — unterhalb der Hauptleiste (Power / Spin / Stoss). Titel und Tastatur-Hinweise bleiben ausgeblendet (nur Desktop-relevant).</p>
+      <table>
+        <thead><tr><th></th><th>Vorher</th><th>Nachher</th></tr></thead>
+        <tbody>
+          <tr><td><code>.aim-section</code></td><td><code>display: none</code></td><td>sichtbar als zweite Zeile</td></tr>
+          <tr><td><code>#controlPanel</code></td><td><code>flex-wrap: nowrap</code></td><td><code>flex-wrap: wrap</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>1.9 &nbsp;Hilfslinien beim Zielen verbessert</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die Zielhilfs-Linien in <code>drawAimingHelp()</code> waren auf dem dunklen Tisch schwer erkennbar. Opazität, Linienstärke und Glow-Effekt wurden verbessert:</p>
+      <table>
+        <thead><tr><th>Element</th><th>Vorher</th><th>Nachher</th></tr></thead>
+        <tbody>
+          <tr><td>Ziellinie (Weiß)</td><td>Opazität 0.55, Breite 1.5</td><td>Opazität 0.85, Breite 2</td></tr>
+          <tr><td>Ghost-Ball-Kreis</td><td>Opazität 0.4, Breite 1, kein Fill</td><td>Opazität 0.75, Breite 2, leichte Füllung</td></tr>
+          <tr><td>Ablenkungslinie (Gold)</td><td>Opazität 0.6, Breite 1, Länge 70</td><td>Opazität 0.95, Breite 2, Länge 120, Glow</td></tr>
+        </tbody>
+      </table>
+      <p>Ergänzend wurde das Timing der Anzeige überarbeitet: Die Hilfslinien erscheinen jetzt sofort, sobald die weiße Kugel losgelassen wird – unabhängig davon, ob bereits aktiv gezielt wurde. Ausgeblendet werden sie nur noch während des aktiven Ziehens der Kugel (<code>cueDragging</code>). Die eingeblendeten Linien dienen gleichzeitig als visuelles Signal „Zielfunktion aktiv".</p>
+
+      <h3>1.10 &nbsp;Pinch-to-Zoom auf dem Canvas</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Für präzisere Ghost-Ball-Positionierung wurde Pinch-to-Zoom implementiert. Zwei Finger vergrößern oder verkleinern den Canvas-Ausschnitt, ohne die Spielkoordinaten zu beeinflussen.</p>
+      <ul>
+        <li>Zoom-Bereich: 1× bis 3×</li>
+        <li>Zoom zentriert auf den Pinch-Mittelpunkt (Canvas-Ankerpunkt bleibt fixiert)</li>
+        <li>Zweifinger-Drag: gleichzeitiges Verschieben des Ausschnitts</li>
+        <li>Doppeltap: Zoom zurücksetzen</li>
+        <li>Nach dem Schuss und bei Orientierungswechsel: Zoom automatisch zurückgesetzt</li>
+        <li>Koordinaten-Mapping (<code>mousePos</code>) funktioniert automatisch korrekt via <code>getBoundingClientRect()</code></li>
+      </ul>
+      <p>Technisch: CSS <code>transform: translate() scale()</code> auf dem Canvas mit <code>transform-origin: 0 0</code>. Pinch-State in globalen Variablen; <code>resetCanvasZoom()</code> wird von <code>applyLayout()</code> und <code>startShot()</code> aufgerufen.</p>
+
+      <h3>1.11 &nbsp;Ball-in-Hand: einheitliches Platzieren und Zielen</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Ball-in-Hand nach Foul und der Anstoß (Kopffeld) wurden als gleichwertige Situationen erkannt und einheitlich implementiert. Der Spieler kann die weiße Kugel beliebig oft neu platzieren und danach direkt zielen; ein expliziter „Wechsel in den Zielmode" ist nicht mehr nötig.</p>
+      <p><strong>Neues Zustandsmodell:</strong></p>
+      <table>
+        <thead><tr><th>Zustand</th><th><code>placingCue</code></th><th><code>cueDragging</code></th><th>Was passiert</th></tr></thead>
+        <tbody>
+          <tr><td>Kugel wird gezogen</td><td>true</td><td>true</td><td>Hilfslinien aus, Ball bewegt sich mit</td></tr>
+          <tr><td>Kugel liegt, Zielmode</td><td>false</td><td>false</td><td>Hilfslinien ein, Klick/Drag zielt</td></tr>
+          <tr><td>Klick auf Weiße im Zielmode</td><td>→ true</td><td>→ true</td><td>Re-Platzierung gestartet</td></tr>
+          <tr><td>STOSS ausgelöst</td><td>false</td><td>false</td><td>Beide Flags bereinigt</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Schlüsseländerungen:</strong></p>
+      <ul>
+        <li><code>handleCanvasUp</code>: Drag-Ende bei <code>ballInHand</code> setzt <code>placingCue = false</code> → automatischer Wechsel in Zielmode</li>
+        <li><code>handleCanvasDown</code>: Klick auf die Weiße bei <code>ballInHand &amp;&amp; !placingCue</code> → Re-Platzierung (Radius 8r)</li>
+        <li><code>startShot()</code>: räumt <code>ballInHand</code> und <code>placingCue</code> immer auf, nicht nur bedingt</li>
+        <li><code>newGame()</code>: Break-Shot setzt <code>ballInHand = true</code> — der Anstoß ist semantisch ebenfalls Ball-in-Hand, nur auf das Kopffeld beschränkt (<code>kitchenOnly</code>)</li>
+        <li>Touch-Greifradius 18r (groß) beim initialen Drag; 8r beim Re-Griff aus Zielmode</li>
+      </ul>
+
+      <h3>1.12 &nbsp;WPA-konforme Tischgeometrie</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Kugelgröße, Taschenöffnungen, Tischmarkierungen und Fußpunkt-Position wurden auf die WPA-Turniernorm (9-Fuß-Tisch, 100&quot; × 50&quot; Spielfläche, Maßstab 8,4 px/inch) abgestimmt.</p>
+      <table>
+        <thead><tr><th>Eigenschaft</th><th>WPA-Vorgabe</th><th>Umsetzung</th></tr></thead>
+        <tbody>
+          <tr><td>Kugelradius</td><td>57,15 mm / 2 = 1,125&quot;</td><td><code>BALL_R = 9.5 px</code></td></tr>
+          <tr><td>Eckloch-Öffnung</td><td>≥ 4,5&quot;</td><td><code>CORNER_CUT = 27 px</code> (= 4,5&quot; / √2 × 8,4)</td></tr>
+          <tr><td>Seitenloch-Öffnung</td><td>≥ 5,0&quot;</td><td><code>POCKET_R_SIDE = 25 px</code> (Sichtradius)</td></tr>
+        </tbody>
+      </table>
+      <p>Markierungspunkte auf Tischmittelachse (je ¼ Tischlänge vom Bandenspiegel):</p>
+      <ul>
+        <li><strong>Kopfpunkt</strong> (<code>PLAY_W × 0,25</code>): Ausgangspunkt beim Anstoß</li>
+        <li><strong>Mittelpunkt</strong> (<code>PLAY_W × 0,50</code>): Mittelpunkt der Spielfläche (neu eingezeichnet)</li>
+        <li><strong>Fußpunkt</strong> (<code>PLAY_W × 0,75</code>): Aufstellpunkt für Aufbau (8-Ball, 15-Ball) und Respotting (9-Ball)</li>
+      </ul>
+      <p>Eck- und Seitentaschen erhalten unterschiedliche visuelle Radien (<code>POCKET_R_CORNER = 18 px</code> / <code>POCKET_R_SIDE = 25 px</code>), entsprechend den unterschiedlichen WPA-Öffnungsweiten.</p>
+
+      <h3>1.13 &nbsp;Seitentaschen: D-Form-Darstellung und Physik</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die Seitentaschen wurden visuell und physikalisch korrekt als halbkreisförmige Öffnungen („D-Form") an der Bandeninnenseite umgesetzt.</p>
+      <p><strong>Neue Konstante:</strong> <code>HALF_SIDE_PW = 21 px</code> entspricht der halben WPA-Öffnungsbreite (5,0&quot; / 2 × 8,4 px/inch).</p>
+      <p><strong>Darstellung:</strong> Für jede Seitentasche wird statt eines vollen Kreises ein Halbkreis (<code>arc(..., π, 0)</code> oben / <code>arc(..., 0, π)</code> unten) direkt an der Bandeninnenkante gezeichnet. Drei Schichten (gold-transparent, fast-schwarz, schwarz) simulieren Tiefe.</p>
+      <p><strong>Cushion-Strip mit Lücke:</strong> Die obere und untere Bande wird als zwei Hälften links und rechts der Seitentasche gezeichnet, damit die Öffnung sauber dargestellt wird.</p>
+      <p><strong>Physik:</strong> Die Bedingung <code>!nearPocket</code> für das Unterdrücken von Bandenreflexionen wurde für die obere und untere Wand durch <code>!inSidePocketMouth</code> ersetzt. Die Zone <code>Math.abs(b.x − midX) &lt; HALF_SIDE_PW</code> lässt Bälle passieren, ohne sie zurückzuwerfen.</p>
+
+      <h3>1.14 &nbsp;Sidespin-Richtungskorrektur an Banden</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>In <code>applySpinOnCushion()</code> war das Vorzeichen für die seitlichen Wände (links/rechts) vertauscht: Rechtseffet an der rechten Bande lenkte die Kugel fälschlicherweise nach oben statt nach unten.</p>
+      <table>
+        <thead><tr><th></th><th>Vorher</th><th>Nachher</th></tr></thead>
+        <tbody>
+          <tr><td>Vorzeichen (links/rechts)</td><td><code>side === "right" ? -1 : 1</code></td><td><code>side === "right" ? 1 : -1</code></td></tr>
+        </tbody>
+      </table>
+      <p>Das Ergebnis ist nun physikalisch korrekt: Rechtseffet an rechter Bande → Kugel läuft nach rechts weg.</p>
+
+      <h3>1.15 &nbsp;Bandenphysik: Geschwindigkeitsabhängiger Ausfallwinkel</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die vier Wandreflexionen wurden durch eine neue Hilfsfunktion <code>applyCushionRebound(b, side)</code> ersetzt. Sie implementiert einen physikalisch plausiblen Rückprall mit getrennten Koeffizienten für Normal- und Tangentialkomponente:</p>
+      <table>
+        <thead><tr><th>Koeffizient</th><th>Wert</th><th>Effekt</th></tr></thead>
+        <tbody>
+          <tr><td><code>e_n</code> (normal)</td><td><code>max(0.65, 0.90 − max(0, (|vN| − 15) × 0.012))</code></td><td>0.90 bei leicht/mittel → Einfalls=Ausfallwinkel; sinkt auf 0.65 bei hartem Schuss</td></tr>
+          <tr><td><code>e_t</code> (tangential)</td><td>0.90 (konstant)</td><td>Einfalls=Ausfallwinkel bei mittlerer Stärke</td></tr>
+        </tbody>
+      </table>
+      <p>Bei leichten und mittleren Stößen gilt näherungsweise Einfalls=Ausfallwinkel. Je härter der Schuss, desto kleiner wird der Ausfallwinkel (Kugel läuft stärker entlang der Bande).</p>
+
+      <h3>1.16 &nbsp;Effet bei leichtem Bandenstoß verstärkt</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die bisherige Effet-Formel (<code>eng × |vN| × 0.18</code>) war proportional zur Aufprallgeschwindigkeit — bei sehr leichten Bandenstößen wirkte das Effet kaum. Realitätsnäher ist das umgekehrte Verhältnis: je weicher die Bande angespielt wird, desto stärker wirkt der Effet.</p>
+      <p>Neuer <code>spinBoost</code>-Faktor in <code>applySpinOnCushion()</code>:</p>
+      <ul>
+        <li>Bei sehr leichtem Stoß (|vN| → 0): spinBoost bis 2,0 (doppelte Wirkung)</li>
+        <li>Bei mittlerem Stoß (|vN| = 15): spinBoost = 1,0 (keine Verstärkung)</li>
+        <li>Bei hartem Stoß (|vN| &gt; 15): spinBoost = 1,0</li>
+      </ul>
+
+      <h3>1.17 &nbsp;Neue Spielvariante: Basisübung</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Neue Variante <code>basis</code> zum gezielten Üben der Steuerelemente und des Kugelgefühls.</p>
+      <ul>
+        <li>Nur die weiße Spielkugel; keine farbigen Bälle</li>
+        <li>Nach jedem Stoß: Ball in Hand (Kugel neu platzieren)</li>
+        <li>Stoßzähler <code>basisShots</code> läuft mit (wird im Ergebnis angezeigt)</li>
+        <li>Der Modus-Auswahl-Bereich (8-Ball, 9-Ball usw.) wird im Menü ausgeblendet</li>
+      </ul>
+      <p>Einsatzzweck: Übung von Stoßstärke, Lauflänge, Laufrichtung und Bandenwinkel ohne Spielablenkung durch Spielregeln.</p>
+
+      <h3>1.18 &nbsp;9-Ball: Aufstellungsvariante „Vorgelagert"</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Im 9-Ball gibt es neben dem klassischen WPA-Diamant eine alternative Aufstellung: Die 1 liegt eine Kugelbreite vor dem Fußpunkt, sodass der Fußpunkt zwischen der ersten und zweiten Reihe des Diamonds fällt.</p>
+      <p>Im Spielmenü erscheint ein neuer Abschnitt „9-Ball Aufstellung" (nur bei Variante 9-Ball):</p>
+      <table>
+        <thead><tr><th>Option</th><th>Beschreibung</th></tr></thead>
+        <tbody>
+          <tr><td>Diamant (WPA)</td><td>Standard-Aufstellung: 1 auf dem Fußpunkt</td></tr>
+          <tr><td>Vorgelagert</td><td>1 liegt eine Kugelbreite vor dem Fußpunkt</td></tr>
+        </tbody>
+      </table>
+      <p>Technisch: <code>setup9BallVorgelagert()</code> verwendet dieselbe Diamantformation wie <code>setup9Ball()</code>, verschiebt den Apex-Punkt (<code>apexX</code>) jedoch um eine Reihenbreite (<code>dx</code>) Richtung Kopfende.</p>
+
+      <h3>1.19 &nbsp;8-Ball: Kugel-Ansage bei offenem Tisch</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Bei offenem Tisch muss der Spieler vor dem Schuss eine konkrete Kugelnummer ansagen (statt pauschal „Voll" oder „Halb"). Die zuerst versenkte Kugel legt die Gruppenverteilung für beide Spieler fest. Kombinationsstöße sind erlaubt: der Erstkontakt darf auf jede Kugel außer der Schwarzen fallen, solange die angesagte Kugel versenkt wird.</p>
+      <p><strong>Ablauf:</strong></p>
+      <ol>
+        <li>Spieler zielt auf eine Kugel → Raycast erkennt die wahrscheinliche Zielkugel</li>
+        <li>Modal erscheint: „Volle 3 ansagen?" mit [✓ Bestätigen] / [Andere Kugel] – das Modal erscheint erst nach aktivem Zielvorgang (<code>aimActive</code>-Flag), nicht sofort nach dem Zugwechsel</li>
+        <li>Nach Bestätigung wird der Schuss automatisch ausgeführt</li>
+        <li>Versenkte angesagte Kugel → Gruppen werden vergeben, Spieler setzt fort</li>
+        <li>Nicht versenkt → Tisch bleibt offen, Gegner am Zug</li>
+      </ol>
+      <p><strong>KI:</strong> Wählt selbständig eine geeignete Zielkugel und hält einen winkelbasierten Sicherheitsabstand zur Schwarzen, um versehentliche 8-Ball-Fouls zu vermeiden.</p>
+      <table>
+        <thead><tr><th>Szenario</th><th>Regel</th></tr></thead>
+        <tbody>
+          <tr><td>Kombinationsstoß (z. B. 2 → 9)</td><td>Erlaubt, wenn 9 angesagt und versenkt</td></tr>
+          <tr><td>Schwarze als Erstkontakt</td><td>Foul (auch auf offenem Tisch)</td></tr>
+          <tr><td>Angesagte Kugel nicht versenkt</td><td>Kein Foul, aber Tisch bleibt offen</td></tr>
+        </tbody>
+      </table>
+
+      <h3>1.20 &nbsp;Ecktaschen-Physik: Kugel-Katapult-Bug behoben</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Bälle, die sich im Bereich der Ecktaschen-Banden bewegten, wurden bei moderater Geschwindigkeit regelrecht herauskatapultiert, statt in die Tasche zu fallen oder liegen zu bleiben.</p>
+      <p><strong>Ursache:</strong> Linke und rechte Bande unterdrücken Reflexionen bei Ecktaschennähe bereits korrekt (<code>!nearPocket</code>). Die obere und untere Bande prüften hingegen nur <code>!inSidePocketMouth</code> (für Seitentaschen) und ignorierten Ecktaschen vollständig.</p>
+      <p><strong>Fix:</strong> Neue Variable <code>nearCornerPocket</code> (Radius 53 px, nur Ecktaschen). Die obere und untere Bandenbedingung wurde um <code>&amp;&amp; !nearCornerPocket</code> ergänzt.</p>
+      <table>
+        <thead><tr><th>Bande</th><th>Vorher</th><th>Nachher</th></tr></thead>
+        <tbody>
+          <tr><td>Links / Rechts</td><td><code>!nearPocket</code> ✓</td><td>unverändert</td></tr>
+          <tr><td>Oben / Unten</td><td><code>!inSidePocketMouth</code> (Ecktaschen nicht abgedeckt)</td><td><code>!inSidePocketMouth &amp;&amp; !nearCornerPocket</code> ✓</td></tr>
+        </tbody>
+      </table>
+      <p>Bälle im Ecktaschenbereich werden von den Ober-/Unterbanden nicht mehr zurückgeworfen und können wie erwartet versinken oder sanft herauslaufen.</p>
+
+      <h3>1.21 &nbsp;KI Profi-Spielstärke: 80-90% Pocketrate, Positionierungsschwäche</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die KI in der Profi-Schwierigkeitsstufe verfehlte zu viele Bälle. Ursache war eine fehlerhafte Power-Kalkulation, die den Schnittwinkel-Energieverlust ignorierte: Bei einem dünnen Schnitt überträgt der Stoß nur einen Bruchteil der Cue-Energie auf die Zielkugel — sie blieb regelmäßig kurz vor der Tasche stehen.</p>
+      <p>Vier Änderungen in <code>aiPlanShot()</code>:</p>
+      <table>
+        <thead><tr><th>Änderung</th><th>Vorher</th><th>Nachher</th></tr></thead>
+        <tbody>
+          <tr><td>Power-Formel</td><td><code>dTP / 1500</code> (Schnittwinkel ignoriert)</td><td><code>dTP / dotN / 1600</code> (Energie-adjustiert)</td></tr>
+          <tr><td>Mindest-Power</td><td>35%</td><td>40%</td></tr>
+          <tr><td>Shot-Scoring</td><td><code>dotN × 100</code> (linear)</td><td><code>dotN² × 130</code> (quadratisch)</td></tr>
+          <tr><td>Profi: Min. dotN</td><td>0.2 (≈78° Schnitt erlaubt)</td><td>0.28 (≈74° Schnitt max.)</td></tr>
+          <tr><td><code>hard</code> err</td><td>0.002 rad (±0.11°)</td><td>0.006 rad (±0.34°)</td></tr>
+          <tr><td><code>hard</code> powerVar</td><td>0.015 (±0.75%)</td><td>0.08 (±4%)</td></tr>
+        </tbody>
+      </table>
+      <p>Die quadratische dotN-Gewichtung bevorzugt gerade Stöße deutlich stärker; die adjustierte Power-Formel stellt sicher, dass die Zielkugel auch bei dünnen Schnitten die Tasche erreicht. Der leicht erhöhte Winkel-Fehler und die größere Power-Streuung sorgen für realistische Positionierungsschwächen ohne die Trefferquote nennenswert zu beeinträchtigen.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 2 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 2 – Online-Multiplayer-Modus der Billard-App <span class="date">(2. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Die Billard-App erhielt einen vollständigen Online-Multiplayer-Modus (2 Spieler, Echtzeit). Grundlage ist ein eigener WebSocket-Relay-Server (<code>pbc-relay</code>), der auf Render.com betrieben wird. Die Spiellogik läuft autoritativ auf der Seite des schießenden Spielers; der Gegner erhält nach jedem Schuss einen vollständigen Spielzustand-Sync.</p>
+
+      <h3>2.1 &nbsp;WebSocket-Relay-Server (pbc-relay)</h3>
+      <p><strong>Projekt:</strong> <code>C:\Daten\Projects\pbc-relay\relay.js</code> (eigenständiges Node.js-Projekt, GitHub: <code>chrisgitti/pbc-relay</code>)</p>
+      <p>Neues Projekt <code>pbc-relay</code> – ein schlanker WebSocket-Relay-Server (~55 Zeilen, Node.js + <code>ws</code>-Paket). Deployed auf Render.com unter <code>wss://pbc-relay.onrender.com</code>.</p>
+      <p>Zwei Clients bilden einen Raum mit 6-stelligem Zufallscode. Alle Nachrichten zwischen Host und Gast werden blind weitergeleitet.</p>
+      <table>
+        <tr><th>Nachrichtentyp</th><th>Richtung</th><th>Bedeutung</th></tr>
+        <tr><td><code>create</code> / <code>join</code></td><td>Client → Relay</td><td>Raum erstellen / beitreten</td></tr>
+        <tr><td><code>created</code> / <code>start</code></td><td>Relay → Client</td><td>Bestätigung / Spielstart mit Rollenzuweisung</td></tr>
+        <tr><td><code>shot</code></td><td>Client → Relay</td><td>Schuss-Parameter (Winkel, Kraft, Spin, Weiße-Position)</td></tr>
+        <tr><td><code>sync</code></td><td>Client → Relay</td><td>Vollständiger Spielzustand nach jedem Schuss</td></tr>
+        <tr><td><code>ping</code> / <code>pong</code></td><td>Client ↔ Relay</td><td>Keepalive</td></tr>
+        <tr><td><code>rematch</code> / <code>disconnect</code></td><td>Client ↔ Relay</td><td>Neustart-Wunsch / Verbindungsabbruch</td></tr>
+      </table>
+
+      <h3>2.2 &nbsp;Lobby-Overlay und Raum-Code-System</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Neuer Menüpunkt „🌐 Online-Spiel" öffnet ein Lobby-Overlay mit:</p>
+      <ul>
+        <li>Namenseingabe für beide Spieler</li>
+        <li>„Raum erstellen" → Relay generiert 6-stelligen Code (z. B. <code>A3KF2M</code>), der dem Gegner mitgeteilt wird</li>
+        <li>„Beitreten" → Code-Eingabe → Relay verbindet beide Clients und startet das Spiel</li>
+        <li>Wartescreen bis der Gegner beitritt</li>
+        <li>Fehlertext bei ungültigem oder bereits vollem Raum</li>
+        <li>Disconnect-Overlay bei Verbindungsabbruch</li>
+      </ul>
+
+      <h3>2.3 &nbsp;Autoritative Physik-Synchronisation</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Der schießende Spieler ist die autoritative Quelle: Er berechnet die Physik vollständig lokal und sendet nach <code>onShotComplete()</code> einen vollständigen Zustand-Sync an den Gegner (<code>sendOnlineSync()</code>).</p>
+      <p>Der Empfänger animiert den Schuss visuell (<code>applyOnlineShot()</code>), überspringt aber die eigene Spiellogik (<code>handle8BallShot()</code>) und wartet auf den Sync. <code>applyOnlineSync()</code> überschreibt den gesamten Spielzustand:</p>
+      <table>
+        <tr><th>Im Sync enthaltene Felder</th></tr>
+        <tr><td>Positionen und <code>inPlay</code>-Status aller Kugeln</td></tr>
+        <tr><td><code>currentPlayer</code>, Gruppen beider Spieler, <code>potted</code>-Arrays</td></tr>
+        <tr><td><code>open8ball</code>, <code>ballInHand</code>, <code>placingCue</code>, <code>kitchenOnly</code>, <code>isBreakShot</code></td></tr>
+        <tr><td><code>foulMessage</code>, <code>called8Pocket</code>, <code>pushOutAvailable</code>, <code>state</code>, <code>endMessage</code></td></tr>
+      </table>
+      <p>Eingabe-Blocking: Canvas-Events, Spacebar und STOSS!-Button werden gesperrt, wenn <code>game.currentPlayer !== online.myPlayer</code>.</p>
+
+      <h3>2.4 &nbsp;Sync-Queue für Mehrfach-Stöße</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Bei aufeinanderfolgenden Stößen desselben Spielers (Kugel versenkt → Fortsetzung) treffen mehrere Sync-Nachrichten ein, bevor die Physik des ersten Schusses auf der Empfängerseite abgeschlossen ist. Ein einzelner <code>pendingSync</code>-Slot würde ältere Syncs überschreiben und eine Zustandsdesynchronisation auslösen.</p>
+      <p>Fix: <code>_pendingSyncs[]</code>-Array (FIFO-Queue) statt einzelnem <code>pendingSync</code>-Slot. Syncs werden exakt in der Eingangsreihenfolge den zugehörigen Schüssen zugeordnet.</p>
+
+      <h3>2.5 &nbsp;Bugfixes: Kugelanzeige, Volle/Halbe, Spielende</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <ul>
+        <li><strong><code>potted</code>-Serialisierung:</strong> <code>player.potted</code> enthält Kugel-Nummern (Integer), nicht Objekte. <code>sendOnlineSync()</code> rief fälschlicherweise <code>.map(b =&gt; b.num)</code> auf → <code>undefined</code>-Einträge → leere <code>potted</code>-Arrays auf der Empfängerseite → falsche „x übrig"-Anzeige. Fix: <code>[...game.players[i].potted]</code> (direkte Zahlen-Kopie).</li>
+        <li><strong>Backfill beim Anstoß:</strong> Beim Anstoß versenkte Kugeln wurden beim Zuweisen der Gruppen nicht retroaktiv dem neuen Gruppenbesitzer gutgeschrieben. Fix: Beim Gruppen-Zuweisen werden alle bereits <code>!inPlay</code>-Kugeln der jeweiligen Gruppe nachträglich in <code>potted</code> eingetragen.</li>
+        <li><strong>Spielende:</strong> <code>sendOnlineSync()</code> wurde bei <code>game.state === "ended"</code> nicht aufgerufen (early return vor dem Sync). Fix: Sync wird nun auch beim Spielende vor <code>showEndScreen()</code> gesendet.</li>
+      </ul>
+
+      <h3>2.6 &nbsp;CSP-Header erweitert</h3>
+      <p><strong>Datei:</strong> <code>public/.htaccess</code></p>
+      <p>Die Content-Security-Policy im Apache-Header erlaubte unter <code>connect-src</code> nur <code>'self'</code>. Dadurch wurde der WebSocket-Aufbau zu <code>wss://pbc-relay.onrender.com</code> vom Browser blockiert. Zusätzlich fehlten Einträge für Google Fonts.</p>
+      <ul>
+        <li><code>connect-src</code>: <code>wss://pbc-relay.onrender.com</code> ergänzt</li>
+        <li><code>style-src</code>: <code>https://fonts.googleapis.com</code> ergänzt</li>
+        <li><code>font-src</code>: <code>https://fonts.gstatic.com</code> ergänzt</li>
+      </ul>
+
+      <h3>2.7 &nbsp;Relay-Verbindungsaufbau mit automatischem Retry</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Fix: <code>connectRelay()</code> versucht die Verbindung bei <code>onerror</code> bis zu 8-mal alle 5 Sekunden erneut (Gesamtdauer ~40 Sekunden). Während des Wartens wird im Lobby-Fehlerbereich „Server startet… bitte warten (N/8)" angezeigt. Ein neuer Versuch wird nur gestartet, solange das Lobby-Overlay noch sichtbar ist.</p>
+
+      <h3>2.8 &nbsp;Foul-Meldung wird beim nächsten Schuss sofort gelöscht</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Nach einem illegalen Anstoß (Foul) blieb die Fehlermeldung im Canvas sichtbar, wenn der nächste Spieler seinen Schuss ausführte.</p>
+      <p>Fix: <code>game.foulMessage = ""</code> und <code>game.foulTimer = 0</code> werden jetzt am Beginn von <code>startShot()</code> zurückgesetzt, bevor die Schussparameter gesetzt werden.</p>
+
+      <h3>2.9 &nbsp;Menü-Klick am Spielende trennt Online-Verbindung</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Klickte ein Spieler am Ende einer Online-Partie auf „Menü", wurde die WebSocket-Verbindung nicht getrennt. Der andere Spieler konnte auf „Revanche" klicken und ein neues Spiel starten, ohne zu merken, dass kein Gegner mehr vorhanden war.</p>
+      <p>Fix: Der <code>endMenu</code>-Handler setzt <code>online.connected = false</code>, entfernt den <code>onclose</code>-Handler und schließt den WebSocket. Das Relay sendet daraufhin automatisch eine <code>disconnect</code>-Nachricht an den Gegner. Zusätzlich prüft der <code>rematch</code>-Empfänger-Handler jetzt <code>online.connected</code>, bevor <code>newGame()</code> ausgelöst wird.</p>
+
+      <h3>2.10 &nbsp;Raumcode-Zeichensatz bereinigt</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-relay\relay.js</code></p>
+      <p>Die bisherige Code-Generierung enthielt die Zeichen <code>0</code>, <code>O</code>, <code>1</code> und <code>I</code>, die in vielen Schriftarten nicht eindeutig voneinander zu unterscheiden sind.</p>
+      <p>Fix: Expliziter Zeichensatz <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code> (32 Zeichen) ohne verwechselbare Zeichen. Bei 6 Stellen ergeben sich über 1 Milliarde mögliche Codes.</p>
+
+      <h3>2.11 &nbsp;Menü/Neustart während des Online-Spiels trennt Verbindung</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Klickte ein Spieler während einer laufenden Online-Partie auf „Menü", „Neustart" oder drückte die Taste <code>M</code>, erhielt der Gegner kein Disconnect-Signal und spielte unbemerkt alleine weiter.</p>
+      <p>Fix: Die Disconnect-Logik wurde in <code>showMenu()</code> selbst verlagert — prüft <code>game.mode === "online"</code> und schließt ggf. den WebSocket. Damit sind alle Aufrufstellen automatisch abgedeckt (<code>btnMenu</code>, Taste <code>M</code>, End-Screen-„Menü"). Der <code>btnRestart</code>-Handler leitet im Online-Modus auf <code>showMenu()</code> um statt <code>newGame()</code> aufzurufen.</p>
+
+      <h3>2.12 &nbsp;Bandenphysik korrigiert – Ausfallwinkel geschwindigkeitsabhängig</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die Formel in <code>applyCushionRebound()</code> war invertiert (Phase 1.15): <code>e_n</code> sank bei hartem Stoß (→ flacherer Abprall), blieb aber bei leichtem Stoß konstant auf 0.90. Das korrekte Verhalten ist genau umgekehrt.</p>
+      <table>
+        <tr><th>Stoßhärte</th><th>Ausfallwinkel</th><th>Erklärung</th></tr>
+        <tr><td>Leicht</td><td>vergrößert sich (flacher)</td><td>Gummi dämpft Normalkomponente stärker</td></tr>
+        <tr><td>Mittel (Referenz)</td><td>Einfalls = Ausfallswinkel</td><td><code>e_n = e_t = 0.90</code></td></tr>
+        <tr><td>Hart</td><td>verkleinert sich (spitzer)</td><td>Gummi federt elastischer zurück</td></tr>
+      </table>
+      <p>Neue Formel: <code>e_n = clamp(0.90 + (|vN| − 15) × 0.015, 0.62, 0.97)</code></p>
+      <p><strong>Wechselwirkung mit Effet:</strong> Der Sidespin addiert eine Tangentialkomponente nach dem Rückprall. Je nach Richtung verstärkt oder schwächt er den geometrischen Ausfallwinkel. Bei leichten Stößen wirkt der Effet stärker (<code>spinBoost</code> bis 2×). Die Interaktion ergibt sich korrekt aus der Überlagerung beider Effekte — <code>applySpinOnCushion()</code> bleibt unverändert.</p>
+
+      <h3>2.13 &nbsp;Basisübung – Wiederholen-Toggle</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Im Spielmodus „Basisübung" wurde ein neuer Toggle-Button „↺ Wiederholen" in der Steuerzeilenleiste ergänzt. Bei Aktivierung (goldene Umrandung) wird die Weiße nach jedem Stoß automatisch an ihre Ausgangsposition vor dem Stoß zurückgesetzt, statt wie üblich Ball-in-Hand zu gewähren. Der Modus erleichtert Training und Feinjustierung, da derselbe Aufbau beliebig oft wiederholt werden kann ohne die Weiße neu zu platzieren.</p>
+      <p>Technisch speichert <code>startShot()</code> die aktuelle Cueball-Position in <code>game.basisCueSaveX/Y</code> vor dem Stoß. <code>handleBasisShot()</code> stellt bei aktivem <code>basisRepeatMode</code> diese Position wieder her und setzt <code>game.cuePotted = false</code>, sodass kein Ball-in-Hand ausgelöst wird. Beim Spielstart (<code>newGame()</code>) wird der Toggle automatisch deaktiviert und die Schaltfläche zurückgesetzt.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 3 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 3 – Mini-Modus und Bugfix Tisch drehen <span class="date">(2. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Mini-Modus für Messen und Events: 8-Ball und 9-Ball sind jetzt mit reduzierter Kugelzahl spielbar. Zusätzlich wurde ein Bugfix für den „Tisch drehen"-Button in der Basisübung eingespielt.</p>
+
+      <h3>3.1 &nbsp;Mini-Modus – Reduzierte Kugelanzahl für Messen</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Im Hauptmenü wurde ein neuer Abschnitt „Kugelanzahl" ergänzt (erscheint nur bei 8-Ball und 9-Ball). Damit lässt sich die Anzahl der Kugeln beim Anstoß frei wählen:</p>
+      <table>
+        <tr><th>Variante</th><th>Auswahl</th><th>Besonderheit</th></tr>
+        <tr><td>8-Ball</td><td>3, 5, 7, 9, 11, 13 oder Alle (15)</td><td>Ball 8 immer dabei; je gleich viele Solids und Stripes</td></tr>
+        <tr><td>9-Ball</td><td>2, 3, 4, 5, 6, 7, 8 oder Alle (9)</td><td>Ball 9 als Gewinnkugel immer dabei; Ball 1 am Apex</td></tr>
+      </table>
+      <p>Die Aufstellung passt sich der gewählten Kugelzahl an: 9-Ball nutzt diamantartige Formen (Ball 9 möglichst zentral), 8-Ball nutzt Dreiecksformen (Ball 8 in Reihe 3 Mitte). Die Break-Mindestanforderung (normalerweise 4 Kugeln an der Bande) wird proportional zur Kugelzahl gesenkt: <code>max(1, floor(n/4))</code>.</p>
+      <p>Die Spiellogik (Gruppenermittlung, Gewinnbedingung, Niedrigste-Kugel-Regel bei 9-Ball) funktioniert ohne Anpassung, da <code>game.balls</code> nur die gewählten Kugeln enthält.</p>
+      <p>Im Online-Modus überträgt der Host nach dem Spielstart die gesamte Spielkonfiguration (Variante, Aufstellungsart, Kugelanzahl) per neuem <code>settings</code>-Nachrichtentyp an den Gast. Der Gast startet <code>newGame()</code> erst nach Empfang dieser Nachricht. Damit wurde auch die bisher vorhandene Inkonsistenz behoben, bei der Variante und Rack-Typ nicht synchronisiert wurden.</p>
+
+      <h3>3.2 &nbsp;Bugfix: „Tisch drehen" in Basisübung</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Der Button „⟳ Tisch drehen" war im Spielmodus Basisübung sichtbar, aber funktionslos. Ursache war ein zu enger Guard im Click-Handler (<code>if (game.variant !== "drill15") return</code>), der die Variante <code>basis</code> blockierte. Der Guard wurde auf beide Varianten erweitert: <code>drill15</code> und <code>basis</code>.</p>
+
+      <h3>3.3 &nbsp;Mini-Modus: Aufstellungen für 3 und 5 Kugeln korrigiert</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die Rack-Konfigurationen für 3 und 5 Kugeln wurden nach konkreten Vorgaben angepasst:</p>
+      <table>
+        <thead><tr><th>Variante</th><th>Anzahl</th><th>Vorher</th><th>Nachher</th></tr></thead>
+        <tbody>
+          <tr><td>9-Ball</td><td>3</td><td>Dreieck (1 · 2+9)</td><td>Hintereinander: 1 – 9 – 2</td></tr>
+          <tr><td>9-Ball</td><td>5</td><td>Pfeil (1 · 2+3 · 4+9)</td><td>1 vorne · 2+3 · 9 mittig · 4 dahinter</td></tr>
+          <tr><td>8-Ball</td><td>3</td><td>Dreieck (1 · 8+9)</td><td>Hintereinander: 1 – 8 – 9</td></tr>
+          <tr><td>8-Ball</td><td>5</td><td>Zwei Reihen</td><td>1 vorne · 2+9 · 8 mittig · 10 dahinter</td></tr>
+        </tbody>
+      </table>
+      <p>Bei der Hintereinander-Aufstellung (3 Kugeln) stehen alle Bälle in einer Linie entlang der Rack-Achse. Bei 5 Kugeln bilden je zwei Bälle die zweite Reihe, der Schlüsselball (9 bzw. 8) steht mittig in Reihe 3, dahinter ein einzelner Ball.</p>
+
+      <h3>3.4 &nbsp;Steuerungshinweis: LMB/RMB → LMT/RMT</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>In der Hinweiszeile unterhalb des Spielfelds wurden die englischen Abkürzungen LMB (Left Mouse Button) und RMB (Right Mouse Button) durch die deutschen Entsprechungen <strong>LMT</strong> (Linke Maustaste) und <strong>RMT</strong> (Rechte Maustaste) ersetzt.</p>
+
+      <h3>3.5 &nbsp;Basisübung: Ball-in-Hand sofort beim Abwählen von „Wiederholen"</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>War „Wiederholen" aktiv und wurde abgewählt, konnte die Weiße erst nach dem nächsten Stoß wieder frei platziert werden. Ursache: Im Repeat-Modus setzt <code>handleBasisShot()</code> <code>cuePotted</code> nicht auf <code>true</code>, weshalb <code>respawnCueBall()</code> nie aufgerufen wurde und <code>placingCue</code> auf <code>false</code> blieb.</p>
+      <p>Fix: Im Click-Handler von <code>btnBasisRepeat</code> wird beim Wechsel ON→OFF sofort <code>respawnCueBall()</code> aufgerufen, sofern das Spiel im Zustand „aiming" ist und kein Stoß läuft – identisch zum Verhalten nach einem normalen Stoß.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 4 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 4 – Mobile-Fixes Basisübung Billard-App <span class="date">(3. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Mehrere mobile-spezifische Bugs im Spielmodus „Basisübung" wurden behoben. Alle Fixes betreffen ausschließlich <code>C:\Daten\Projects\pbc-pool-app\index.html</code>. Auf dem PC war kein Verhalten beeinträchtigt.</p>
+
+      <h3>4.1 &nbsp;Basisübung: Weiße bleibt nach Stoß liegen</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die Weiße wurde nach jedem Stoß immer auf den Fußpunkt gesetzt, auch wenn sie nicht eingelocht worden war. Ursache: <code>handleBasisShot()</code> erzwang <code>game.cuePotted = true</code>, was stets <code>respawnCueBall()</code> (→ Fußpunkt) auslöste.</p>
+      <p>Fix: <code>handleBasisShot()</code> prüft nun <code>game.cuePotted</code>. Liegt die Weiße noch auf dem Tisch, wird <code>respawnCueBall()</code> zur korrekten State-Initialisierung aufgerufen und anschließend die ursprüngliche Ruheposition wiederhergestellt. Nur bei echter Versenkung bleibt <code>cuePotted = true</code> und der Ball erscheint am Fußpunkt.</p>
+
+      <h3>4.2 &nbsp;Ball-in-Hand auf Mobile: aimLocked blockiert Drag nicht mehr</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Ab dem zweiten Stoß war die Weiße auf dem Handy nicht mehr verschiebbar. Ursache: Ein synthetisches <code>mouseenter</code>-Event beim Antippen des SCHUSS-Buttons setzte <code>game.aimLocked = true</code>. Da <code>mouseleave</code> auf Mobile nie feuert, blieb <code>aimLocked</code> dauerhaft <code>true</code> und <code>handleCanvasMove()</code> kehrte sofort zurück.</p>
+      <p>Zwei Korrekturen:</p>
+      <ul>
+        <li>In <code>handleCanvasMove()</code> wurde der <code>aimLocked</code>-Check hinter den <code>placingCue</code>-Block verschoben, damit der Ball-in-Hand-Modus nie durch <code>aimLocked</code> gesperrt wird.</li>
+        <li>Im Canvas-<code>touchstart</code>-Handler wird <code>game.aimLocked = false</code> gesetzt, bevor <code>handleCanvasDown()</code> aufgerufen wird.</li>
+      </ul>
+
+      <h3>4.3 &nbsp;touch-action: none für #gameCanvas</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Dem <code>#gameCanvas</code>-Selektor fehlte <code>touch-action: none</code>. Der Browser konnte Touch-Events für Scroll und Zoom abfangen, bevor sie die App erreichten. Ergänzt.</p>
+
+      <h3>4.4 &nbsp;WIEDERHOLEN-Button: robuste Touch-Behandlung</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Der WIEDERHOLEN-Button ließ sich auf dem Handy einschalten, aber nicht mehr ausschalten. Drei Korrekturen:</p>
+      <ul>
+        <li><strong>Event-Handling:</strong> Umstellung auf <code>touchstart</code> für Touch-Geräte und <code>pointerdown</code> (nur Nicht-Touch) für Maus/Stift; <code>click</code> bleibt als Fallback mit 500 ms-Deduplizierung erhalten.</li>
+        <li><strong>Visueller Aktivzustand:</strong> Neuer CSS-Selektor <code>#btnBasisRepeat.repeat-active</code> (schwarzer Text auf Gold-Hintergrund). Der Button zeigt im AN-Zustand den Text „↺ Wiederholen: AN" – sofort erkennbar.</li>
+        <li><strong>Hover nur auf Zeigegeräten:</strong> Die <code>#bottomControls button:hover</code>-Regel wurde in ein <code>@media (hover: hover) and (pointer: fine)</code> eingeschlossen, damit der Gold-Hover auf Touchscreens nicht mit dem Aktivzustand verwechselt werden kann.</li>
+      </ul>
+      <p>Zusätzlich wurden <code>no-store</code>-Cache-Control-Header in <code>server.js</code> ergänzt, damit Änderungen beim mobilen Testen sofort wirksam sind.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 5 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 5 – Zuschauer-Modus, Spielstand-Zähler und Live-Preview <span class="date">(3. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Mehrere neue Features und Bugfixes im Online-Multiplayer sowie in allen Spielmodi. Alle Änderungen betreffen <code>pbc-pool-app\index.html</code> und <code>pbc-relay\relay.js</code>.</p>
+
+      <h3>5.1 &nbsp;Zuschauer-Modus (spectate)</h3>
+      <p><strong>Dateien:</strong> <code>pbc-pool-app\index.html</code>, <code>pbc-relay\relay.js</code></p>
+      <p>Ein dritter Lobby-Button „👁 Zuschauen" wurde ergänzt. Zuschauer verbinden sich mit demselben Raumcode wie Spieler, erhalten aber keinerlei Spieleingabe-Rechte:</p>
+      <ul>
+        <li>Canvas erhält <code>pointer-events: none</code> → alle Touch- und Maus-Ereignisse blockiert</li>
+        <li>Aim-Schaltflächen und STOSS-Button werden ausgeblendet, Kraft- und Effetanzeige bleibt sichtbar (nur lesend)</li>
+        <li>Ein „👁 Zuschauer-Modus"-Badge mit Verlassen-Button erscheint am oberen Rand</li>
+        <li>Bis zu 50 Zuschauer gleichzeitig pro Raum (<code>MAX_SPECTATORS = 50</code>)</li>
+        <li>Trennt ein Zuschauer die Verbindung, läuft das Spiel unbeeinträchtigt weiter</li>
+      </ul>
+      <p>Im Relay-Server wurde die Raumstruktur um ein <code>spectators[]</code>-Array erweitert. Eine neue <code>broadcastToRoom()</code>-Funktion leitet Spielnachrichten an Gegner <strong>und alle Zuschauer</strong> weiter. Ein eigener <code>"spectate"</code>-Handler prüft, ob ein aktives Spiel im Raum läuft, bevor der Zuschauer zugelassen wird.</p>
+
+      <h3>5.2 &nbsp;Ball-in-Hand Doppelklick-Toggle</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app\index.html</code></p>
+      <p>Beim Ball-in-Hand-Modus wird durch Doppelklick (Maus) bzw. Doppel-Tap (Touch) zwischen Verschieben und Zielen umgeschaltet. Die Erkennung erfolgt über einen <code>_lastMouseDownTime</code>-Zeitstempel direkt in <code>handleCanvasDown()</code> (Schwellenwert 300 ms, Radius 5× Kugelradius). Dadurch entfällt die frühere, fehleranfällige Lösung mit einem großen Eingangsradius, der unbeabsichtigt den Ghostball repositionierte.</p>
+
+      <h3>5.3 &nbsp;Live-Preview für Zuschauer (Ziellinie, Kraft, Effet, Ballposition)</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app\index.html</code></p>
+      <p>Der am Zug befindliche Spieler sendet während des Zielens in Echtzeit ein <code>"preview"</code>-Paket an den Server (max. ~12 Hz, gedrosselt über <code>_lastPreviewSent</code>). Das Paket enthält Zielwinkel, Stoßstärke, Effet-X/Y sowie die aktuelle Position des Spielballs. Zuschauer empfangen diese Daten und sehen so:</p>
+      <ul>
+        <li>Die live gezeichnete Ziellinie inklusive Ghostball</li>
+        <li>Den aktuellen Wert der Stoßstärke-Anzeige</li>
+        <li>Die Effetposition auf der Effetscheibe</li>
+        <li>Die korrekte Position der weißen Kugel beim Ball-in-Hand-Verschieben</li>
+      </ul>
+      <p>Der Gegenspieler (Spieler 2) ignoriert <code>"preview"</code>-Pakete vollständig.</p>
+
+      <h3>5.4 &nbsp;Spielstand-Zähler über Rematches</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app\index.html</code></p>
+      <p>Ein persistenter Spielstand wird über mehrere Rematches hinweg gezählt:</p>
+      <ul>
+        <li>Anzeige <code>0 : 0</code> dauerhaft im Scoreboard-Header, rechts neben Spieler 2, durch eine goldene Trennlinie abgesetzt</li>
+        <li>Aktualisiert sich sofort nach jedem Spielende</li>
+        <li>Sichtbar in allen Mehrspielermodi (Hot-Seat, vs. KI, Online), ausgeblendet im Solo- und Basisübungs-Modus</li>
+        <li>Im Endscreen zusätzlich als <code>&lt; 1 : 0 &gt;</code> unterhalb der Ergebnismeldung</li>
+        <li>Spielstand wird beim Gang ins Hauptmenü zurückgesetzt, bei Revanche fortgeführt</li>
+        <li>Im Online-Modus wird <code>game.winner</code> im Sync-Paket mitgesendet, damit Gegner und Zuschauer denselben Stand sehen</li>
+      </ul>
+
+      <h3>5.5 &nbsp;Fix: Ghostball-Klick sofort an Zuschauer übertragen</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app\index.html</code></p>
+      <p>Ein Einzelklick (Maus) bzw. Tap (Touch) auf den Canvas aktualisierte den Zielwinkel (<code>updateAimFromPoint()</code>), rief aber <code>sendPreview()</code> nicht auf. Zuschauer sahen die neue Ziellinie erst beim nächsten Drag oder Button-Klick. Behoben: <code>sendPreview()</code> wird jetzt in beiden Klick-Pfaden von <code>handleCanvasDown()</code> direkt nach <code>updateAimFromPoint()</code> aufgerufen.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 6 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 6 – Vollbild-Toggle für Handy-Betrieb <span class="date">(3. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Ein Vollbild-Toggle-Button blendet auf kleinen Bildschirmen alle UI-Anzeigen aus und vergrößert den Billardtisch auf den verfügbaren Platz. Alle Spielmodi sind unterstützt.</p>
+
+      <h3>6.1 &nbsp;Vollbild-Toggle-Button</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app\index.html</code></p>
+      <p>Ein neuer Button <code>⛶</code> (vier Ecken) wurde als letztes Element in <code>#bottomControls</code> ergänzt. Er ist ausschließlich auf Bildschirmen mit ≤ 820 px Breite sichtbar (CSS <code>display: none</code> + <code>@media (max-width: 820px) { display: inline-flex }</code>). Auf dem Desktop bleibt er vollständig verborgen.</p>
+
+      <h3>6.2 &nbsp;Vollbild-Modus: Layout und Canvas-Größe</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app\index.html</code></p>
+      <p>Ein Tipp auf <code>⛶</code> aktiviert die CSS-Klasse <code>body.fullscreen-mode</code>:</p>
+      <ul>
+        <li><code>#scoreboard</code> → <code>display: none</code></li>
+        <li><code>#controlPanel</code> → <code>display: none</code></li>
+        <li><code>#playArea</code> → <code>grid-template-columns: 1fr</code> (Kontrollspalte entfällt)</li>
+        <li>Alle anderen Buttons in <code>#bottomControls</code> → <code>display: none</code></li>
+        <li>Im Hochformat: <code>#playArea</code> erhält <code>flex: 1</code>, der Canvas füllt den verbleibenden vertikalen Platz</li>
+      </ul>
+      <p>Die Canvas-Skalierung in <code>applyLayout()</code> wurde angepasst: Im Vollbild-Modus werden die Höhen von Scoreboard und ControlPanel mit 0 angesetzt. Erneutes Tippen auf <code>✕</code> stellt das Normallayout wieder her. Beim Öffnen des Hauptmenüs wird der Vollbild-Modus automatisch beendet.</p>
+
+      <h3>6.3 &nbsp;Zuschauer-Modus-Kompatibilität</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app\index.html</code></p>
+      <p>Im Zuschauer-Modus ist <code>#bottomControls</code> auf <code>visibility: hidden</code> gesetzt. Der <code>⛶</code>-Button erhält direkt danach <code>visibility: visible</code>, sodass er trotz unsichtbarer Elternleiste weiterhin bedienbar bleibt (<code>visibility</code> ist bei Kindelementen überschreibbar). Beim Verlassen des Zuschauer-Modus wird der Inline-Style zurückgesetzt.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 7 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 7 – Vollbild-Bugfixes Zuschauer-Modus <span class="date">(3. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Zwei Darstellungsfehler im Zusammenspiel von Vollbild-Toggle und Zuschauer-Modus wurden behoben.</p>
+
+      <h3>7.1 &nbsp;Spectator-Badge überdeckte den Spieltisch im Vollbild</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Das <code>#spectatorBadge</code>-Element (Einblendung „Zuschauer · Raum XXXXXX") wurde im Vollbild-Modus nicht ausgeblendet und überlagerte den Canvas-Bereich. Behoben durch:</p>
+      <p><code>body.fullscreen-mode #spectatorBadge { display: none !important; }</code></p>
+
+      <h3>7.2 &nbsp;✕-Button im Zuschauer-Modus auf Mobilgeräten unsichtbar</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Im Zuschauer-Modus setzt <code>updateUI()</code> die gesamte <code>#bottomControls</code>-Leiste auf <code>visibility: hidden</code>. Das anschließende <code>style.visibility = "visible"</code> des <code>#btnFullscreen</code> greift auf Mobilgeräten nicht zuverlässig, wenn das Elternelement durch einen Inline-Style versteckt ist.</p>
+      <p>Lösung: Der Inline-Style <code>visibility: hidden</code> auf <code>#bottomControls</code> wird im Zuschauer-Modus nur noch gesetzt, wenn <code>_fullscreen</code> nicht aktiv ist. Ist Vollbild aktiv, werden weder <code>#bottomControls</code> noch <code>#btnFullscreen</code> per Inline-Style überschrieben; die CSS-Klasse <code>fullscreen-mode</code> blendet alle anderen Buttons sauber via <code>display: none</code> aus. Der ✕-Button bleibt damit in allen Zuständen vollständig sichtbar und bedienbar.</p>
+
+      <h3>7.3 &nbsp;✕-Button im Vollbild durch Layout-Overflow verborgen</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Im Hochformat-Vollbild erhält <code>#playArea</code> die CSS-Eigenschaft <code>flex: 1</code> und füllt damit die gesamte Höhe des <code>#app</code>-Containers (100 vh). <code>#bottomControls</code> rutscht dadurch aus dem sichtbaren Bereich und wird durch <code>overflow: hidden</code> auf <code>#app</code> abgeschnitten — der ✕-Button ist nicht mehr erreichbar.</p>
+      <p>Lösung: In Vollbild-Modus erhält <code>#btnFullscreen</code> <code>position: fixed</code> mit einer festen Position rechts unten (<code>bottom: 16px; right: 16px; z-index: 9999</code>). Der Button ist damit aus dem normalen Dokumentfluss herausgenommen und immer sichtbar, unabhängig von Layout-Overflow oder Container-Höhen.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 8 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 8 – Deflection, Swerve &amp; Queue-Winkel <span class="date">(3. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Drei reale Billard-Physikeffekte wurden in die App integriert: Deflection (Squirt),
+      Swerve (Masse-ähnliche Kurvenwirkung) und ein neues UI-Element für den Queue-Neigungswinkel.
+      Außerdem wurde die Swerve-Vorschau korrekt auf Zuschauer übertragen.</p>
+
+      <h3>8.1 &nbsp;Deflection (Squirt)</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Beim Schuss mit Seitenschnitt weicht die Weißkugel leicht in die dem Effet
+      entgegengesetzte Richtung ab. Kalibriert auf einen Predator K2 mit Revo-Shaft (Low-Deflection).</p>
+      <p>Formel: <code>deflAngle = K_DEF · |spinX| · powerPercent^P_DEF</code><br>
+      Kalibrierung: <strong>K_DEF = 0.044 rad</strong>, <strong>P_DEF = 0.64</strong> (Fit-Fehler &lt; 5 % an vier Messpunkten).</p>
+      <p>Die Ziellinie in <code>drawAimingHelp()</code> wird mit dem korrigierten Winkel gezeichnet –
+      der Spieler sieht, wohin die Kugel tatsächlich läuft.</p>
+
+      <h3>8.2 &nbsp;Queue-Winkel (Élévation)</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Neues UI-Element: zweiter Tab <strong>WINKEL</strong> innerhalb der bestehenden <code>.spin-section</code>,
+      ohne Layout-Änderungen. Ein <code>elevCanvas</code> zeigt eine Seitenansicht (Queue + Weißkugel),
+      der Neigungswinkel (0–45°) ist per Drag-Geste einstellbar (nach oben = mehr Winkel).
+      Der Winkel wird nach jedem Stoß und bei Spielstart auf 0° zurückgesetzt.</p>
+
+      <h3>8.3 &nbsp;Swerve</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Mit Seitenschnitt und erhöhtem Queue-Winkel entsteht eine C-Bogenbahn: zunächst
+      Deflection-Richtung, dann Kurve in Effet-Richtung. Die Swerve-Kraft wird pro
+      Physik-Frame auf die Weißkugel angewendet, solange noch kein Ballkontakt stattfand
+      (<code>spinPending.used === false</code>).</p>
+      <p>Die goldene Swerve-Vorschaulinie (<code>predictSwervePath()</code>, 300 Schritte) wird über
+      die reguläre Ziellinie gelegt. Zentrale Konstante:
+      <code>swerveAcc = |spinX| · elevFactor · 0.012 · speedRatio</code> mit
+      <code>speedRatio = min(initialPower / currentSpeed, 6)</code> (geschwindigkeitsabhängig).</p>
+
+      <h3>8.4 &nbsp;Swerve-Vorschau im Zuschauer-Modus</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p><code>sendPreview()</code> überträgt nun auch <code>cueElevation</code>. Der Zuschauer-Handler
+      setzt <code>game.cueElevation</code> aus der empfangenen Nachricht – damit wird die Swerve-Kurve
+      korrekt auf dem Zuschauer-Gerät gezeichnet. Die Deflection-Linie wurde bereits zuvor korrekt
+      übertragen (<code>spinX</code>/<code>spinY</code> waren schon im Preview-Payload enthalten).</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 9 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 9 – Match-Modus, Break-Regel und KI-Anstoß <span class="date">(7. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Der Billard-App wurde ein vollständiges Match-System mit wählbarer Gewinnspiellzahl (1–23)
+      hinzugefügt, eine Break-Regel-Option (Wechselbreak/Winnerbreak) sowie deutliche
+      Verbesserungen am KI-Anstoß.</p>
+
+      <h3>9.1 &nbsp;Match-Modus – Gewinnspiele (1–23)</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Neuer Menüabschnitt „Gewinnspiele" mit einem Stepper (1–23), eingeblendet bei
+      8-Ball und 9-Ball in den Modi Hot-Seat, KI und Online.
+      Label: „Best of 1" (n = 1) bzw. „Best of N – Race to M" (n &gt; 1, N = 2n–1).</p>
+      <p>Das Spielobjekt erhielt zwei neue Felder: <code>setsTarget</code> (Ziel-Gewinnspiellzahl) und
+      <code>matchScore</code> (gewonnene Spiele je Spieler). Der Spielstand wird im Scoreboard als
+      <code>X : Y</code> eingeblendet und nach jedem Spiel aktualisiert.</p>
+      <p>Verhalten im End-Screen:</p>
+      <table>
+        <thead><tr><th>Situation</th><th>Titel</th><th>Button</th></tr></thead>
+        <tbody>
+          <tr><td>Rundenende (Match noch offen)</td><td>„Spiel gewonnen!" + Spielstand</td><td>„Nächstes Spiel"</td></tr>
+          <tr><td>Match-Ende (Gewinnspiellimit erreicht)</td><td>„Match gewonnen!" + Endstand</td><td>„Revanche"</td></tr>
+          <tr><td>Einzelspiel (setsTarget = 1)</td><td>„Spielende"</td><td>„Revanche"</td></tr>
+        </tbody>
+      </table>
+      <p>NEUSTART während des Spiels und der Gang ins Hauptmenü setzen den Spielstand auf 0:0 zurück.
+      „Revanche" behält die eingestellte Gewinnspiellzahl und setzt nur den Spielstand zurück.</p>
+      <p>Im Online-Modus überträgt der Host <code>setsTarget</code> im <code>settings</code>-Paket;
+      der laufende Spielstand wird per <code>sync</code> geteilt.</p>
+
+      <h3>9.2 &nbsp;Break-Regel (Wechselbreak / Winnerbreak)</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Neuer Menüabschnitt „Break-Regel" (erscheint zusammen mit dem Gewinnspiele-Stepper
+      bei 8-Ball/9-Ball). Zwei Optionen:</p>
+      <table>
+        <thead><tr><th>Regel</th><th>Verhalten</th></tr></thead>
+        <tbody>
+          <tr><td>Wechselbreak</td><td>Anstoß wechselt nach jedem Spiel</td></tr>
+          <tr><td>Winnerbreak</td><td>Gewinner des letzten Spiels stößt erneut an</td></tr>
+        </tbody>
+      </table>
+      <p>Der nächste Anstoßspieler (<code>nextBreakPlayer</code>) wird beim Gang ins Menü und bei
+      einer Revanche zurückgesetzt. Im Online-Modus wird er per <code>sync</code> synchronisiert.</p>
+
+      <h3>9.3 &nbsp;KI-Anstoß – Automatik, Kraft und Position</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Drei Verbesserungen am KI-Anstoß im Zusammenspiel mit dem Match-Modus:</p>
+      <ul>
+        <li><strong>Automatik:</strong> Ist die KI beim Spielstart am Zug (durch die Break-Regel),
+          startet sie den Anstoß selbständig, ohne dass der Spieler eingreifen kann.</li>
+        <li><strong>Kraft:</strong> KI-Anstoß wird mit 88–100 % Stoßstärke ausgeführt (zuvor durch
+          die allgemeine Stärke-Obergrenze auf ~78 % begrenzt).</li>
+        <li><strong>Position (9-Ball):</strong> Die KI platziert die Weiße beim 9-Ball-Anstoß am
+          2. Diamanten der langen Bande (zufällig oben oder unten), nicht mehr in Tischmitte.</li>
+      </ul>
+
+      <h3>9.4 &nbsp;Profi-KI: Zielgenauigkeit und Safe-Spiel</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die Profi-KI erhielt drei Verbesserungen, die Zielgenauigkeit und Spielverständnis
+      deutlich anheben.</p>
+
+      <p><strong>Zielgenauigkeit:</strong><br>
+      Winkelstreuung und Power-Varianz wurden reduziert und an die Schussschwierigkeit
+      gekoppelt. Positionierungsfehler (die zuvor auch beim Profi auftraten) wurden entfernt.
+      Die Ball-in-Hand-Kandidatensuche wurde auf 56 Positionen erweitert (8 Abstände × 7 Lateralversätze).</p>
+      <table>
+        <thead><tr><th>Parameter</th><th>Vorher</th><th>Nachher</th></tr></thead>
+        <tbody>
+          <tr><td>Winkelstreuung Profi</td><td>0,006 rad (fest)</td><td>0,0007–0,0052 rad (schwierigkeitsabhängig)</td></tr>
+          <tr><td>Power-Varianz Profi</td><td>±4 %</td><td>±1,2 %</td></tr>
+          <tr><td>Stellungsfehler Profi</td><td>45 %</td><td>0 % (nur noch bei Anfänger)</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>Intelligentes Safety-System (<code>aiPlanSafetyShot</code>):</strong><br>
+      Neue Funktion mit Simulationsvalidierung. Die KI bewertet 11 Winkelversätze × 9 Power-Stufen
+      und wählt den Schuss, der entweder die Zielkugel hinter einem Blocker versteckt oder
+      Weiße und Zielkugel an gegenüberliegenden Banden platziert.</p>
+
+      <p><strong>Fallback-Eskalation bei schwierigen Lagen:</strong><br>
+      Dreistufige Kette: Safety → Bandenstoß-Safety (40 Zielpunkte × 7 Powers,
+      simulationsvalidiert) → Notstoß (22 % Kraft). Zuvor führte die KI direkt einen
+      Foul-Stoß aus. Zusätzlich werden Cut-Shots seltener verworfen (minDotN 0,55 → 0,48)
+      und einfache Pots nicht mehr fälschlicherweise als Safety behandelt.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 10 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 10 – Bestätigungsdialog &amp; 9-Ball-Standard <span class="date">(7. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Zwei kleine UX-Verbesserungen in der Billard-App: Schutz vor versehentlichem
+      Antippen von Menü/Neustart auf dem Handy sowie eine sinnvollere Voreinstellung
+      bei der 9-Ball-Aufstellung.</p>
+
+      <h3>10.1 &nbsp;Bestätigungsdialog für „Menü" und „Neustart"</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Beim Justieren des Ghostballs auf dem Handy konnte man versehentlich die Buttons
+      „≡ Menü" oder „↻ Neustart" antippen und damit das laufende Spiel ungewollt beenden.</p>
+      <p>Beide Buttons zeigen jetzt einen Bestätigungsdialog:</p>
+      <table>
+        <tr><th>Button</th><th>Meldung</th></tr>
+        <tr><td>≡ Menü</td><td>„Zum Menü wechseln? Aktueller Spielstand wird zurückgesetzt."</td></tr>
+        <tr><td>↻ Neustart</td><td>„Spiel neu starten? Aktueller Spielstand wird zurückgesetzt."</td></tr>
+      </table>
+      <p>Der Dialog ist als <code>#confirmDialog</code>-Overlay umgesetzt (z-index 500), im gleichen
+      Dark-Theme wie <code>#endScreen</code> und <code>#onlineLobby</code>. Die Hilfsfunktion
+      <code>showConfirm(msg, onOk)</code> nimmt Nachricht und Callback entgegen.</p>
+
+      <h3>10.2 &nbsp;9-Ball Aufstellung – „Vorgelagert" als Standard</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Die vorgelagerte Stellung wird im Vereinsbetrieb bevorzugt. Daher wurde die
+      Voreinstellung von „Diamant (WPA)" auf „Vorgelagert" geändert:</p>
+      <ul>
+        <li>HTML: <code>class="opt selected"</code> auf <code>data-val="vorgelagert"</code> gesetzt</li>
+        <li>JavaScript: <code>game.rack9</code> Startwert von <code>"diamond"</code> auf <code>"vorgelagert"</code> geändert</li>
+      </ul>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 11 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 11 – Shot-Timer und 8-Ball-Regelkorrekturen <span class="date">(9. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Zwei unabhängige Erweiterungen: ein optionaler Shot-Timer für alle Spielvarianten sowie zwei Korrekturen an den 8-Ball-Regelauswertungen.</p>
+
+      <h3>11.1 &nbsp;Shot-Timer (optional)</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Im Menü wurde die Option <strong>Shot-Timer</strong> ergänzt (Standard: deaktiviert). Ist er aktiv, läuft nach jedem Aufstellen einer Kugel (Drill15) bzw. nach jedem Zug-Beginn (8/9-Ball) ein Countdown:</p>
+      <table>
+        <thead><tr><th>Variante</th><th>Dauer</th><th>Sonderregel</th></tr></thead>
+        <tbody>
+          <tr><td>15-Kugeln Drill</td><td>30 s</td><td>–</td></tr>
+          <tr><td>8/9-Ball – erster Stoß nach Anstoß</td><td>60 s</td><td>–</td></tr>
+          <tr><td>8/9-Ball – alle weiteren Stöße</td><td>30 s</td><td>–</td></tr>
+        </tbody>
+      </table>
+      <p>Soundhinweise: Warnsound (zwei fallende Töne) bei 10 s, Kurz-Beep jede Sekunde in den letzten 5 s.</p>
+      <p><strong>Ablauf bei Timer-Ende:</strong> Drill15: Kugel gilt als verfehlt, nächste Kugel wird aufgestellt. 8/9-Ball: Foul „Keine Kugel getroffen" – Gegner erhält Ball-in-Hand. Funktioniert auch im Online-Modus.</p>
+      <p><strong>Extension-Button (+30 s):</strong> Nur für 8/9-Ball. Jeder Spieler kann ihn einmal pro Spiel nutzen; danach ausgegraut.</p>
+
+      <h3>11.2 &nbsp;8-Ball Respot-Korrektur (WPA)</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Die Funktion <code>respotBlackBall()</code> suchte bisher fälschlicherweise horizontal Richtung Fußbande. Korrigiert: Die Suche verläuft jetzt regelkonform entlang der Mittellinie <strong>Richtung Kopffeld</strong> (abnehmende X-Koordinate). Nur als letzter Fallback wird Richtung Fußbande gesucht.</p>
+
+      <h3>11.3 &nbsp;8-Ball – vorzeitig versenkte 8 kein Foul</h3>
+      <p><strong>Datei:</strong> <code>C:\Daten\Projects\pbc-pool-app\index.html</code></p>
+      <p>Vereinfachte Hausregel: Das vorzeitige Versenken der 8 ist kein Foul. Die 8 wird immer neu aufgesetzt.</p>
+      <ul>
+        <li>Eigene Kugel gleichzeitig versenkt → Spieler darf weiterspielen.</li>
+        <li>Keine eigene Kugel versenkt → normaler Zugwechsel ohne Ball-in-Hand.</li>
+        <li>Sonstige Fouls (Weiße eingelocht usw.) gelten weiterhin.</li>
+      </ul>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Architektur Billard-App -->
+  <details class="phase">
+    <summary><span class="summary-text">Architektur PBC-Erding Billard-App <span class="date">(Stand: Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Die Billard-App ist eine vollständige Pool-Billard-Simulation als einzelne HTML-Datei. Sie wird in einem eigenen Projekt gepflegt und in die pbc-erding2-Website eingebettet.</p>
+
+      <h3>Quellprojekt und Deployment-Ziele</h3>
+      <table>
+        <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+        <tbody>
+          <tr><td>Quellprojekt</td><td><code>C:\Daten\Projects\pbc-pool-app\</code></td></tr>
+          <tr><td>Master-Datei</td><td><code>pbc-pool-app\index.html</code> (gesamte App, HTML + CSS + JS)</td></tr>
+          <tr><td>GitHub</td><td><code>github.com/chrisgitti/pbc-pool-app</code></td></tr>
+          <tr><td>Pflege-Skill</td><td><code>/pbced-billardapp next</code> / <code>/pbced-billardapp fallback</code></td></tr>
+        </tbody>
+      </table>
+      <p>Die App wird manuell in zwei Zielorte innerhalb von <code>pbc-erding2</code> kopiert:</p>
+      <table>
+        <thead><tr><th>Zielort</th><th>Pfad</th><th>URL (Entwurf)</th></tr></thead>
+        <tbody>
+          <tr><td>Next.js-Build</td><td><code>public/spiel-spass/billardapp/index.html</code></td><td><code>weberding.de/pbced/pbced2/spiel-spass/billardapp/</code></td></tr>
+          <tr><td>Fallback-Site</td><td><code>Fallback/spiel-spass/billardapp/index.html</code></td><td><code>weberding.de/pbced/pbced2/fallback/spiel-spass/billardapp/</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Deployment-Workflow</h3>
+      <pre>pbc-pool-app/index.html   ← Entwicklung und Änderungen immer hier
+        │
+        ├──▶  Copy-Item  ──▶  pbc-erding2/public/spiel-spass/billardapp/index.html
+        │                           │
+        │                     npm run build
+        │                           │
+        │                     out/spiel-spass/billardapp/  ──▶  FTP → weberding.de
+        │
+        └──▶  Copy-Item  ──▶  pbc-erding2/Fallback/spiel-spass/billardapp/index.html
+                                    │
+                                FTP → weberding.de/pbced/pbced2/fallback/</pre>
+
+      <h3>Online-Modus: WebSocket-Relay (pbc-relay / Render.com)</h3>
+      <p>Für den Zwei-Spieler-Online-Modus betreibt die App einen eigenen Relay-Server. Der Relay hat keine Spiellogik – er leitet Nachrichten zwischen zwei Clients blind weiter.</p>
+      <table>
+        <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+        <tbody>
+          <tr><td>Projekt</td><td><code>C:\Daten\Projects\pbc-relay\relay.js</code></td></tr>
+          <tr><td>GitHub</td><td><code>github.com/chrisgitti/pbc-relay</code></td></tr>
+          <tr><td>Plattform</td><td>Render.com (Pro Plan, Node.js + <code>ws</code>)</td></tr>
+          <tr><td>WebSocket-URL</td><td><code>wss://pbc-relay.onrender.com</code></td></tr>
+          <tr><td>Umfang</td><td>~60 Zeilen</td></tr>
+        </tbody>
+      </table>
+      <pre>Browser (Host)                  Render.com                Browser (Gast/Zuschauer)
+      │                        ┌──────────┐                     │
+      │──── WebSocket ─────────│ pbc-relay│──── WebSocket ──────│
+      │  create/join/spectate  │  relay.js│  start/spectating   │
+      │  shot/sync/preview ───▶│          │▶─── shot/sync ───── │
+      │  disconnect            └──────────┘     disconnect       │</pre>
+
+      <h3>Raumverwaltung</h3>
+      <pre>Host öffnet Raum   →  Server generiert 6-stelligen Code (A–Z, 2–9, ohne 0/O/1/I)
+                      Server speichert: { host: ws, guest: null, hostName, spectators: [] }
+Gast tritt bei    →  Server verbindet Host + Gast → sendet 'start' an beide
+Zuschauer tritt bei →  Wird spectators[] hinzugefügt; Host sendet 'snapshot'
+Spieler trennt    →  Server löscht Raum, sendet 'disconnect' an alle
+Zuschauer trennt  →  Wird aus spectators[] entfernt; Raum bleibt bestehen</pre>
+
+      <h3>Nachrichtenprotokoll</h3>
+      <table>
+        <thead><tr><th>Nachricht</th><th>Richtung</th><th>Bedeutung</th></tr></thead>
+        <tbody>
+          <tr><td><code>create</code></td><td>Client → Server</td><td>Host erstellt Raum (<code>name</code>)</td></tr>
+          <tr><td><code>created</code></td><td>Server → Host</td><td>Raumcode bestätigt (<code>code</code>, <code>role: 'host'</code>)</td></tr>
+          <tr><td><code>join</code></td><td>Client → Server</td><td>Gast tritt bei (<code>code</code>, <code>name</code>)</td></tr>
+          <tr><td><code>start</code></td><td>Server → beide</td><td>Spiel beginnt (<code>role</code>, <code>opponentName</code>)</td></tr>
+          <tr><td><code>spectate</code></td><td>Client → Server</td><td>Zuschauer tritt bei (<code>code</code>, <code>name</code>)</td></tr>
+          <tr><td><code>spectating</code></td><td>Server → Zuschauer</td><td>Zuschauen bestätigt</td></tr>
+          <tr><td><code>spectator_joined</code></td><td>Server → Host</td><td>Neuer Zuschauer verbunden → Host sendet <code>snapshot</code></td></tr>
+          <tr><td><code>snapshot</code></td><td>Host → alle</td><td>Vollständiger Spielzustand für neu verbundene Zuschauer</td></tr>
+          <tr><td><code>preview</code></td><td>aktiver Spieler → alle</td><td>Live-Zielwinkel, Kraft, Effet (X/Y), Queue-Winkel, Ballposition (~12 Hz)</td></tr>
+          <tr><td><code>settings</code></td><td>Host → Gast</td><td>Spielkonfiguration: Variante, Rack-Typ, Kugelanzahl, Gewinnspiele</td></tr>
+          <tr><td><code>shot</code> u. a.</td><td>Host ↔ Gast + Zusch.</td><td>Stoß-Sync und Spielzustand (broadcast an alle im Raum)</td></tr>
+          <tr><td><code>disconnect</code></td><td>Server → alle</td><td>Verbindungsabbruch eines Spielers</td></tr>
+          <tr><td><code>ping</code>/<code>pong</code></td><td>Client ↔ Server</td><td>Keep-alive</td></tr>
+        </tbody>
+      </table>
+
+    </div>
+  </details>
+
+  <hr>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Sonstiges -->
+  <details class="phase">
+    <summary><span class="summary-text">Sonstiges</span></summary>
+    <div class="phase-body">
+      <p><em>Raum für aktuelle Anmerkungen der Autoren – nicht versioniert, kann jederzeit überschrieben werden.</em></p>
+
+      <div class="sonstiges">
+        <h3 style="margin-top:0; border-bottom-color: rgba(255,255,255,0.08);">Offener Punkt: Strategische Ausrichtung bezüglich der Aufnahme von Freizeitspielern</h3>
+
+        <h4>Was spricht gegen eine zu offene Aufnahme</h4>
+        <p>Ein berechtigter Einwand ist, dass die Zahl der uns – insbesondere zu den Trainingszeiten – zur Verfügung stehenden Billardtische begrenzt ist. Wenn viele Mitglieder ohne sportlichen Anspruch dauerhaft Tische belegen, kann dies den Trainingsbetrieb der Liga- und Turnierspieler beeinträchtigen.</p>
+        <p>Außerdem besteht das Risiko, dass der Verein für manche Interessierte vor allem als günstige Spielmöglichkeit wahrgenommen wird. Das kann zu einer eher konsumorientierten Haltung führen: Man nutzt die Infrastruktur, beteiligt sich aber kaum am Vereinsleben, an Arbeitseinsätzen, Organisation oder sportlicher Weiterentwicklung.</p>
+        <p>Auch für die Außendarstellung kann eine zu beliebige Aufnahme problematisch sein, wenn der Verein dadurch sein sportliches Profil verliert. Ein Billardverein sollte nicht nur „Freizeitlocation", sondern auch Trainings-, Mannschafts- und Wettkampfgemeinschaft bleiben.</p>
+
+        <h4>Argumente für eine offene Vereinsstrategie</h4>
+        <p>Ein eingetragener Verein lebt grundsätzlich von Offenheit, Gemeinschaft und Teilhabe. Gerade ein Sportverein sollte nicht zu früh zwischen „wertvollen" und „weniger wertvollen" Mitgliedern unterscheiden. Viele spätere Liga- oder Turnierspieler beginnen zunächst als Freizeitspieler ohne konkrete sportliche Ambitionen. Eine offene Aufnahme kann daher der Einstieg in sportliche Entwicklung von Mitgliedern und insbesondere auch deren Kindern sein.</p>
+        <p>Auch wirtschaftlich ist Wachstum wichtig. Mitgliedsbeiträge schaffen Spielraum für bessere Ausstattung, Pflege der Tische, Jugendarbeit, Öffentlichkeitsarbeit, Turniere und langfristige Vereinsentwicklung. Wenn der Verein aktuell nur rund 30 Mitglieder hat und die Mitgliederzahl seit längerer Zeit stagniert oder eher rückläufig ist, spricht das eher gegen eine stark restriktive Aufnahmepolitik.</p>
+        <p>Zudem stärkt eine größere Mitgliederbasis das Vereinsleben: mehr helfende Hände, mehr Kontakte, mehr Sichtbarkeit, mehr Nachwuchs und eine lebendigere Atmosphäre. Gerade für einen neuen Webauftritt wäre eine zu defensive Botschaft wenig einladend.</p>
+
+        <h4>Persönliche Bewertung</h4>
+        <p>Die Sorge um begrenzte Tischkapazitäten ist nachvollziehbar. Sie spricht aber nicht zwingend gegen eine offene Aufnahme, sondern eher für eine klare Organisation der Trainingszeiten. Sofern sich künftig eine unverhältnismäßig hohe Teilnahme am Trainingsbetrieb ergeben sollte, können bestimmte Zeiten primär für Ligaspieler, Mannschaftstraining oder Turniervorbereitung reserviert werden. Daneben können offene Trainingszeiten, Schnuppertrainings und Freizeitspielzeiten angeboten werden.</p>
+        <p>Insgesamt spricht mehr für eine offene, aber strukturierte Vereinsstrategie. Der PBC Erding e.V. sollte grundsätzlich offen für neue Mitglieder sein, auch wenn diese zunächst nur freizeit- oder hobbyorientiert spielen. Entscheidend ist nicht, neue Interessierte auszubremsen, sondern sie sinnvoll in die Vereinsgemeinschaft einzubinden und für stärkere Beteiligung zu begeistern.</p>
+        <p><strong>Empfehlung:</strong> Auf der Startseite sollte nicht abschreckend oder restriktiv kommuniziert werden, sondern offen und einladend. Die Aufnahme in den Verein kann anschließend im persönlichen Kontakt erfolgen, ergänzt durch klare Regeln zu Trainingszeiten, Tischbelegung und Rücksichtnahme auf Liga- und Mannschaftsbetrieb.</p>
+        <hr style="margin: 1.5rem 0; border-color: rgba(255,255,255,0.08);">
+        <p><em>Sportliche Grüße – Christian</em></p>
+      </div>
+    </div>
+  </details>
+
+  <div class="page-footer">
+    Pool Billard Club Erding e.V. · pbc-erding2 · Änderungshistorie
+  </div>
+
+</div>
+</body>
+</html>

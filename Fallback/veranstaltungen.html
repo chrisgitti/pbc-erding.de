@@ -1,0 +1,419 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veranstaltungen – PBC Erding</title>
+  <meta name="description" content="Trainingszeiten, Mittwochsturnier und Veranstaltungskalender des PBC Erding." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <img src="images/logo_pbced.png" alt="PBC Erding Logo" width="32" height="32">
+      PBC Erding
+    </a>
+    <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="main-nav" id="main-nav">
+      <ul>
+        <li><a href="index.html">Startseite</a></li>
+        <li><a href="verein.html">Verein</a></li>
+        <li><a href="mannschaften.html">Mannschaften</a></li>
+        <li><a href="veranstaltungen.html">Veranstaltungen</a></li>
+        <li><a href="ergebnisse.html">Ergebnisse</a></li>
+        <li><a href="downloads.html">Downloads</a></li>
+        <li><a href="links.html">Links</a></li>
+        <li><a href="galerie.html">Galerie</a></li>
+        <li><a href="sponsoren.html">Sponsoren</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+      </ul>
+      <a href="kontakt.html" class="btn-outline-sm">Mitglied werden</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div class="container">
+      <p class="section-label">Veranstaltungen</p>
+      <h1 class="page-header-title">Liga, Turniere, Training &amp; Kalender</h1>
+      <p class="page-header-sub">Regelmäßige Trainingszeiten, monatliches Mittwochsturnier und alle Vereinstermine im Überblick.</p>
+    </div>
+  </div>
+
+  <section class="bg-main">
+    <div class="container">
+
+      <!-- ── Info-Karten ── -->
+      <div class="info-cards-grid" style="margin-bottom:2.5rem;">
+
+        <!-- Training -->
+        <div class="info-card">
+          <p class="info-card-label">Wöchentliches Training</p>
+          <div class="training-list">
+            <div class="training-row">
+              <div>
+                <p class="training-tag">Sonntag</p>
+                <p class="training-typ">Schnuppertraining &amp; Vereinstraining</p>
+              </div>
+              <p class="training-zeit">13:00 – 16:00 Uhr</p>
+            </div>
+            <div class="training-row">
+              <div>
+                <p class="training-tag">Dienstag</p>
+                <p class="training-typ">Vereinstraining</p>
+              </div>
+              <p class="training-zeit">18:00 – 21:00 Uhr</p>
+            </div>
+            <div class="training-row">
+              <div>
+                <p class="training-tag">Donnerstag</p>
+                <p class="training-typ">Training &amp; Ligavorbereitung</p>
+              </div>
+              <p class="training-zeit">18:00 – 21:00 Uhr</p>
+            </div>
+          </div>
+          <p class="training-adresse" style="margin-top:1rem;">Bowling Castle Erding · Robert-Bosch-Straße 3 · 85435 Erding</p>
+        </div>
+
+        <!-- Mittwochsturnier -->
+        <div class="info-card info-card-gold">
+          <p class="info-card-label info-card-label-gold">Mittwochsturnier</p>
+          <h2 class="turnier-headline">Jeden letzten<br>Mittwoch im Monat</h2>
+          <div class="turnier-time-box">
+            <span class="turnier-time">18:30</span>
+            <div>
+              <p style="font-weight:700;color:var(--text);">Turnierbeginn</p>
+              <p style="font-size:0.8rem;color:var(--text-muted);">Bowling Castle Erding</p>
+            </div>
+          </div>
+          <p style="margin-top:1rem;font-size:0.875rem;color:var(--text-muted);line-height:1.6;">
+            Offenes Turnier für Vereins- und Hobbyspieler. Startgebühr 10 €,
+            Ausschüttung vollständig an die Platzierten. Anmeldung direkt vor Ort.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- ── Monatskalender (dynamisch via JS) ── -->
+      <div id="kalender-container"></div>
+
+      <!-- ── Liga-Spielplan ── -->
+      <div style="margin-top:3rem;">
+        <h2 class="liga-spielplan-title">Ligaspieltage 2025/26</h2>
+
+        <!-- PBC Erding I -->
+        <div class="month-block" style="margin-bottom:1.5rem;">
+          <div class="month-header">
+            <div>
+              <h3 class="month-title" style="font-size:1.4rem;">PBC Erding I</h3>
+              <p class="month-sub">Bezirksliga Oberbayern-Nord · Saison 2025/26</p>
+            </div>
+            <div class="month-counts">
+              <div class="month-count"><span class="month-count-num" style="color:var(--green);">6</span><span class="month-count-label">S</span></div>
+              <div class="month-count-sep"></div>
+              <div class="month-count"><span class="month-count-num" style="color:var(--gold);">1</span><span class="month-count-label">U</span></div>
+              <div class="month-count-sep"></div>
+              <div class="month-count"><span class="month-count-num" style="color:#f87171;">3</span><span class="month-count-label">N</span></div>
+              <div class="month-count-sep"></div>
+              <div class="month-count"><span class="month-count-num" style="color:rgba(255,255,255,.5);">10/10</span><span class="month-count-label">Spiele</span></div>
+            </div>
+          </div>
+          <div class="month-events">
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>27.09.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">BSV 1912 München III</span> – <strong>PBC Erding I</strong></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>25.10.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">1. PBC Moosburg</span> – <strong>PBC Erding I</strong></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">9:1</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>22.11.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">1. PBC Mühldorf III</span> – <strong>PBC Erding I</strong></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>20.12.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">BC Mainburg II</span> – <strong>PBC Erding I</strong></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>24.01.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">1. PBC Freising III</span> – <strong>PBC Erding I</strong></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>07.02.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding I</strong> – <span class="spieltag-neutral">BSV 1912 München III</span></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>07.03.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding I</strong> – <span class="spieltag-neutral">1. PBC Moosburg</span></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">6:4</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>21.03.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding I</strong> – <span class="spieltag-neutral">1. PBC Mühldorf III</span></div>
+              <div class="spieltag-result"><span class="dot dot-gold"></span><span class="result-gold">5:5</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>18.04.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding I</strong> – <span class="spieltag-neutral">BC Mainburg II</span></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>09.05.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding I</strong> – <span class="spieltag-neutral">1. PBC Freising III</span></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">8:2</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PBC Erding II -->
+        <div class="month-block" style="margin-bottom:1.5rem;">
+          <div class="month-header">
+            <div>
+              <h3 class="month-title" style="font-size:1.4rem;">PBC Erding II</h3>
+              <p class="month-sub">Kreisliga Oberbayern D · Saison 2025/26</p>
+            </div>
+            <div class="month-counts">
+              <div class="month-count"><span class="month-count-num" style="color:var(--green);">9</span><span class="month-count-label">S</span></div>
+              <div class="month-count-sep"></div>
+              <div class="month-count"><span class="month-count-num" style="color:var(--gold);">0</span><span class="month-count-label">U</span></div>
+              <div class="month-count-sep"></div>
+              <div class="month-count"><span class="month-count-num" style="color:#f87171;">0</span><span class="month-count-label">N</span></div>
+              <div class="month-count-sep"></div>
+              <div class="month-count"><span class="month-count-num" style="color:rgba(255,255,255,.5);">9/10</span><span class="month-count-label">Spiele</span></div>
+            </div>
+          </div>
+          <div class="month-events">
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>20.09.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">PBC Erding III</span> – <strong>PBC Erding II</strong></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>15.11.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">PBC Markt Schwaben II</span> – <strong>PBC Erding II</strong></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>22.11.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">PBC Lerchenau II</span> – <strong>PBC Erding II</strong></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">1:9</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>06.12.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">BSV PB München III</span> – <strong>PBC Erding II</strong></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">3:7</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>10.01.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">BSV PB München IV</span> – <strong>PBC Erding II</strong></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">1:9</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>31.01.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding II</strong> – <span class="spieltag-neutral">PBC Erding III</span></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">6:4</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>28.02.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding II</strong> – <span class="spieltag-neutral">PBC Lerchenau II</span></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">8:2</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>14.03.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding II</strong> – <span class="spieltag-neutral">PBC Markt Schwaben II</span></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">7:3</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>11.04.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding II</strong> – <span class="spieltag-neutral">BSV PB München III</span></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">6:4</span></div>
+            </div>
+            <div class="spieltag-row">
+              <div class="spieltag-date">Sa<br><strong>16.05.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding II</strong> – <span class="spieltag-neutral">BSV PB München IV</span></div>
+              <div class="spieltag-result spieltag-time">14:00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PBC Erding III -->
+        <div class="month-block">
+          <div class="month-header">
+            <div>
+              <h3 class="month-title" style="font-size:1.4rem;">PBC Erding III</h3>
+              <p class="month-sub">Kreisliga Oberbayern D · Saison 2025/26</p>
+            </div>
+            <div class="month-counts">
+              <div class="month-count"><span class="month-count-num" style="color:var(--green);">1</span><span class="month-count-label">S</span></div>
+              <div class="month-count-sep"></div>
+              <div class="month-count"><span class="month-count-num" style="color:var(--gold);">0</span><span class="month-count-label">U</span></div>
+              <div class="month-count-sep"></div>
+              <div class="month-count"><span class="month-count-num" style="color:#f87171;">8</span><span class="month-count-label">N</span></div>
+              <div class="month-count-sep"></div>
+              <div class="month-count"><span class="month-count-num" style="color:rgba(255,255,255,.5);">9/10</span><span class="month-count-label">Spiele</span></div>
+            </div>
+          </div>
+          <div class="month-events">
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>20.09.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding III</strong> – <span class="spieltag-neutral">PBC Erding II</span></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>18.10.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">BSV PB München III</span> – <strong>PBC Erding III</strong></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">6:4</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>08.11.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">BSV PB München IV</span> – <strong>PBC Erding III</strong></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">6:4</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>13.12.</strong><br>2025</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">PBC Markt Schwaben II</span> – <strong>PBC Erding III</strong></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">7:3</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>31.01.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">PBC Erding II</span> – <strong>PBC Erding III</strong></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">6:4</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>21.02.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding III</strong> – <span class="spieltag-neutral">BSV PB München III</span></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">2:8</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>07.03.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding III</strong> – <span class="spieltag-neutral">PBC Lerchenau II</span></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">4:6</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>14.03.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding III</strong> – <span class="spieltag-neutral">BSV PB München IV</span></div>
+              <div class="spieltag-result"><span class="dot dot-green"></span><span class="result-green">6:4</span></div>
+            </div>
+            <div class="spieltag-row spieltag-past">
+              <div class="spieltag-date">Sa<br><strong>25.04.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><strong>PBC Erding III</strong> – <span class="spieltag-neutral">PBC Markt Schwaben II</span></div>
+              <div class="spieltag-result"><span class="dot dot-red"></span><span class="result-red">1:9</span></div>
+            </div>
+            <div class="spieltag-row">
+              <div class="spieltag-date">Sa<br><strong>09.05.</strong><br>2026</div>
+              <div class="spieltag-sep"></div>
+              <div class="spieltag-paarung"><span class="spieltag-neutral">PBC Lerchenau II</span> – <strong>PBC Erding III</strong></div>
+              <div class="spieltag-result spieltag-time">14:00</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /liga -->
+
+      <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:2rem;">
+        Kalender automatisch generiert · Alle Angaben ohne Gewähr
+      </p>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <img src="images/logo_pbced.png" alt="PBC Erding Logo" width="28" height="28">
+          PBC Erding
+        </a>
+        <p>Pool Billard Club Erding e.V. – Training, Ligabetrieb und Schnuppertraining im Bowling Castle Erding.</p>
+        <address>
+          Bowling Castle Erding<br>
+          Robert-Bosch-Straße 3<br>
+          85435 Erding<br>
+          <a href="mailto:info@pbc-erding.de">info@pbc-erding.de</a>
+          <a href="tel:015253699008">0152 53699008</a>
+        </address>
+        <a href="https://www.facebook.com/billard.erding" target="_blank" rel="noopener noreferrer" class="footer-fb-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          Facebook
+        </a>
+      </div>
+      <div>
+        <p class="footer-nav-title">Navigation</p>
+        <nav class="footer-nav">
+          <a href="index.html">Startseite</a>
+          <a href="verein.html">Verein</a>
+          <a href="mannschaften.html">Mannschaften</a>
+          <a href="veranstaltungen.html">Veranstaltungen</a>
+          <a href="ergebnisse.html">Ergebnisse</a>
+          <a href="galerie.html">Galerie</a>
+        </nav>
+      </div>
+      <div>
+        <p class="footer-nav-title">Mehr</p>
+        <nav class="footer-nav">
+          <a href="downloads.html">Downloads</a>
+          <a href="links.html">Links</a>
+          <a href="sponsoren.html">Sponsoren</a>
+          <a href="kontakt.html">Kontakt</a>
+          <a href="impressum.html">Impressum</a>
+          <a href="datenschutz.html">Datenschutz</a>
+        </nav>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Pool Billard Club Erding e.V.</span>
+      <span><a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/nav.js"></script>
+<script src="js/veranstaltungen.js"></script>
+</body>
+</html>

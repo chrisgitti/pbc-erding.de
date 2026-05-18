@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PBC Erding – POOL BILLARD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* PBC-Erding Design Tokens (übernommen aus pbc-erding2) */
+    --charcoal-950: #0a0a0b;
+    --charcoal-900: #111113;
+    --charcoal-800: #1a1a1e;
+    --charcoal-700: #242429;
+    --charcoal-600: #2e2e35;
+    --green-900: #0a2010;
+    --green-800: #0d2e17;
+    --green-700: #134d22;
+    --green-600: #1a6b2f;
+    --green-500: #1f8c3b;
+    --gold-400: #e2b96f;
+    --gold-500: #d4a043;
+    --gold-600: #b8852e;
+    /* Aliases für die App */
+    --bg: var(--charcoal-950);
+    --bg-2: var(--charcoal-900);
+    --bg-3: var(--charcoal-800);
+    --anthrazit: var(--charcoal-700);
+    --gold: var(--gold-500);
+    --gold-2: var(--gold-600);
+    --gold-soft: var(--gold-400);
+    --gold-deep: #6f4f15;
+    --text: #ffffff;
+    --text-muted: rgba(255,255,255,0.7);
+    --danger: #d62828;
+    --panel: rgba(17, 17, 19, 0.94);
+    --border-gold: color-mix(in srgb, var(--gold-500) 35%, transparent);
+    /* Tisch */
+    --felt-1: var(--green-700);
+    --felt-2: var(--green-900);
+    --rail: var(--charcoal-900);
+    --rail-light: var(--charcoal-700);
+    --accent: var(--gold-500);
+    --accent-2: var(--gold-400);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(212, 175, 55, 0.05), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(212, 175, 55, 0.04), transparent 45%),
+      linear-gradient(135deg, #0a0a0b 0%, #16161a 60%, #1f1f24 100%);
+    color: var(--text);
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  .font-display { font-family: "Bebas Neue", "Inter", system-ui, sans-serif; letter-spacing: 0.01em; }
+  #app {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100vh; padding: 10px; gap: 8px;
+  }
+  #scoreboard {
+    width: min(98vw, 1200px);
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(180deg, rgba(20,20,24,0.95), rgba(10,10,11,0.95));
+    border: 1px solid var(--border-gold);
+    border-radius: 10px;
+    padding: 8px 16px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  /* Brand chip in scoreboard */
+  .brand-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 12px;
+    border-right: 1px solid var(--border-gold);
+    margin-right: 6px;
+  }
+  .brand-chip .brand-mark {
+    width: 26px; height: 26px;
+    border: 1.5px solid var(--gold);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #0a0a0b, #1f1f24);
+    color: var(--gold);
+    font-weight: 800; font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  .brand-chip .brand-text {
+    font-size: 10px; line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .brand-chip .brand-text .gold { color: var(--gold); font-weight: 700; }
+  .brand-chip .brand-text .sub { display: block; font-size: 9px; opacity: 0.6; }
+  .player {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 12px; border-radius: 4px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .player.right { justify-content: flex-end; flex-direction: row-reverse; }
+  .player.active {
+    background: rgba(212, 160, 67, 0.06);
+    border-color: var(--border-gold);
+    box-shadow: 0 0 22px rgba(212, 160, 67, 0.15);
+  }
+  .player .name { font-weight: 600; font-size: 14px; }
+  .player .info { font-size: 11px; opacity: 0.8; }
+  .player .badge {
+    display: inline-block; min-width: 22px; height: 22px;
+    border-radius: 50%; line-height: 22px; text-align: center;
+    font-weight: 700; font-size: 12px;
+    background: #fff; color: #111;
+  }
+  .player .badge.solid { background: #d62828; color: #fff; }
+  .player .badge.stripe { background: linear-gradient(180deg, #fff 0 35%, #1d4ed8 35% 65%, #fff 65% 100%); color: #111; }
+  .player .badge.eight { background: #111; color: #fff; }
+  .center-info {
+    text-align: center;
+    font-size: 12px; line-height: 1.4;
+    min-width: 220px;
+  }
+  .center-info .mode-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: rgba(212, 160, 67, 0.08);
+    border: 1px solid var(--border-gold);
+    color: var(--gold-500);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+  }
+  .center-info .status { font-weight: 600; color: var(--gold-500); letter-spacing: 0.04em; }
+  .center-info .foul { color: var(--danger); font-weight: 600; min-height: 16px; }
+
+  /* Layout: canvas left, control panel right */
+  #playArea {
+    display: grid;
+    grid-template-columns: auto 220px;
+    gap: 12px;
+    align-items: start;
+    width: min(98vw, 1200px);
+  }
+  #gameCanvas {
+    background: #000;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    display: block;
+    cursor: crosshair;
+    width: 100%;
+    max-width: 960px;
+    height: auto;
+  }
+  #controlPanel {
+    background: linear-gradient(180deg, rgba(20,20,24,0.95), rgba(10,10,11,0.95));
+    border: 1px solid var(--border-gold);
+    border-radius: 4px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  .panel-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--gold-500);
+    margin: 0 0 6px;
+    font-weight: 700;
+  }
+
+  /* Power slider */
+  .power-section .row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .power-value {
+    font-family: "Bebas Neue", system-ui, sans-serif;
+    font-size: 22px; font-weight: 400; color: var(--gold-500);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+  /* Power bar (interactive: click/tap/drag to set) */
+  .power-bar {
+    width: 100%; height: 22px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+  }
+  .power-bar:hover { border-color: rgba(255,255,255,0.3); }
+  .power-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4cc9f0 0%, #ffc857 50%, #ef476f 100%);
+    transition: width 0.04s linear;
+    pointer-events: none;
+  }
+  .power-bar-ticks {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    display: flex; justify-content: space-between;
+    padding: 0 4px; align-items: center;
+  }
+  .power-bar-ticks span {
+    width: 1px; height: 8px; background: rgba(255,255,255,0.2);
+  }
+  /* Control hint */
+  .ctrl-hint {
+    font-size: 11px; opacity: 0.85;
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  .kbd {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 10px;
+    margin-right: 4px;
+  }
+
+  /* Spin selector */
+  .spin-section { text-align: center; }
+  #spinCanvas {
+    width: 110px; height: 110px;
+    background: #1a1f24;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    display: block;
+    margin: 0 auto 6px;
+  }
+  .spin-label {
+    font-size: 11px;
+    opacity: 0.7;
+    text-align: center;
+  }
+  .spin-reset {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.7);
+    padding: 4px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 10px;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.2s;
+  }
+  .spin-reset:hover { border-color: var(--gold-500); color: var(--gold-500); }
+
+  /* Shoot button — PBC primary */
+  #btnShoot {
+    background: var(--gold-500);
+    color: var(--charcoal-950);
+    font-weight: 700;
+    font-size: 15px;
+    padding: 16px;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    box-shadow: 0 12px 30px rgba(212, 160, 67, 0.18);
+    transition: all 0.2s;
+  }
+  #btnShoot:hover { background: var(--gold-400); transform: translateY(-1px); }
+  #btnShoot:active { transform: translateY(1px); box-shadow: 0 6px 14px rgba(212, 160, 67, 0.18); }
+  #btnShoot:disabled {
+    background: var(--charcoal-700); color: rgba(255,255,255,0.3);
+    cursor: not-allowed; box-shadow: none; transform: none;
+  }
+  #btnShoot .hint { font-size: 9px; opacity: 0.6; display: block; font-weight: 500; letter-spacing: 0.06em; margin-top: 3px; text-transform: none; }
+
+  .aim-section .aim-row {
+    display: flex; align-items: center; gap: 6px; margin-top: 4px;
+  }
+  .aim-section button {
+    flex: 1; padding: 6px 10px; font-size: 11px;
+    background: rgba(255,255,255,0.02);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: all 0.2s;
+  }
+  .aim-section button:hover {
+    border-color: var(--gold-500);
+    color: var(--gold-500);
+    background: rgba(212, 160, 67, 0.05);
+  }
+  .aim-status {
+    font-size: 11px; opacity: 0.8;
+    text-align: center; margin-top: 4px;
+    padding: 4px 6px; border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+  }
+  .aim-status.locked { color: var(--accent); }
+
+  /* Bottom controls */
+  #bottomControls {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  }
+  #bottomControls button {
+    background: rgba(255,255,255,0.02);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  #bottomControls button:hover {
+    border-color: var(--gold-500);
+    color: var(--gold-500);
+    background: rgba(212, 160, 67, 0.05);
+  }
+
+  /* Menu overlay – PBC Hero-Stil */
+  #menu {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 60%, rgba(19,77,34,0.45) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 15%, rgba(212,160,67,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(19,77,34,0.20) 0%, transparent 60%),
+      var(--charcoal-950);
+    backdrop-filter: blur(12px);
+    z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 6vh 20px 4vh;
+    overflow-y: auto;
+  }
+  #menu.hidden { display: none; }
+  /* Linke grüne Akzentleiste */
+  #menu::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--green-700); opacity: 0.6;
+  }
+  /* Großes Hintergrund-Wort */
+  #menu::after {
+    content: "BILLARD"; position: absolute;
+    right: -2%; bottom: -4%;
+    font-family: "Bebas Neue", system-ui, sans-serif;
+    font-size: clamp(8rem, 18vw, 18rem);
+    color: rgba(255,255,255,0.05);
+    letter-spacing: 0.02em;
+    line-height: 1; pointer-events: none;
+    user-select: none;
+  }
+
+  .menu-eyebrow {
+    display: flex; align-items: flex-start; gap: 12px;
+    width: min(92vw, 720px);
+    margin-bottom: 16px;
+  }
+  .menu-eyebrow .accent-line {
+    display: block;
+    height: 1px; width: 32px;
+    background: rgba(212, 160, 67, 0.5);
+    margin-top: 14px; flex-shrink: 0;
+  }
+  .menu-eyebrow .titles { display: flex; flex-direction: column; gap: 2px; }
+  .menu-eyebrow .titles .club {
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #fff; line-height: 1.05;
+  }
+  .menu-eyebrow .titles .ev {
+    font-size: clamp(22px, 3.2vw, 32px);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff; line-height: 1.05;
+  }
+  .menu-eyebrow .titles .tag {
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold-500);
+  }
+
+  #menu h1 {
+    width: min(92vw, 720px);
+    margin: 0 0 4px;
+    font-family: "Bebas Neue", system-ui, sans-serif;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    font-weight: 400;
+    color: #fff;
+    background: none;
+    -webkit-background-clip: initial; background-clip: initial;
+  }
+  #menu h1 .gold { color: var(--gold-500); }
+  #menu h1 .br { display: block; }
+
+  #menu .gold-divider {
+    width: min(92vw, 720px);
+    margin: 18px 0 14px;
+  }
+  #menu .gold-divider span {
+    display: block;
+    height: 1px;
+    width: 64px;
+    background: rgba(212, 160, 67, 0.4);
+  }
+
+  #menu p.lead {
+    width: min(92vw, 720px);
+    max-width: 540px;
+    margin: 0 0 24px;
+    color: rgba(255,255,255,0.78);
+    font-size: 15px; line-height: 1.6;
+  }
+
+  .menu-section {
+    width: min(92vw, 720px);
+    background: rgba(17, 17, 19, 0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+  }
+  .menu-section h3 {
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold-500);
+  }
+  .options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .opt {
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .opt:hover {
+    border-color: var(--gold-500);
+    color: var(--gold-500);
+    background: rgba(212, 160, 67, 0.05);
+  }
+  .opt.selected {
+    background: var(--gold-500);
+    color: var(--charcoal-950);
+    border-color: var(--gold-500);
+    font-weight: 600;
+    box-shadow: 0 12px 30px rgba(212, 160, 67, 0.18);
+  }
+  .start-row {
+    display: flex; gap: 12px; margin-top: 20px;
+    width: min(92vw, 720px); justify-content: flex-start;
+  }
+  .start-row button {
+    background: var(--gold-500);
+    color: var(--charcoal-950);
+    font-weight: 600;
+    border: 0;
+    padding: 14px 28px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 12px 30px rgba(212, 160, 67, 0.18);
+    transition: all 0.2s;
+  }
+  .start-row button:hover {
+    background: var(--gold-400);
+    transform: translateY(-1px);
+  }
+  .hint {
+    width: min(92vw, 720px);
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 14px;
+    text-align: left;
+    letter-spacing: 0.06em;
+  }
+  /* Untere goldene Linie */
+  #menu .bottom-accent {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent 0%, rgba(212,160,67,0.5) 40%, rgba(212,160,67,0.5) 60%, transparent 100%);
+  }
+
+  /* Call-shot banner (8-Ball: Voll/Halb-Ansage) – inline, table stays visible */
+  #callShotBanner {
+    width: min(98vw, 1200px);
+    display: none;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(180deg, rgba(20,20,24,0.95), rgba(10,10,11,0.95));
+    border: 1px solid var(--gold-500);
+    border-radius: 4px;
+    padding: 10px 18px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 22px rgba(212, 160, 67, 0.25);
+    animation: callPulse 1.6s ease-in-out infinite;
+  }
+  #callShotBanner.show { display: flex; }
+  @keyframes callPulse {
+    0%, 100% { box-shadow: 0 4px 16px rgba(212, 160, 67, 0.20); }
+    50% { box-shadow: 0 4px 28px rgba(212, 160, 67, 0.55); }
+  }
+  #callShotBanner .label {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  #callShotBanner .label .player-name { color: var(--accent); }
+  #callShotBanner .label .sub { display: block; font-size: 11px; opacity: 0.75; font-weight: 400; margin-top: 2px; }
+  #callShotBanner .actions { display: flex; gap: 10px; }
+  #callShotBanner .actions button {
+    padding: 10px 20px; font-size: 12px; font-weight: 700;
+    border: 0; border-radius: 999px; cursor: pointer;
+    min-width: 130px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.2s;
+  }
+  #callShotBanner .actions button:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+  #callShotBanner .actions button:active { transform: translateY(2px); }
+  #callSolid { background: #d62828; color: white; border: 2px solid #b71c1c; }
+  #callStripe {
+    background: linear-gradient(180deg, #fff 0 30%, #1d4ed8 30% 70%, #fff 70% 100%);
+    color: #111; border: 2px solid #1d4ed8;
+    text-shadow: 0 0 3px #fff;
+  }
+
+  /* End screen */
+  #endScreen {
+    position: fixed; inset: 0;
+    display: none;
+    background: rgba(10,10,11,0.92);
+    z-index: 9;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+  #endScreen.show { display: flex; }
+  #endScreen .card {
+    background: linear-gradient(180deg, rgba(20,20,24,0.95), rgba(10,10,11,0.95));
+    border: 1px solid var(--border-gold);
+    border-radius: 4px;
+    padding: 36px 48px; text-align: center;
+    max-width: 90vw;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+  #endScreen h2 {
+    margin: 0 0 12px;
+    font-family: "Bebas Neue", system-ui, sans-serif;
+    font-size: 48px;
+    letter-spacing: 0.04em;
+    color: var(--gold-500);
+    text-transform: uppercase;
+  }
+  #endScreen p { margin: 4px 0; color: rgba(255,255,255,0.85); }
+  #endScreen .actions { margin-top: 24px; display: flex; gap: 12px; justify-content: center; }
+  #endScreen button {
+    background: rgba(255,255,255,0.02);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 12px 24px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.2s;
+  }
+  #endScreen button:hover {
+    border-color: var(--gold-500);
+    color: var(--gold-500);
+  }
+  #endScreen button.primary {
+    background: var(--gold-500); color: var(--charcoal-950);
+    border-color: var(--gold-500); font-weight: 600;
+    box-shadow: 0 12px 30px rgba(212, 160, 67, 0.18);
+  }
+  #endScreen button.primary:hover { background: var(--gold-400); color: var(--charcoal-950); }
+
+  @media (max-width: 820px) {
+    #playArea { grid-template-columns: 1fr; }
+    #controlPanel { flex-direction: row; flex-wrap: wrap; }
+    #controlPanel > * { flex: 1; min-width: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="menu">
+  <div class="menu-eyebrow">
+    <span class="accent-line"></span>
+    <div class="titles">
+      <span class="club">Pool Billard Club</span>
+      <span class="ev">Erding e.V.</span>
+      <span class="tag">Im Bowling Castle seit 2026</span>
+    </div>
+  </div>
+
+  <h1>
+    <span class="br">Spiel.</span>
+    <span class="br gold">Leidenschaft.</span>
+    <span class="br">Gemeinschaft.</span>
+  </h1>
+
+  <div class="gold-divider"><span></span></div>
+
+  <p class="lead">8-Ball &amp; 9-Ball auf einem virtuellen Tisch – im Hot-Seat zu zweit, gegen die KI oder allein im Übungsmodus.</p>
+
+  <div class="menu-section">
+    <h3>Spielvariante</h3>
+    <div class="options" id="optVariant">
+      <div class="opt selected" data-val="8ball">8-Ball</div>
+      <div class="opt" data-val="9ball">9-Ball</div>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <h3>Spielmodus</h3>
+    <div class="options" id="optMode">
+      <div class="opt selected" data-val="hotseat">Hot-Seat (2 Spieler)</div>
+      <div class="opt" data-val="ai">Gegen KI</div>
+      <div class="opt" data-val="solo">Solo / Übung</div>
+    </div>
+  </div>
+
+  <div class="menu-section" id="aiSection" style="display:none;">
+    <h3>KI-Schwierigkeit</h3>
+    <div class="options" id="optDiff">
+      <div class="opt" data-val="easy">Leicht</div>
+      <div class="opt selected" data-val="medium">Mittel</div>
+      <div class="opt" data-val="hard">Schwer</div>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <h3>Sound</h3>
+    <div class="options" id="optSound">
+      <div class="opt selected" data-val="on">An</div>
+      <div class="opt" data-val="off">Aus</div>
+    </div>
+  </div>
+
+  <div class="start-row">
+    <button id="btnStart">Spiel starten</button>
+  </div>
+  <p class="hint">LMB ziehen = zielen · RMB ziehen = Stoßstärke + Stoß · Power-Bar klickbar · Pfeil-Tasten = Feinjustierung · Mini-Ball = Effet · Leertaste = ausführen · M = Menü</p>
+  <div class="bottom-accent"></div>
+</div>
+
+<div id="app">
+  <div id="scoreboard">
+    <div class="brand-chip" title="Pool Billard Club Erding e.V.">
+      <div class="brand-mark">8</div>
+      <div class="brand-text">
+        <span class="gold">PBC ERDING</span>
+        <span class="sub">POOL BILLARD</span>
+      </div>
+    </div>
+    <div class="player" id="p1Box">
+      <span class="badge" id="p1Badge">1</span>
+      <div>
+        <div class="name" id="p1Name">Spieler 1</div>
+        <div class="info" id="p1Info">–</div>
+      </div>
+    </div>
+    <div class="center-info">
+      <div class="mode-tag" id="modeTag">8-Ball · Hot-Seat</div>
+      <div class="status" id="statusLine">Anstoß!</div>
+      <div class="foul" id="foulLine"></div>
+    </div>
+    <div class="player right" id="p2Box">
+      <span class="badge" id="p2Badge">2</span>
+      <div>
+        <div class="name" id="p2Name">Spieler 2</div>
+        <div class="info" id="p2Info">–</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="callShotBanner">
+    <div class="label">
+      <span class="player-name" id="callShotPlayerLine">Spieler</span>: Welche Gruppe spielst du?
+      <span class="sub">Versenkst du eine Kugel der gewählten Gruppe → Zuweisung steht. Verfehlt → Tisch bleibt offen, Gegner ist dran.</span>
+    </div>
+    <div class="actions">
+      <button id="callSolid">● Voll (1–7)</button>
+      <button id="callStripe">≡ Halb (9–15)</button>
+    </div>
+  </div>
+
+  <div id="playArea">
+    <canvas id="gameCanvas" width="920" height="500"></canvas>
+
+    <div id="controlPanel">
+      <div class="aim-section">
+        <p class="panel-title">Steuerung</p>
+        <div class="ctrl-hint">
+          <div><span class="kbd">LMB</span> ziehen → Queue einstellen</div>
+          <div><span class="kbd">RMB</span> ziehen → Stoßstärke + Stoß</div>
+          <div><span class="kbd">←</span>/<span class="kbd">→</span> Feinzielen</div>
+          <div><span class="kbd">Leer</span> Stoß auslösen</div>
+        </div>
+        <div class="aim-row">
+          <button id="btnAimLeft" title="Pfeil links">◄ fein</button>
+          <button id="btnAimRight" title="Pfeil rechts">fein ►</button>
+        </div>
+        <div class="aim-row">
+          <button id="btnAimLeftFine" title="Sehr feine Justierung links">◄◄ sehr fein</button>
+          <button id="btnAimRightFine" title="Sehr feine Justierung rechts">sehr fein ►►</button>
+        </div>
+        <div class="aim-status" id="aimStatus">Aim: frei</div>
+      </div>
+
+      <div class="power-section">
+        <div class="row">
+          <span class="panel-title" style="margin:0;">Stoßstärke</span>
+          <span class="power-value" id="powerValue">0%</span>
+        </div>
+        <div class="power-bar" id="powerBar">
+          <div class="power-bar-fill" id="powerBarFill"></div>
+          <div class="power-bar-ticks">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="spin-section">
+        <p class="panel-title">Effet</p>
+        <canvas id="spinCanvas" width="110" height="110"></canvas>
+        <div class="spin-label" id="spinLabel">kein Effet</div>
+        <button class="spin-reset" id="btnSpinReset">zurücksetzen</button>
+      </div>
+
+      <button id="btnShoot">
+        STOSS!
+        <span class="hint">Leertaste oder RMB-Release</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="bottomControls">
+    <button id="btnMenu" title="Menü (M)">≡ Menü</button>
+    <button id="btnRestart">↻ Neustart</button>
+    <button id="btnSound" title="Sound umschalten">♪ Sound</button>
+  </div>
+</div>
+
+<div id="endScreen">
+  <div class="card">
+    <h2 id="endTitle">Spiel beendet</h2>
+    <p id="endText"></p>
+    <div class="actions">
+      <button class="primary" id="endRestart">Revanche</button>
+      <button id="endMenu">Menü</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   POOL BILLIARD – 8-Ball & 9-Ball Web App
+   Slider-Steuerung + Effet-Auswahl + Stoß-Button
+   ========================================================================= */
+
+const W = 920, H = 500;
+const RAIL = 40;                   // wider rail/cushion
+const POCKET_R = 17;               // visual pocket radius (small disc, throat is the gap)
+const POCKET_CATCH_R = 22;         // ball capture radius (≈ ball diameter)
+const POCKET_NEAR = 50;            // cushion-bypass zone around pockets
+const BALL_R = 11;
+const CORNER_CUT = 30;             // wie weit die Bande vor der Tisch-Ecke endet (px)
+const FRICTION = 0.992;       // multiplicative damping (sliding)
+const ROLLING_DRAG = 0.018;   // linear deceleration per frame (rolling resistance)
+const MIN_VEL = 0.10;         // below this, ball stops
+const CUSHION_BOUNCE = 0.78;
+const BALL_BOUNCE = 0.96;
+const MAX_POWER = 42;
+
+const PLAY_X1 = RAIL, PLAY_Y1 = RAIL;
+const PLAY_X2 = W - RAIL, PLAY_Y2 = H - RAIL;
+const PLAY_W = PLAY_X2 - PLAY_X1;
+const PLAY_H = PLAY_Y2 - PLAY_Y1;
+
+// Eckpockets: Mittelpunkt diagonal außerhalb der Tisch-Ecke, in der Mitte der
+// diagonalen Banden-Lücke (CORNER_CUT). Mid-Pockets knapp außerhalb der Tischlinie.
+const _diag = 8;        // Verschiebung der Eckpocket-Mitte aus der Tisch-Ecke nach außen
+const _midOff = 13;
+const POCKETS = [
+  { x: PLAY_X1 - _diag,        y: PLAY_Y1 - _diag, type: "corner" },
+  { x: (PLAY_X1+PLAY_X2)/2,    y: PLAY_Y1 - _midOff, type: "side" },
+  { x: PLAY_X2 + _diag,        y: PLAY_Y1 - _diag, type: "corner" },
+  { x: PLAY_X1 - _diag,        y: PLAY_Y2 + _diag, type: "corner" },
+  { x: (PLAY_X1+PLAY_X2)/2,    y: PLAY_Y2 + _midOff, type: "side" },
+  { x: PLAY_X2 + _diag,        y: PLAY_Y2 + _diag, type: "corner" },
+];
+
+const BALL_COLORS = {
+  0: "#f7f1e3", 1: "#fcc419", 2: "#1c4e80", 3: "#d1495b", 4: "#5e3a8e",
+  5: "#e8731f", 6: "#1f7a3a", 7: "#7a2236", 8: "#111111",
+  9: "#fcc419", 10: "#1c4e80", 11: "#d1495b", 12: "#5e3a8e",
+  13: "#e8731f", 14: "#1f7a3a", 15: "#7a2236",
+};
+
+/* ---------------- Game State ---------------- */
+const game = {
+  variant: "8ball",
+  mode: "hotseat",
+  difficulty: "medium",
+  soundOn: true,
+
+  balls: [],
+  cueBall: null,
+  currentPlayer: 0,
+  players: [
+    { name: "Spieler 1", group: null, potted: [] },
+    { name: "Spieler 2", group: null, potted: [] }
+  ],
+  state: "aiming",
+  shotInProgress: false,
+
+  firstHit: null,
+  ballsPottedThisShot: [],
+  cuePotted: false,
+  anyCushionAfterFirstHit: false,
+
+  ballInHand: false,
+  endMessage: "",
+  open8ball: true,
+  winner: null,
+  isBreakShot: true,        // first shot of the rack
+  calledGroup: null,        // "solid" | "stripe" — set before a shot when table is open
+  kitchenOnly: false,       // restrict cue-ball placement to head field (kitchen)
+
+
+  aimAngle: 0,
+  aimLocked: false,           // when mouse over panel, we lock aim
+  powerPercent: 50,           // 0..100 (slider)
+  spinX: 0, spinY: 0,         // -1..1 (Effet)
+  spinPending: { x:0, y:0, dirX:0, dirY:0, power:0, used:false },
+
+  placingCue: false,
+  aiThinking: false,
+  aiTimer: 0,
+
+  foulMessage: "",
+  foulTimer: 0,
+};
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+/* ---------------- Audio ---------------- */
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch (e) { audioCtx = null; }
+  }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+}
+function playClick(volume = 0.4, freq = 320, duration = 0.07) {
+  if (!game.soundOn) return;
+  ensureAudio();
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 0.4), audioCtx.currentTime + duration);
+  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration + 0.02);
+}
+function soundCueHit(power) {
+  const v = clamp(0.15 + power * 0.04, 0.1, 0.7);
+  playClick(v, 220, 0.12);
+}
+function soundBallClick(strength) {
+  const v = clamp(0.05 + strength * 0.035, 0.05, 0.5);
+  playClick(v, 480 + Math.random() * 200, 0.06);
+}
+function soundCushion() { playClick(0.15, 180, 0.09); }
+function soundPocket() {
+  if (!game.soundOn) return;
+  ensureAudio();
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "sine";
+  const t = audioCtx.currentTime;
+  osc.frequency.setValueAtTime(380, t);
+  osc.frequency.exponentialRampToValueAtTime(80, t + 0.25);
+  gain.gain.setValueAtTime(0.35, t);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(t); osc.stop(t + 0.32);
+}
+
+/* ---------------- Ball ---------------- */
+class Ball {
+  constructor(num, x, y) {
+    this.num = num;
+    this.x = x; this.y = y;
+    this.vx = 0; this.vy = 0;
+    this.inPlay = true;
+    this.r = BALL_R;
+    this.color = BALL_COLORS[num] || "#fff";
+    this.isCue = num === 0;
+    this.isStripe = num >= 9 && num <= 15;
+    this.isSolid = num >= 1 && num <= 7;
+    this.isEight = num === 8;
+  }
+  speed() { return Math.hypot(this.vx, this.vy); }
+  isStill() { return this.speed() < MIN_VEL; }
+}
+
+/* ---------------- Racks ---------------- */
+function setup8BallRack() {
+  game.balls = [];
+  const cue = new Ball(0, PLAY_X1 + PLAY_W * 0.25, PLAY_Y1 + PLAY_H * 0.5);
+  game.cueBall = cue;
+  game.balls.push(cue);
+
+  const apexX = PLAY_X1 + PLAY_W * 0.72;
+  const apexY = PLAY_Y1 + PLAY_H * 0.5;
+  const dx = BALL_R * 2 * Math.cos(Math.PI / 6) + 0.3;
+  const dy = BALL_R * 2 + 0.2;
+  const rackOrder = [
+    [1],
+    [9, 2],
+    [10, 8, 3],
+    [11, 4, 12, 5],
+    [6, 13, 7, 14, 15]
+  ];
+  for (let row = 0; row < 5; row++) {
+    const rowBalls = rackOrder[row];
+    const rowX = apexX + row * dx;
+    const startY = apexY - (row * dy) / 2;
+    for (let col = 0; col < rowBalls.length; col++) {
+      const b = new Ball(rowBalls[col], rowX, startY + col * dy);
+      game.balls.push(b);
+    }
+  }
+}
+
+function setup9BallRack() {
+  game.balls = [];
+  const cue = new Ball(0, PLAY_X1 + PLAY_W * 0.25, PLAY_Y1 + PLAY_H * 0.5);
+  game.cueBall = cue;
+  game.balls.push(cue);
+
+  const apexX = PLAY_X1 + PLAY_W * 0.72;
+  const apexY = PLAY_Y1 + PLAY_H * 0.5;
+  const dx = BALL_R * 2 * Math.cos(Math.PI / 6) + 0.3;
+  const dy = BALL_R * 2 + 0.2;
+  const rack = [
+    [1],
+    [2, 3],
+    [4, 9, 5],
+    [6, 7],
+    [8]
+  ];
+  for (let row = 0; row < rack.length; row++) {
+    const rowBalls = rack[row];
+    const rowX = apexX + row * dx;
+    const startY = apexY - ((rowBalls.length - 1) * dy) / 2;
+    for (let col = 0; col < rowBalls.length; col++) {
+      const b = new Ball(rowBalls[col], rowX, startY + col * dy);
+      game.balls.push(b);
+    }
+  }
+}
+
+/* ---------------- Physics ---------------- */
+function step() {
+  const balls = game.balls.filter(b => b.inPlay);
+  // Adaptive substeps: more substeps when balls move faster (prevents tunneling)
+  let maxSpeed = 0;
+  for (const b of balls) { const s = b.speed(); if (s > maxSpeed) maxSpeed = s; }
+  const SUBSTEPS = clamp(Math.ceil(maxSpeed / 4) + 2, 4, 12);
+  for (let s = 0; s < SUBSTEPS; s++) {
+    for (const b of balls) {
+      b.x += b.vx / SUBSTEPS;
+      b.y += b.vy / SUBSTEPS;
+    }
+    // Ball-ball collisions
+    for (let i = 0; i < balls.length; i++) {
+      for (let j = i + 1; j < balls.length; j++) {
+        const a = balls[i], c = balls[j];
+        if (!a.inPlay || !c.inPlay) continue;
+        const ddx = c.x - a.x, ddy = c.y - a.y;
+        const d2 = ddx * ddx + ddy * ddy;
+        const minD = a.r + c.r;
+        if (d2 < minD * minD && d2 > 0.0001) {
+          const d = Math.sqrt(d2);
+          const nx = ddx / d, ny = ddy / d;
+          const overlap = (minD - d) / 2;
+          a.x -= nx * overlap; a.y -= ny * overlap;
+          c.x += nx * overlap; c.y += ny * overlap;
+          const va = a.vx * nx + a.vy * ny;
+          const vc = c.vx * nx + c.vy * ny;
+          const newVa = vc * BALL_BOUNCE;
+          const newVc = va * BALL_BOUNCE;
+          a.vx += (newVa - va) * nx;
+          a.vy += (newVa - va) * ny;
+          c.vx += (newVc - vc) * nx;
+          c.vy += (newVc - vc) * ny;
+          const strength = Math.abs(va - vc);
+          // Track first cue hit + apply spin
+          if (a.isCue && game.firstHit === null) {
+            game.firstHit = c.num;
+            applySpinOnContact(a, nx, ny);
+          } else if (c.isCue && game.firstHit === null) {
+            game.firstHit = a.num;
+            applySpinOnContact(c, -nx, -ny);
+          } else if (a.isCue && !game.spinPending.used) {
+            applySpinOnContact(a, nx, ny);
+          } else if (c.isCue && !game.spinPending.used) {
+            applySpinOnContact(c, -nx, -ny);
+          }
+          if (strength > 0.5) soundBallClick(strength);
+        }
+      }
+    }
+    // Cushion collisions
+    for (const b of balls) {
+      if (!b.inPlay) continue;
+      const nearPocket = POCKETS.some(p => Math.hypot(p.x - b.x, p.y - b.y) < POCKET_NEAR);
+      // Top/Bottom-Banden nur im aktiven Bereich (zwischen den Eck-Cuts)
+      const cushHorizActive = b.x > PLAY_X1 + CORNER_CUT && b.x < PLAY_X2 - CORNER_CUT;
+      // Left/Right-Banden nur im aktiven Bereich
+      const cushVertActive = b.y > PLAY_Y1 + CORNER_CUT && b.y < PLAY_Y2 - CORNER_CUT;
+
+      if (b.x - b.r < PLAY_X1 && cushVertActive && !nearPocket) {
+        b.x = PLAY_X1 + b.r;
+        if (b.vx < 0) {
+          b.vx = -b.vx * CUSHION_BOUNCE;
+          if (b.isCue) applySpinOnCushion(b, "left");
+          soundCushion(); game.anyCushionAfterFirstHit = true;
+        }
+      }
+      if (b.x + b.r > PLAY_X2 && cushVertActive && !nearPocket) {
+        b.x = PLAY_X2 - b.r;
+        if (b.vx > 0) {
+          b.vx = -b.vx * CUSHION_BOUNCE;
+          if (b.isCue) applySpinOnCushion(b, "right");
+          soundCushion(); game.anyCushionAfterFirstHit = true;
+        }
+      }
+      if (b.y - b.r < PLAY_Y1 && cushHorizActive && !nearPocket) {
+        b.y = PLAY_Y1 + b.r;
+        if (b.vy < 0) {
+          b.vy = -b.vy * CUSHION_BOUNCE;
+          if (b.isCue) applySpinOnCushion(b, "top");
+          soundCushion(); game.anyCushionAfterFirstHit = true;
+        }
+      }
+      if (b.y + b.r > PLAY_Y2 && cushHorizActive && !nearPocket) {
+        b.y = PLAY_Y2 - b.r;
+        if (b.vy > 0) {
+          b.vy = -b.vy * CUSHION_BOUNCE;
+          if (b.isCue) applySpinOnCushion(b, "bottom");
+          soundCushion(); game.anyCushionAfterFirstHit = true;
+        }
+      }
+
+      // Schrägbanden-Kollision an den 4 Eck-Cuts (45°-Linien)
+      // Inward-Normale zeigt vom Wand-Außen ins Felt-Innere
+      if (!nearPocket) {
+        // Helper: reflectAtSlant
+        const refl = (nxIn, nyIn, signedDist) => {
+          if (signedDist >= b.r) return;
+          const overlap = b.r - signedDist;
+          b.x += nxIn * overlap;
+          b.y += nyIn * overlap;
+          const vN = b.vx * nxIn + b.vy * nyIn;
+          if (vN < 0) {
+            const f = 1 + CUSHION_BOUNCE;
+            b.vx -= f * vN * nxIn;
+            b.vy -= f * vN * nyIn;
+            if (b.isCue) applySpinOnCushion(b, "top");
+            soundCushion();
+            game.anyCushionAfterFirstHit = true;
+          }
+        };
+        // Top-Left: Wand x+y = PLAY_X1+PLAY_Y1+CORNER_CUT, inward = (1,1)/√2
+        if (b.x < PLAY_X1 + CORNER_CUT && b.y < PLAY_Y1 + CORNER_CUT) {
+          const d = ((b.x - PLAY_X1) + (b.y - PLAY_Y1) - CORNER_CUT) / Math.SQRT2;
+          refl(1/Math.SQRT2, 1/Math.SQRT2, d);
+        }
+        // Top-Right: Wand -x+y = -PLAY_X2+PLAY_Y1+CORNER_CUT, inward = (-1,1)/√2
+        else if (b.x > PLAY_X2 - CORNER_CUT && b.y < PLAY_Y1 + CORNER_CUT) {
+          const d = ((PLAY_X2 - b.x) + (b.y - PLAY_Y1) - CORNER_CUT) / Math.SQRT2;
+          refl(-1/Math.SQRT2, 1/Math.SQRT2, d);
+        }
+        // Bottom-Left: inward = (1,-1)/√2
+        else if (b.x < PLAY_X1 + CORNER_CUT && b.y > PLAY_Y2 - CORNER_CUT) {
+          const d = ((b.x - PLAY_X1) + (PLAY_Y2 - b.y) - CORNER_CUT) / Math.SQRT2;
+          refl(1/Math.SQRT2, -1/Math.SQRT2, d);
+        }
+        // Bottom-Right: inward = (-1,-1)/√2
+        else if (b.x > PLAY_X2 - CORNER_CUT && b.y > PLAY_Y2 - CORNER_CUT) {
+          const d = ((PLAY_X2 - b.x) + (PLAY_Y2 - b.y) - CORNER_CUT) / Math.SQRT2;
+          refl(-1/Math.SQRT2, -1/Math.SQRT2, d);
+        }
+      }
+    }
+  }
+
+  // Friction: multiplicative + linear rolling drag
+  for (const b of balls) {
+    if (!b.inPlay) continue;
+    b.vx *= FRICTION;
+    b.vy *= FRICTION;
+    const sp = Math.hypot(b.vx, b.vy);
+    if (sp > 0) {
+      const newSp = Math.max(0, sp - ROLLING_DRAG);
+      const k = newSp / sp;
+      b.vx *= k; b.vy *= k;
+    }
+    if (Math.hypot(b.vx, b.vy) < MIN_VEL) { b.vx = 0; b.vy = 0; }
+  }
+
+  // Pocket detection
+  for (const b of balls) {
+    if (!b.inPlay) continue;
+    for (const p of POCKETS) {
+      if (Math.hypot(p.x - b.x, p.y - b.y) < POCKET_CATCH_R) {
+        b.inPlay = false;
+        b.vx = 0; b.vy = 0;
+        game.ballsPottedThisShot.push(b.num);
+        if (b.isCue) game.cuePotted = true;
+        soundPocket();
+        break;
+      }
+    }
+  }
+
+  if (game.shotInProgress && game.balls.every(b => !b.inPlay || b.isStill())) {
+    game.shotInProgress = false;
+    onShotComplete();
+  }
+}
+
+/* Apply spin (Effet) on contact with object ball.
+   The spin is "consumed" on first contact:
+   - Top/Back spin (sy): adds velocity to cue ball along original shot direction
+     (top = forward = +dir, back = backward = -dir)
+   - Side English (sx): adds velocity perpendicular to shot direction. */
+function applySpinOnContact(cue, nx, ny) {
+  const sp = game.spinPending;
+  if (sp.used) return;
+  const power = sp.power || 1;
+  // Forward direction = original shot direction
+  const dx = sp.dirX, dy = sp.dirY;
+  // top spin (sy < 0 means top half clicked, so top spin) - we map sy: -1=top, +1=back
+  const topMag = -sp.y;   // -1 (back) .. +1 (top)
+  const sideMag = sp.x;   // -1 (left) .. +1 (right english)
+
+  // Scale of spin effect proportional to original power
+  cue.vx += dx * topMag * power * 0.30;
+  cue.vy += dy * topMag * power * 0.30;
+  // Side: perpendicular to shot direction
+  cue.vx += -dy * sideMag * power * 0.18;
+  cue.vy +=  dx * sideMag * power * 0.18;
+
+  sp.used = true;
+}
+
+/* Side spin on cushion bounce: tweak the parallel velocity component slightly */
+function applySpinOnCushion(cue, side) {
+  const sp = game.spinPending;
+  if (Math.abs(sp.x) < 0.05) return;
+  // Side english curves the bounce angle a bit
+  const eng = sp.x;
+  if (side === "left" || side === "right") {
+    cue.vy += (side === "right" ? -1 : 1) * eng * Math.abs(cue.vx) * 0.18;
+  } else {
+    cue.vx += (side === "bottom" ? -1 : 1) * eng * Math.abs(cue.vy) * 0.18;
+  }
+  // Side english fades on every bounce
+  sp.x *= 0.5;
+}
+
+/* ---------------- Shot lifecycle ---------------- */
+function startShot() {
+  if (game.state !== "aiming" || game.shotInProgress) return;
+  if (game.placingCue) return;
+  if (!game.cueBall.inPlay) return;
+  if (game.powerPercent < 1) return;
+  // Nach Anstoß keine Kopffeld-Beschränkung mehr für Ball-in-Hand
+  game.kitchenOnly = false;
+  // Block: bei offenem Tisch muss vorher eine Gruppe angesagt werden (außer beim Break selbst)
+  if (typeof needsGroupCall === "function" && needsGroupCall()) {
+    maybeShowCallModal();
+    return;
+  }
+
+  const power = (game.powerPercent / 100) * MAX_POWER;
+  const angle = game.aimAngle;
+  const dirX = Math.cos(angle), dirY = Math.sin(angle);
+
+  game.firstHit = null;
+  game.ballsPottedThisShot = [];
+  game.cuePotted = false;
+  game.anyCushionAfterFirstHit = false;
+  game.spinPending = { x: game.spinX, y: game.spinY, dirX, dirY, power, used: false };
+
+  const cue = game.cueBall;
+  cue.vx = dirX * power;
+  cue.vy = dirY * power;
+  game.shotInProgress = true;
+  game.state = "moving";
+  soundCueHit(power);
+
+  // Reset spin selection for next shot - keep power slider value (user can adjust)
+  // Spin resets after each shot so it doesn't accidentally apply again
+  game.spinX = 0; game.spinY = 0;
+  drawSpinCanvas();
+  updateSpinLabel();
+}
+
+function onShotComplete() {
+  const variant = game.variant;
+  const mode = game.mode;
+
+  if (variant === "8ball") handle8BallShot();
+  else if (variant === "9ball") handle9BallShot();
+  else handleSoloShot();
+
+  if (game.state === "ended") {
+    showEndScreen();
+    return;
+  }
+  if (game.cuePotted) respawnCueBall();
+  if (mode === "solo") game.currentPlayer = 0;
+
+  game.state = "aiming";
+  updateUI();
+
+  if (mode === "ai" && game.currentPlayer === 1 && game.state === "aiming") {
+    game.aiThinking = true;
+    game.aiTimer = 60;
+  }
+}
+
+function respawnCueBall() {
+  const cue = game.cueBall;
+  cue.inPlay = true;
+  let cx = PLAY_X1 + PLAY_W * 0.25;
+  let cy = PLAY_Y1 + PLAY_H * 0.5;
+  for (let attempts = 0; attempts < 50; attempts++) {
+    let ok = true;
+    for (const b of game.balls) {
+      if (b === cue || !b.inPlay) continue;
+      if (Math.hypot(b.x - cx, b.y - cy) < (cue.r + b.r) * 1.05) { ok = false; break; }
+    }
+    if (ok) break;
+    cx += (Math.random() - 0.5) * 30;
+    cy += (Math.random() - 0.5) * 30;
+    cx = clamp(cx, PLAY_X1 + cue.r + 1, PLAY_X1 + PLAY_W * 0.5);
+    cy = clamp(cy, PLAY_Y1 + cue.r + 1, PLAY_Y2 - cue.r - 1);
+  }
+  cue.x = cx; cue.y = cy;
+  cue.vx = 0; cue.vy = 0;
+  game.placingCue = true;
+}
+
+/* ---------------- 8-Ball rules ---------------- */
+function handle8BallShot() {
+  const me = game.players[game.currentPlayer];
+  const other = game.players[1 - game.currentPlayer];
+  const potted = game.ballsPottedThisShot;
+  const wasBreak = game.isBreakShot;
+  const calledGroup = game.calledGroup;
+  game.isBreakShot = false;       // never again
+  game.calledGroup = null;        // consumed; will be re-asked next time if still open
+
+  let foul = false;
+  let foulReason = "";
+
+  if (game.cuePotted) { foul = true; foulReason = "Weiße versenkt"; }
+  if (game.firstHit === null && !foul) { foul = true; foulReason = "Keine Kugel getroffen"; }
+  if (!foul && game.firstHit === 8 && !canTarget8Ball(me)) {
+    foul = true; foulReason = "Schwarze zuerst getroffen";
+  }
+  if (!foul && me.group && !game.open8ball) {
+    if (game.firstHit !== null && game.firstHit !== 8) {
+      const isFirstSolid = game.firstHit >= 1 && game.firstHit <= 7;
+      const isFirstStripe = game.firstHit >= 9 && game.firstHit <= 15;
+      if (me.group === "solid" && isFirstStripe) { foul = true; foulReason = "Falsche Kugel zuerst"; }
+      if (me.group === "stripe" && isFirstSolid) { foul = true; foulReason = "Falsche Kugel zuerst"; }
+    }
+  }
+
+  // Schwarze versenkt?
+  const potted8 = potted.includes(8);
+  if (potted8) {
+    const cleared = playerClearedGroup(me);
+    if (cleared && !foul) {
+      // Gruppe leer + sauberer Stoß → Sieg
+      game.endMessage = `${me.name} gewinnt – Schwarze Acht versenkt!`;
+      game.state = "ended"; game.winner = game.currentPlayer;
+      return;
+    } else if (cleared && foul) {
+      // Gruppe leer, aber Foul beim 8-Versenken → Verlust
+      game.endMessage = `${other.name} gewinnt – ${me.name} hat ein Foul beim Versenken der 8`;
+      game.state = "ended"; game.winner = 1 - game.currentPlayer;
+      return;
+    } else {
+      // 8 zu früh versenkt: Re-Spot auf Fußpunkt, Foul, Gegner mit Ball-in-Hand
+      respotBlackBall();
+      game.ballsPottedThisShot = game.ballsPottedThisShot.filter(n => n !== 8);
+      game.foulMessage = "Foul: Schwarze 8 vorzeitig versenkt – wird neu aufgesetzt";
+      game.foulTimer = 240;
+      game.ballInHand = true;
+      game.currentPlayer = 1 - game.currentPlayer;
+      if (!game.cuePotted) game.placingCue = true;
+      return;
+    }
+  }
+
+  // BREAK: Tisch bleibt IMMER offen, keine Auto-Zuweisung
+  if (wasBreak) {
+    if (foul) {
+      game.foulMessage = "Foul beim Anstoß: " + foulReason;
+      game.foulTimer = 240;
+      game.ballInHand = true;
+      game.currentPlayer = 1 - game.currentPlayer;
+      if (!game.cuePotted) game.placingCue = true;
+      return;
+    }
+    // Versenkte Kugeln zählen, aber Gruppe wird erst beim nächsten Stoß per Ansage zugewiesen
+    const pottedAny = potted.some(n => n !== 0);
+    if (!pottedAny) {
+      // kein Pott → Gegner ist dran (Tisch offen)
+      game.currentPlayer = 1 - game.currentPlayer;
+    }
+    // Anstoßender ist weiter dran (oder Gegner falls kein Pott).
+    // Tisch bleibt OFFEN, beim nächsten Stoß muss angesagt werden.
+    return;
+  }
+
+  // OPEN TABLE (nach Break): Call-Shot-Logik
+  if (game.open8ball && calledGroup) {
+    if (foul) {
+      game.foulMessage = "Foul: " + foulReason;
+      game.foulTimer = 240;
+      game.ballInHand = true;
+      game.currentPlayer = 1 - game.currentPlayer;
+      if (!game.cuePotted) game.placingCue = true;
+      return;
+    }
+    const calledNums = calledGroup === "solid" ? [1,2,3,4,5,6,7] : [9,10,11,12,13,14,15];
+    const pottedCalled = potted.some(n => calledNums.includes(n));
+
+    if (pottedCalled) {
+      // Zuweisung steht jetzt fest
+      me.group = calledGroup;
+      other.group = calledGroup === "solid" ? "stripe" : "solid";
+      game.open8ball = false;
+      // Versenkte Kugeln zuweisen
+      for (const n of potted) {
+        if (n === 0 || n === 8) continue;
+        if (isMyGroupBall(n, me)) me.potted.push(n);
+        else if (isMyGroupBall(n, other)) other.potted.push(n);
+      }
+      // Spieler ist weiter dran
+      return;
+    } else {
+      // Angesagte Gruppe nicht getroffen → Tisch bleibt offen, Spielerwechsel
+      game.foulMessage = `Angesagte Gruppe (${calledGroup === "solid" ? "Voll" : "Halb"}) nicht getroffen – Tisch bleibt offen`;
+      game.foulTimer = 240;
+      game.currentPlayer = 1 - game.currentPlayer;
+      return;
+    }
+  }
+
+  // CLOSED TABLE: bisherige Logik (Spieler hat Gruppe, spielt darauf)
+  const myGroupPotted = potted.some(n => isMyGroupBall(n, me));
+  for (const n of potted) {
+    if (n === 0 || n === 8) continue;
+    if (isMyGroupBall(n, me)) me.potted.push(n);
+    else if (other.group && isMyGroupBall(n, other)) other.potted.push(n);
+  }
+  if (foul) {
+    game.foulMessage = "Foul: " + foulReason;
+    game.foulTimer = 240;
+    game.ballInHand = true;
+    game.currentPlayer = 1 - game.currentPlayer;
+    if (!game.cuePotted) game.placingCue = true;
+    return;
+  }
+  if (myGroupPotted) return;  // weiter
+  game.currentPlayer = 1 - game.currentPlayer;
+}
+
+// Setzt die Schwarze auf den Fußpunkt zurück. Falls belegt, schiebt sich der Spot
+// in BALL_R*2-Schritten Richtung untere Bande, dann ggf. nach oben.
+function respotBlackBall() {
+  const ball8 = game.balls.find(b => b.num === 8);
+  if (!ball8) return;
+  ball8.inPlay = true;
+  ball8.vx = 0; ball8.vy = 0;
+  const footX = PLAY_X1 + PLAY_W * 0.72;
+  const footY = PLAY_Y1 + PLAY_H * 0.5;
+  let sx = footX, sy = footY;
+  const step = BALL_R * 2 + 0.5;
+  let placed = false;
+  // 1) erst geradlinig auf Fußpunkt
+  // 2) dann Richtung Fußbande (rechts vom Fußpunkt)
+  // 3) wenn unten kein Platz, alternative Y-Verschiebung
+  for (let attempts = 0; attempts < 60 && !placed; attempts++) {
+    let collision = false;
+    for (const other of game.balls) {
+      if (other === ball8 || !other.inPlay) continue;
+      if (Math.hypot(other.x - sx, other.y - sy) < (ball8.r + other.r)) {
+        collision = true; break;
+      }
+    }
+    if (!collision && sx > PLAY_X1 + ball8.r && sx < PLAY_X2 - ball8.r &&
+        sy > PLAY_Y1 + ball8.r && sy < PLAY_Y2 - ball8.r) {
+      placed = true;
+      break;
+    }
+    // Verschiebung: erst Richtung rechte Bande, dann y wechseln
+    sx += step;
+    if (sx > PLAY_X2 - ball8.r) {
+      sx = footX;
+      sy += (attempts % 2 === 0 ? -step : step);
+    }
+  }
+  ball8.x = sx;
+  ball8.y = sy;
+}
+
+function canTarget8Ball(player) {
+  if (game.open8ball) return false;
+  if (!player.group) return false;
+  return playerClearedGroup(player);
+}
+function isMyGroupBall(num, player) {
+  if (!player.group) return false;
+  if (player.group === "solid") return num >= 1 && num <= 7;
+  if (player.group === "stripe") return num >= 9 && num <= 15;
+  return false;
+}
+function playerClearedGroup(player) {
+  if (!player.group) return false;
+  const target = player.group === "solid" ? [1,2,3,4,5,6,7] : [9,10,11,12,13,14,15];
+  return target.every(n => {
+    const b = game.balls.find(bb => bb.num === n);
+    return !b || !b.inPlay;
+  });
+}
+
+/* ---------------- 9-Ball rules ---------------- */
+function handle9BallShot() {
+  const me = game.players[game.currentPlayer];
+  const potted = game.ballsPottedThisShot;
+  let foul = false;
+  let foulReason = "";
+
+  const lowest = lowestBallOnTable();
+
+  if (game.cuePotted) { foul = true; foulReason = "Weiße versenkt"; }
+  if (!foul && game.firstHit === null) { foul = true; foulReason = "Keine Kugel getroffen"; }
+  if (!foul && game.firstHit !== null && game.firstHit !== lowest) {
+    foul = true; foulReason = `Niedrigste Kugel war die ${lowest}`;
+  }
+
+  const potted9 = potted.includes(9);
+  if (potted9) {
+    if (foul) {
+      const ball9 = game.balls.find(b => b.num === 9);
+      if (ball9) { ball9.inPlay = true; ball9.x = PLAY_X1 + PLAY_W * 0.72; ball9.y = PLAY_Y1 + PLAY_H * 0.5; ball9.vx = 0; ball9.vy = 0; }
+      game.ballsPottedThisShot = game.ballsPottedThisShot.filter(n => n !== 9);
+    } else {
+      game.endMessage = `${me.name} gewinnt – die 9 ist versenkt!`;
+      game.state = "ended"; game.winner = game.currentPlayer;
+      return;
+    }
+  }
+
+  for (const n of potted) {
+    if (n === 0 |

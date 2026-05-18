@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Disallow default Next.js starter SVGs (not relevant for crawling)
+Disallow: /file.svg
+Disallow: /globe.svg
+Disallow: /next.svg
+Disallow: /vercel.svg
+Disallow: /window.svg
+
+Sitemap: https://www.pbc-erding.de/sitemap.xml
