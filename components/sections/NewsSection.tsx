@@ -21,7 +21,7 @@ const categoryGradient: Record<string, string> = {
 }
 
 export default function NewsSection() {
-  const latest = news.slice(0, 3)
+  const latest = [...news].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3)
 
   return (
     <section id="news" className="bg-charcoal-950 py-24" aria-labelledby="news-heading">
