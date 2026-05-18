@@ -227,7 +227,7 @@ const ligaTeams: LigaTeam[] = [
       { datum: '2026-02-28', uhrzeit: '14:00', heim: 'PBC Erding II',         gast: 'PBC Lerchenau II',      ergebnis: '8:2', wertung: 'sieg'  },
       { datum: '2026-03-14', uhrzeit: '14:00', heim: 'PBC Erding II',         gast: 'PBC Markt Schwaben II', ergebnis: '7:3', wertung: 'sieg'  },
       { datum: '2026-04-11', uhrzeit: '14:00', heim: 'PBC Erding II',         gast: 'BSV PB München III',    ergebnis: '6:4', wertung: 'sieg'  },
-      { datum: '2026-05-16', uhrzeit: '14:00', heim: 'PBC Erding II',         gast: 'BSV PB München IV',     ergebnis: null,  wertung: 'offen' },
+      { datum: '2026-05-16', uhrzeit: '14:00', heim: 'PBC Erding II',         gast: 'BSV PB München IV',     ergebnis: '7:3', wertung: 'sieg'  },
     ],
   },
   {

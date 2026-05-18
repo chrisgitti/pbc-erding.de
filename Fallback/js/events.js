@@ -5,7 +5,6 @@
 
   // ── Spielplandaten (aus lib/data.ts, nur offene Spiele relevant) ──
   var spielplan = [
-    { datum: '2026-05-16', mannschaft: 'PBC Erding II',  heim: 'PBC Erding II',  gast: 'BSV PB München IV',    uhrzeit: '14:00', liga: 'Kreisliga Oberbayern D'       },
     { datum: '2026-05-09', mannschaft: 'PBC Erding III', heim: 'PBC Lerchenau II', gast: 'PBC Erding III',    uhrzeit: '14:00', liga: 'Kreisliga Oberbayern D'       },
   ];
 
