@@ -4,6 +4,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>PBC Erding – POOL BILLARD</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -870,6 +871,21 @@
   body.portrait-mode #btnShoot .hint { display: none; }
   body.portrait-mode .ctrl-hint { display: none; }
   body.portrait-mode .panel-title { font-size: 9px; margin-bottom: 4px; }
+  body.portrait-mode .cue-section {
+    flex: 1 1 135px;
+    min-width: 130px;
+  }
+  body.portrait-mode .cue-section .panel-title {
+    font-size: 9px;
+  }
+  body.portrait-mode .cue-select {
+    padding: 5px 6px;
+    font-size: 11px;
+  }
+  body.portrait-mode .cue-note {
+    display: none;
+  }
+
   body.portrait-mode #bottomControls {
     width: 100%;
     justify-content: center;
@@ -880,6 +896,126 @@
     padding: 6px 10px;
     font-size: 11px;
   }
+  /* Physik-Slider im Menü */
+  .physics-sliders { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .slider-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.8); }
+  .slider-row span:first-child { flex: 1 1 130px; min-width: 110px; }
+  .slider-row input[type=range] { flex: 1 1 100px; accent-color: var(--gold-500, #d4a043); }
+  .slider-row span:last-child { width: 38px; text-align: right; font-size: 12px; color: var(--gold-500, #d4a043); font-variant-numeric: tabular-nums; }
+  #advancedOptions { margin-top: 4px; }
+  #advancedOptions > summary { cursor: pointer; font-weight: 600; padding: 8px 0; color: var(--gold-500, #d4a043); list-style: none; user-select: none; }
+  #advancedOptions > summary::before { content: "▶ "; font-size: 0.75em; }
+  #advancedOptions[open] > summary::before { content: "▼ "; }
+  .cue-section { display: flex; flex-direction: column; gap: 6px; }
+  .cue-section .panel-title { margin-bottom: 0; }
+  /* Queue-Auswahl: kontrastreich lesbar, auch im geöffneten nativen Dropdown.
+     Wichtig: Viele Browser rendern <option> sonst mit hellem Systemhintergrund,
+     übernehmen aber die helle/goldene Textfarbe des Select-Felds. */
+  .cue-select {
+    width: 100%;
+    padding: 6px 8px;
+    background: #111113;
+    border: 1px solid rgba(212,160,67,0.55);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 13px;
+    margin-top: 0;
+    cursor: pointer;
+    color-scheme: light;
+  }
+  .cue-select:focus { outline: none; border-color: var(--gold-500); box-shadow: 0 0 0 2px rgba(212,160,67,0.14); }
+  .cue-select option {
+    background: #ffffff;
+    color: #111113;
+  }
+  .cue-select option:checked {
+    background: #d4a043;
+    color: #0a0a0b;
+  }
+  .cue-note { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 0; line-height: 1.4; }
+
+  /* ── Physics Overlay ── */
+  #physicsOverlay {
+    position: fixed; inset: 0;
+    background: rgba(10,10,11,0.92); z-index: 600;
+    display: none;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+  #physicsOverlayCard {
+    background: linear-gradient(180deg, rgba(20,20,24,0.95), rgba(10,10,11,0.95));
+    border: 1px solid var(--border-gold); border-radius: 4px;
+    padding: 24px 28px; max-width: 90vw; width: min(520px,92vw);
+    max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+  #physicsOverlay h2 {
+    margin: 0 0 16px;
+    font-family: "Bebas Neue", system-ui, sans-serif;
+    font-size: 32px; letter-spacing: 0.06em;
+    color: var(--gold-500); text-transform: uppercase;
+  }
+  .ov-preset-row {
+    display: flex; gap: 10px; margin-top: 14px; align-items: center;
+  }
+  #ovPresetName {
+    flex: 1; padding: 8px 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(212,160,67,0.35);
+    border-radius: 3px; color: #f0e6d3; font-size: 13px;
+    outline: none;
+  }
+  #ovPresetName:focus { border-color: var(--gold-500); }
+  .ov-btn-row {
+    display: flex; gap: 10px; margin-top: 16px;
+  }
+  #physicsOverlay button, #presetSelectModal button {
+    background: rgba(255,255,255,0.02); color: #fff;
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 3px;
+    padding: 10px 18px; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
+    touch-action: manipulation;
+  }
+  #physicsOverlay button:hover, #presetSelectModal button:hover {
+    border-color: var(--gold-500); color: var(--gold-500);
+  }
+  #physicsOverlay button.primary, #presetSelectModal button.primary {
+    background: var(--gold-500); color: var(--charcoal-950);
+    border-color: var(--gold-500);
+  }
+  #physicsOverlay button.primary:hover, #presetSelectModal button.primary:hover {
+    background: var(--gold-400); color: var(--charcoal-950);
+  }
+
+  /* ── Preset Select Modal ── */
+  #presetSelectModal {
+    position: fixed; inset: 0;
+    background: rgba(10,10,11,0.92); z-index: 650;
+    display: none;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+  #presetSelectCard {
+    background: linear-gradient(180deg, rgba(20,20,24,0.95), rgba(10,10,11,0.95));
+    border: 1px solid var(--border-gold); border-radius: 4px;
+    padding: 28px 36px; max-width: 90vw; width: 360px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+  #presetSelectCard h2 {
+    margin: 0 0 8px;
+    font-family: "Bebas Neue", system-ui, sans-serif;
+    font-size: 28px; letter-spacing: 0.06em;
+    color: var(--gold-500); text-transform: uppercase;
+  }
+  #presetSelectCard p.ov-hint {
+    font-size: 12px; color: rgba(255,255,255,0.55); margin: 0 0 12px;
+  }
+  #presetList label {
+    display: block; padding: 6px 0; cursor: pointer;
+    color: rgba(255,255,255,0.85);
+  }
+  #presetList input[type=radio] { margin-right: 8px; accent-color: var(--gold-500); }
 </style>
 </head>
 <body>
@@ -959,6 +1095,15 @@
     </div>
   </div>
 
+  <div class="menu-section" id="aiSection" style="display:none;">
+    <h3>KI-Spielstärke</h3>
+    <div class="options" id="optDiff">
+      <div class="opt" data-val="easy">Anfänger</div>
+      <div class="opt selected" data-val="medium">Fortgeschrittener</div>
+      <div class="opt" data-val="hard">Profi</div>
+    </div>
+  </div>
+
   <div class="menu-section" id="setsSection" style="display:none;">
     <h3>Gewinnspiele (Sätze)</h3>
     <div class="sets-stepper">
@@ -969,38 +1114,90 @@
     </div>
   </div>
 
-  <div class="menu-section" id="breakSection" style="display:none;">
-    <h3>Break-Regel</h3>
-    <div class="options" id="optBreak">
-      <div class="opt selected" data-val="wechsel">Wechselbreak</div>
-      <div class="opt" data-val="winner">Winnerbreak</div>
-    </div>
-  </div>
+  <details id="advancedOptions">
+    <summary>Erweiterte Optionen</summary>
 
-  <div class="menu-section" id="aiSection" style="display:none;">
-    <h3>KI-Spielstärke</h3>
-    <div class="options" id="optDiff">
-      <div class="opt" data-val="easy">Anfänger</div>
-      <div class="opt selected" data-val="medium">Fortgeschrittener</div>
-      <div class="opt" data-val="hard">Profi</div>
+    <div class="menu-section" id="breakSection" style="display:none;">
+      <h3>Break-Regel</h3>
+      <div class="options" id="optBreak">
+        <div class="opt selected" data-val="wechsel">Wechselbreak</div>
+        <div class="opt" data-val="winner">Winnerbreak</div>
+      </div>
     </div>
-  </div>
 
-  <div class="menu-section">
-    <h3>Sound</h3>
-    <div class="options" id="optSound">
-      <div class="opt selected" data-val="on">An</div>
-      <div class="opt" data-val="off">Aus</div>
+    <div class="menu-section">
+      <h3>Sound</h3>
+      <div class="options" id="optSound">
+        <div class="opt selected" data-val="on">An</div>
+        <div class="opt" data-val="off">Aus</div>
+      </div>
     </div>
-  </div>
 
-  <div class="menu-section">
-    <h3>Shot-Timer</h3>
-    <div class="options" id="optShotTimer">
-      <div class="opt selected" data-val="off">Kein Timer</div>
-      <div class="opt" data-val="on">An (30s / 60s)</div>
+    <div class="menu-section">
+      <h3>Shot-Timer</h3>
+      <div class="options" id="optShotTimer">
+        <div class="opt selected" data-val="off">Kein Timer</div>
+        <div class="opt" data-val="on">An (30s / 60s)</div>
+      </div>
     </div>
-  </div>
+
+    <div class="menu-section">
+      <h3>Tischprofil</h3>
+      <div class="options" id="optTablePreset">
+        <div class="opt" data-val="fast">Profiturniertisch</div>
+        <div class="opt selected" data-val="medium">Turniertisch</div>
+        <div class="opt" data-val="slow">Kneipentisch</div>
+      </div>
+    </div>
+
+
+    <div class="menu-section">
+      <h3>Physik-Einstellungen</h3>
+      <div class="physics-sliders">
+        <label class="slider-row">
+          <span>Rollreibung</span>
+          <input type="range" id="slFriction" min="1" max="25" step="1" value="8">
+          <span id="lblFriction">8‰</span>
+        </label>
+        <label class="slider-row">
+          <span>Rollwiderstand</span>
+          <input type="range" id="slRollingDrag" min="5" max="40" step="1" value="18">
+          <span id="lblRollingDrag">0.018</span>
+        </label>
+        <label class="slider-row">
+          <span>Banden-Elastizität</span>
+          <input type="range" id="slCushionEN" min="70" max="97" step="1" value="90">
+          <span id="lblCushionEN">0.90</span>
+        </label>
+        <label class="slider-row">
+          <span>Banden-Effet</span>
+          <input type="range" id="slCushionMu" min="8" max="35" step="1" value="18">
+          <span id="lblCushionMu">0.18</span>
+        </label>
+        <label class="slider-row">
+          <span>Tuch-Gleitung</span>
+          <input type="range" id="slClothSlide" min="30" max="200" step="5" value="115">
+          <span id="lblClothSlide">0.115</span>
+        </label>
+        <label class="slider-row">
+          <span>Banden-Reibung</span>
+          <input type="range" id="slRailFriction" min="10" max="60" step="2" value="34">
+          <span id="lblRailFriction">0.34</span>
+        </label>
+        <label class="slider-row">
+          <span>Banden-Spin-Grip</span>
+          <input type="range" id="slRailSpinGrip" min="20" max="90" step="2" value="66">
+          <span id="lblRailSpinGrip">0.66</span>
+        </label>
+        <label class="slider-row">
+          <span>Kugel-Elastizität</span>
+          <input type="range" id="slBallBounce" min="80" max="100" step="1" value="96">
+          <span id="lblBallBounce">0.96</span>
+        </label>
+      </div>
+    </div>
+
+  </details>
 
   <div class="start-row">
     <button id="btnStart">Spiel starten</button>
@@ -1075,7 +1272,7 @@
       <div class="aim-section">
         <p class="panel-title">Steuerung</p>
         <div class="ctrl-hint">
-          <div><span class="kbd">LMB</span> ziehen → Queue einstellen</div>
+          <div><span class="kbd">LMB</span> ziehen → Zielrichtung einstellen</div>
           <div><span class="kbd">RMB</span> ziehen → Stoßstärke + Stoß</div>
           <div><span class="kbd">←</span>/<span class="kbd">→</span> Feinzielen</div>
           <div><span class="kbd">Leer</span> Stoß auslösen</div>
@@ -1089,6 +1286,17 @@
           <button id="btnAimRightFine" title="Sehr feine Justierung rechts"><span class="long-label">sehr fein</span> ►►</button>
         </div>
         <div class="aim-status" id="aimStatus">Aim: frei</div>
+      </div>
+
+      <div class="cue-section">
+        <p class="panel-title">Queue</p>
+        <select id="cueTypeSelect" class="cue-select" title="Queue-Art für den nächsten Stoß (manuell wählen)">
+          <option value="playing">Spielqueue</option>
+          <option value="break">Break-Queue (harte Spitze)</option>
+          <option value="jump">Jump-Queue</option>
+          <option value="jump_short">Jump-Queue kurz</option>
+        </select>
+        <div class="cue-note" id="cueTypeHint">Spielqueue: Standard. Break-/Jump-Queue vor dem Stoß manuell wählen.</div>
       </div>
 
       <div class="power-section">
@@ -1137,6 +1345,7 @@
     <button id="btnRotateTable" style="display:none; border-color: #4cc9f0; color: #4cc9f0;">⟳ Tisch drehen</button>
     <button id="btnBasisRepeat" style="display:none;">↺ Wiederholen</button>
     <button id="btnTimerExtend" style="display:none;">⏱ +30s</button>
+    <button id="btnPhysics" style="display:none;">⚙ Physik</button>
     <button id="btnFullscreen" title="Vollbild ein/aus">⛶</button>
   </div>
 </div>
@@ -1207,6 +1416,82 @@
   </div>
 </div>
 
+<div id="physicsOverlay">
+  <div id="physicsOverlayCard">
+    <h2>Physik-Einstellungen</h2>
+    <div class="menu-section">
+      <h3>Tischprofil</h3>
+      <div class="options" id="ovTablePreset">
+        <div class="opt" data-val="fast">Profiturniertisch</div>
+        <div class="opt" data-val="medium">Turniertisch</div>
+        <div class="opt" data-val="slow">Kneipentisch</div>
+      </div>
+    </div>
+    <div class="physics-sliders" style="margin-top:14px;">
+      <label class="slider-row">
+        <span>Rollreibung</span>
+        <input type="range" id="ovFriction" min="1" max="25" step="1" value="8">
+        <span id="ovLblFriction">8‰</span>
+      </label>
+      <label class="slider-row">
+        <span>Rollwiderstand</span>
+        <input type="range" id="ovRollingDrag" min="5" max="40" step="1" value="18">
+        <span id="ovLblRollingDrag">0.018</span>
+      </label>
+      <label class="slider-row">
+        <span>Banden-Elastizität</span>
+        <input type="range" id="ovCushionEN" min="70" max="97" step="1" value="90">
+        <span id="ovLblCushionEN">0.90</span>
+      </label>
+      <label class="slider-row">
+        <span>Banden-Effet</span>
+        <input type="range" id="ovCushionMu" min="8" max="35" step="1" value="18">
+        <span id="ovLblCushionMu">0.18</span>
+      </label>
+      <label class="slider-row">
+        <span>Tuch-Gleitung</span>
+        <input type="range" id="ovClothSlide" min="30" max="200" step="5" value="115">
+        <span id="ovLblClothSlide">0.115</span>
+      </label>
+      <label class="slider-row">
+        <span>Banden-Reibung</span>
+        <input type="range" id="ovRailFriction" min="10" max="60" step="2" value="34">
+        <span id="ovLblRailFriction">0.34</span>
+      </label>
+      <label class="slider-row">
+        <span>Banden-Spin-Grip</span>
+        <input type="range" id="ovRailSpinGrip" min="20" max="90" step="2" value="66">
+        <span id="ovLblRailSpinGrip">0.66</span>
+      </label>
+      <label class="slider-row">
+        <span>Kugel-Elastizität</span>
+        <input type="range" id="ovBallBounce" min="80" max="100" step="1" value="96">
+        <span id="ovLblBallBounce">0.96</span>
+      </label>
+    </div>
+    <div class="ov-preset-row">
+      <input type="text" id="ovPresetName" placeholder="Preset-Name" maxlength="40">
+      <button id="btnSavePreset">💾 Speichern</button>
+      <button id="btnLoadPresetLocal">📂 Laden</button>
+    </div>
+    <div class="ov-btn-row">
+      <button id="btnClosePhysics">✕ Schließen</button>
+    </div>
+  </div>
+</div>
+
+<div id="presetSelectModal">
+  <div id="presetSelectCard">
+    <h2>Physik-Preset laden</h2>
+    <p class="ov-hint">Preset-Dateien gefunden</p>
+    <div id="presetList"></div>
+    <div class="ov-btn-row">
+      <button class="primary" id="btnLoadPreset">Laden</button>
+      <button id="btnSkipPreset">Ohne Preset starten</button>
+    </div>
+  </div>
+</div>
+
 <script>
 "use strict";
 /* PBC Erding – POOL BILLARD (8-Ball & 9-Ball)
@@ -1214,20 +1499,41 @@
 
 const W = 920, H = 500;
 const RAIL = 40;
-const POCKET_R_CORNER = 18;  // WPA: 4,5" Ecklochdurchmesser ÷ Skalierung
-const POCKET_R_SIDE   = 25;  // WPA: 5,0" Seitenloch → sqrt(R²-13²)=21
+let CFG_POCKET_R_CORNER = 20; // Ecklocheintrittsradius (px) – per Tischprofil anpassbar
+let CFG_POCKET_R_SIDE   = 25; // Seitenlocheintrittsradius (px) – per Tischprofil anpassbar
 const POCKET_R = 18;          // Fallback-Alias (nicht mehr direkt genutzt)
 const POCKET_CATCH_R = 22;
 const POCKET_NEAR = 45;
 const BALL_R = 9.5;           // WPA: 57,15 mm / 2 × 8,4 px/inch = 9,45 px
 const CORNER_CUT = 27;        // WPA: 4,5" Ecklocheröffnung = 38 px → 38/√2 ≈ 27 px
 const HALF_SIDE_PW = 21;      // WPA: 5,0" Seitentasche, halbe Öffnungsbreite = 21 px
-const FRICTION = 0.992;
-const ROLLING_DRAG = 0.018;
+// Physik-Konfiguration – per Slider im Menü anpassbar (Standardwerte = Turniertisch)
+let CFG_FRICTION       = 0.992;  // Rollreibung (multiplikativ pro Frame)
+let CFG_ROLLING_DRAG   = 0.018;  // Rollwiderstand (subtraktiv pro Frame)
+let CFG_CUSHION_EN     = 0.90;   // Banden-Normalrestitution (Baseline)
+let CFG_CUSHION_BOUNCE = 0.78;   // Banden-Bounce für Eck-Diagonalen
+let CFG_CUSHION_MU     = 0.18;   // Banden-Reibung (Effet-Übertragungskoeffizient)
+let CFG_BALL_BOUNCE    = 0.96;   // Kugel-Kugel-Restitution
+// Tuch-Physik (Sliding/Rolling-Modell)
+let CFG_CLOTH_SLIDE_ACCEL = 0.115;  // Tuch-Gleitreibung (per Slider einstellbar)
+const SIDE_SPIN_DECAY     = 0.992;
+const LONG_SPIN_DECAY     = 0.996;
+// Banden-Physik
+let CFG_RAIL_FRICTION     = 0.34;   // Banden-Tangentialreibung (per Slider einstellbar)
+let CFG_RAIL_SPIN_GRIP    = 0.66;   // Banden-Spin-Übertragung, Soft (per Slider einstellbar)
+const RAIL_SPIN_GRIP_HARD = 0.24;
+// Jump-Physik
+const JUMP_GRAVITY        = 0.34;
+const JUMP_LANDING_DAMP   = 0.34;
+// Queue-Profile
+const CUE_PROFILES = {
+  playing:    { label:"Spielqueue",      powerGain:1.00, spinTransfer:1.00, sideTransfer:1.00, squirt:1.00, verticalLoss:0.46, jumpLift:0.18, swerve:1.00, note:"Spielqueue: ausgewogene Kontrolle für Effet und Positionsspiel." },
+  break:      { label:"Break-Queue",     powerGain:1.14, spinTransfer:0.62, sideTransfer:0.55, squirt:1.18, verticalLoss:0.34, jumpLift:0.24, swerve:0.55, note:"Break-Queue: harte Spitze, hohe Kraftübertragung, weniger Effet-Grip." },
+  jump:       { label:"Jump-Queue",      powerGain:0.86, spinTransfer:0.74, sideTransfer:0.72, squirt:0.88, verticalLoss:0.18, jumpLift:0.92, swerve:0.75, note:"Jump-Queue: kürzer, leichter, für steile kurze Jump-Shots optimiert." },
+  jump_short: { label:"Jump-Queue kurz", powerGain:0.78, spinTransfer:0.66, sideTransfer:0.64, squirt:0.76, verticalLoss:0.12, jumpLift:1.18, swerve:0.62, note:"Verkürztes Jump-Queue: maximale Hebelwirkung für sehr kurze Jumps." },
+};
 const MIN_VEL = 0.10;
-const CUSHION_BOUNCE = 0.78;
-const BALL_BOUNCE = 0.96;
-const MAX_POWER = 42;
+const MAX_POWER = 58;
 
 const PLAY_X1 = RAIL, PLAY_Y1 = RAIL;
 const PLAY_X2 = W - RAIL, PLAY_Y2 = H - RAIL;
@@ -1264,7 +1570,7 @@ const game = {
   ballInHand: false, endMessage: "", open8ball: true, winner: null,
   isBreakShot: true, calledBall: null, kitchenOnly: false,
   aimAngle: 0, aimLocked: false, aimActive: false, powerPercent: 50,
-  spinX: 0, spinY: 0, cueElevation: 0,
+  spinX: 0, spinY: 0, cueElevation: 0, cueType: "playing",
   spinPending: { x:0, y:0, dirX:0, dirY:0, power:0, used:false },
   placingCue: false, aiThinking: false, aiTimer: 0,
   foulMessage: "", foulTimer: 0,
@@ -1274,6 +1580,7 @@ const game = {
   awaitingPushOutDecision: false, pushOutDoneBy: -1,
   lowestAtShotStart: null,
   drill15Potted: 0, drill15Shots: 0, drill15NextBall: 1, drill15Rotated: false,
+  drill15Score: 0, drill15FromKitchen: false,
   basisRepeatMode: false, basisCueSaveX: 0, basisCueSaveY: 0,
   shotTimerEnabled: false, shotTimerActive: false, shotTimerRemaining: 0,
   p0ExtUsed: false, p1ExtUsed: false,
@@ -1519,9 +1826,10 @@ function _onTimerExpired() {
     const b = game.balls.find(bb => bb.num === cur && bb.inPlay);
     if (b) b.inPlay = false;
     if (cur >= 15) {
+      const sc = game.drill15Score;
       const sub = game.drill15Potted === 15
-        ? "Perfekt – alle 15 Kugeln versenkt!"
-        : `${game.drill15Potted} von 15 versenkt.`;
+        ? `Perfekt – alle 15 Kugeln versenkt! Punkte: ${sc}`
+        : `${game.drill15Potted} von 15 versenkt. Punkte: ${sc}`;
       showRefAnnounce("Zeit abgelaufen!", sub);
       game.endMessage = `Drill abgeschlossen – ${sub}`;
       game.state = "ended";
@@ -1541,7 +1849,7 @@ function _onTimerExpired() {
   game.firstHit = null;
   game.cuePotted = false;
   game.anyCushionAfterFirstHit = false;
-  for (const b of game.balls) { if (b.inPlay) { b.vx = 0; b.vy = 0; } }
+  for (const b of game.balls) { if (b.inPlay && typeof b.resetMotion === "function") b.resetMotion(); else if (b.inPlay) { b.vx = 0; b.vy = 0; } }
   game.foulMessage = "Zeit abgelaufen – Foul!";
   game.foulTimer = 240;
   showRefAnnounce("Zeit abgelaufen!", "Kein Stoß – Spielerwechsel");
@@ -1554,6 +1862,9 @@ class Ball {
   constructor(num, x, y) {
     this.num = num; this.x = x; this.y = y;
     this.vx = 0; this.vy = 0; this.inPlay = true;
+    this.wx = 0; this.wy = 0; this.wz = 0;
+    this.z = 0; this.vz = 0;
+    this.motionState = "resting";
     this.r = BALL_R;
     this.color = BALL_COLORS[num] || "#fff";
     this.isCue = num === 0;
@@ -1562,7 +1873,161 @@ class Ball {
     this.isEight = num === 8;
   }
   speed() { return Math.hypot(this.vx, this.vy); }
-  isStill() { return this.speed() < MIN_VEL; }
+  spinSpeed() { return Math.hypot(this.wx, this.wy, this.wz); }
+  resetMotion() {
+    this.vx = 0; this.vy = 0;
+    this.wx = 0; this.wy = 0; this.wz = 0;
+    this.z = 0; this.vz = 0; this.motionState = "resting";
+  }
+  isStill() {
+    return this.speed() < MIN_VEL && Math.abs(this.vz) < 0.08
+        && this.z < 0.05 && this.spinSpeed() < 0.08;
+  }
+}
+
+function getCueProfile(type) {
+  return CUE_PROFILES[type] || CUE_PROFILES.playing;
+}
+
+function slipVector(b) {
+  return { x: b.vx + BALL_R * b.wy, y: b.vy - BALL_R * b.wx };
+}
+
+function rollingOmegaFor(vx, vy) {
+  return { wx: vy / BALL_R, wy: -vx / BALL_R };
+}
+
+function setRollingOmega(b) {
+  b.wx = b.vy / BALL_R; b.wy = -b.vx / BALL_R;
+}
+
+function applyClothPhysics(b) {
+  if (b.z > 0 || Math.abs(b.vz) > 0.001) {
+    b.z += b.vz; b.vz -= JUMP_GRAVITY;
+    if (b.z <= 0) {
+      b.z = 0;
+      if (Math.abs(b.vz) > 0.75) {
+        b.vz = -b.vz * JUMP_LANDING_DAMP;
+        b.vx *= 0.985; b.vy *= 0.985;
+      } else { b.vz = 0; }
+    } else {
+      b.vx *= 0.997; b.vy *= 0.997;
+      b.wx *= LONG_SPIN_DECAY; b.wy *= LONG_SPIN_DECAY; b.wz *= SIDE_SPIN_DECAY;
+      b.motionState = "airborne"; return;
+    }
+  }
+  const sp = b.speed();
+  const slip = slipVector(b);
+  const us = Math.hypot(slip.x, slip.y);
+  if (us > 0.06 && sp > 0.02) {
+    const ux = slip.x / us, uy = slip.y / us;
+    const accel = Math.min(CFG_CLOTH_SLIDE_ACCEL, us * 0.18);
+    b.vx -= ux * accel; b.vy -= uy * accel;
+    const spinAccel = accel * 2.45 / BALL_R;
+    b.wy -= ux * spinAccel; b.wx += uy * spinAccel;
+    b.motionState = "sliding";
+  } else if (sp > MIN_VEL) {
+    b.motionState = "rolling";
+    const newSp = Math.max(0, sp - CFG_ROLLING_DRAG);
+    if (newSp !== sp) { const k = newSp / sp; b.vx *= k; b.vy *= k; }
+    setRollingOmega(b);
+  }
+  b.vx *= CFG_FRICTION; b.vy *= CFG_FRICTION;
+  b.wx *= LONG_SPIN_DECAY; b.wy *= LONG_SPIN_DECAY; b.wz *= SIDE_SPIN_DECAY;
+  if (b.speed() < MIN_VEL) {
+    b.vx = 0; b.vy = 0;
+    if (Math.abs(b.wx) < 0.08) b.wx = 0;
+    if (Math.abs(b.wy) < 0.08) b.wy = 0;
+    if (Math.abs(b.wz) < 0.08) b.wz = 0;
+    if (b.spinSpeed() < 0.08) b.motionState = "resting";
+  }
+}
+
+function applyRailRebound(b, nx, ny, label = "rail") {
+  // nx/ny zeigen von der Bande in die Spielfläche. Nur Bewegung in die Bande hinein reagiert.
+  const vN = b.vx * nx + b.vy * ny;
+  if (vN >= 0) return;
+
+  const absN = Math.abs(vN);
+  const preWx = b.wx, preWy = b.wy;
+  const tx = -ny, ty = nx;
+  const vT = b.vx * tx + b.vy * ty;
+
+  // Default bei CFG_CUSHION_EN = 0.90 entspricht nahezu der alten, realistischeren Datei:
+  // eN ≈ 0.76 + geschwindigkeitsabhängiger Anteil. Der Slider verschiebt diese Basis.
+  const eN = clamp((CFG_CUSHION_EN - 0.14) + Math.min(absN, 38) * 0.0045, 0.62, 0.97);
+  const normalOut = -vN * eN;
+
+  // Tangentiale Relativbewegung am Bandenkontakt. Seiteneffet kann die Weiße entlang
+  // der Bande beschleunigen oder abbremsen. CFG_CUSHION_MU wirkt hier tatsächlich.
+  const sideRailFactor = 0.62 + CFG_CUSHION_MU * 0.55;
+  const railSurfaceT = b.wz * BALL_R * sideRailFactor;
+  const uT = vT + railSurfaceT;
+  const maxTangential = CFG_RAIL_FRICTION * (1 + eN) * absN;
+  const tangentialGrip = clamp(CFG_CUSHION_MU * 1.65, 0.08, 0.70);
+  const deltaT = clamp(-uT * tangentialGrip, -maxTangential, maxTangential);
+  const tangentOut = vT + deltaT;
+
+  b.vx = normalOut * nx + tangentOut * tx;
+  b.vy = normalOut * ny + tangentOut * ty;
+
+  // Seiteneffet wird teilweise in Bahn entlang der Bande umgewandelt.
+  b.wz += (-deltaT * 1.10 / BALL_R);
+  b.wz *= clamp(1 - CFG_CUSHION_MU * 1.20, 0.50, 0.88);
+
+  // Kernkorrektur für Nachlauf/Rücklauf bei Bankern:
+  // Der alte Vor-/Rücklaufdrall wird beim Bandenkontakt NICHT vollständig auf
+  // die neue Rollrichtung gesetzt. Weiche Kontakte nähern ihn stärker dem neuen
+  // Rollzustand an; harte Kontakte lassen mehr alten Spin stehen. Erst danach
+  // entscheidet die Tuchreibung über abruptes Bremsen, Weiterlaufen oder Zurückziehen.
+  const desired = rollingOmegaFor(b.vx, b.vy);
+  const spinGrip = clamp(CFG_RAIL_SPIN_GRIP - absN * 0.0105, RAIL_SPIN_GRIP_HARD, CFG_RAIL_SPIN_GRIP);
+  b.wx = preWx * (1 - spinGrip) + desired.wx * spinGrip;
+  b.wy = preWy * (1 - spinGrip) + desired.wy * spinGrip;
+  b.motionState = "sliding";
+
+  soundCushion();
+  game.anyCushionAfterFirstHit = true;
+  if (game.isBreakShot && !b.isCue) game.breakCushionBalls.add(b.num);
+}
+
+function launchCueBall(cue, dirX, dirY, power, spinX, spinY, elevationNorm, cueType) {
+  const profile = getCueProfile(cueType);
+  const elev = clamp(elevationNorm || 0, 0, 1);
+  const elevRad = elev * Math.PI / 2;
+  const vertical = Math.sin(elevRad);
+
+  // Wichtig für Banker: Die Weiße startet NICHT künstlich sofort im Rollzustand.
+  // Der Treffpunkt oben/unten erzeugt zunächst Schlupf bzw. Überspin/Rückspin.
+  // Erst Tuch- und Bandenreibung bauen daraus sichtbaren Nachlauf, Rücklauf,
+  // Stopp- oder Zieheffekte auf. Die spätere Version hatte hier einen Rollbasis-
+  // Anteil addiert; dadurch wurden Unterschiede zwischen mittigem, oberem und
+  // unterem Treffpunkt bei Bandenbällen weitgehend glattgebügelt.
+  const horizontalFactor = clamp(1 - profile.verticalLoss * Math.pow(vertical, 1.15), 0.18, 1.0);
+  const launchPower = power * profile.powerGain * horizontalFactor;
+  cue.vx = dirX * launchPower;
+  cue.vy = dirY * launchPower;
+
+  const spinPower = power * profile.spinTransfer * (0.92 - 0.30 * vertical);
+  const longSpin = (-spinY) * spinPower * 1.38 / BALL_R;
+  cue.wx = dirY * longSpin;
+  cue.wy = -dirX * longSpin;
+  cue.wz = spinX * power * profile.sideTransfer * (1.75 - 0.35 * vertical) / BALL_R;
+
+  if (Math.abs(spinX) > 0.03 && vertical > 0.08) {
+    const masse = Math.abs(spinX) * vertical * profile.swerve * power * 0.010;
+    cue.vx += -dirY * Math.sign(spinX) * masse;
+    cue.vy +=  dirX * Math.sign(spinX) * masse;
+  }
+
+  const jumpTrigger = vertical * (power / MAX_POWER);
+  if (jumpTrigger > 0.22) {
+    cue.z = Math.max(cue.z, 0);
+    cue.vz = Math.max(cue.vz, power * profile.jumpLift * Math.pow(vertical, 1.7) * 0.34);
+    cue.motionState = "airborne";
+  } else {
+    cue.z = 0; cue.vz = 0; cue.motionState = "sliding";
+  }
 }
 
 function setup8BallRack() {
@@ -1714,7 +2179,7 @@ function step() {
   const balls = game.balls.filter(b => b.inPlay);
   let maxSpeed = 0;
   for (const b of balls) { const s = b.speed(); if (s > maxSpeed) maxSpeed = s; }
-  const SUBSTEPS = clamp(Math.ceil(maxSpeed / 4) + 2, 4, 12);
+  const SUBSTEPS = clamp(Math.ceil(maxSpeed / 4) + 2, 4, 16);
   for (let s = 0; s < SUBSTEPS; s++) {
     for (const b of balls) { b.x += b.vx / SUBSTEPS; b.y += b.vy / SUBSTEPS; }
     for (let i = 0; i < balls.length; i++) {
@@ -1732,8 +2197,8 @@ function step() {
           c.x += nx * overlap; c.y += ny * overlap;
           const va = a.vx * nx + a.vy * ny;
           const vc = c.vx * nx + c.vy * ny;
-          const newVa = vc * BALL_BOUNCE;
-          const newVc = va * BALL_BOUNCE;
+          const newVa = vc * CFG_BALL_BOUNCE;
+          const newVc = va * CFG_BALL_BOUNCE;
           a.vx += (newVa - va) * nx;
           a.vy += (newVa - va) * ny;
           c.vx += (newVc - vc) * nx;
@@ -1757,33 +2222,26 @@ function step() {
       const cushVertActive = b.y > PLAY_Y1 + CORNER_CUT && b.y < PLAY_Y2 - CORNER_CUT;
       if (b.x - b.r < PLAY_X1 && cushVertActive && !nearPocket) {
         b.x = PLAY_X1 + b.r;
-        if (b.vx < 0) applyCushionRebound(b, "left");
+        applyRailRebound(b, 1, 0);
       }
       if (b.x + b.r > PLAY_X2 && cushVertActive && !nearPocket) {
         b.x = PLAY_X2 - b.r;
-        if (b.vx > 0) applyCushionRebound(b, "right");
+        applyRailRebound(b, -1, 0);
       }
       if (b.y - b.r < PLAY_Y1 && cushHorizActive && !inSidePocketMouth && !nearCornerPocket) {
         b.y = PLAY_Y1 + b.r;
-        if (b.vy < 0) applyCushionRebound(b, "top");
+        applyRailRebound(b, 0, 1);
       }
       if (b.y + b.r > PLAY_Y2 && cushHorizActive && !inSidePocketMouth && !nearCornerPocket) {
         b.y = PLAY_Y2 - b.r;
-        if (b.vy > 0) applyCushionRebound(b, "bottom");
+        applyRailRebound(b, 0, -1);
       }
       if (!nearPocket) {
         const refl = (nxIn, nyIn, signedDist) => {
           if (signedDist >= b.r) return;
           const overlap = b.r - signedDist;
           b.x += nxIn * overlap; b.y += nyIn * overlap;
-          const vN = b.vx * nxIn + b.vy * nyIn;
-          if (vN < 0) {
-            const f = 1 + CUSHION_BOUNCE;
-            b.vx -= f * vN * nxIn; b.vy -= f * vN * nyIn;
-            if (b.isCue) applySpinOnCushion(b, "top");
-            soundCushion(); game.anyCushionAfterFirstHit = true;
-            if (game.isBreakShot && !b.isCue) game.breakCushionBalls.add(b.num);
-          }
+          applyRailRebound(b, nxIn, nyIn);
         };
         if (b.x < PLAY_X1 + CORNER_CUT && b.y < PLAY_Y1 + CORNER_CUT) {
           const d = ((b.x - PLAY_X1) + (b.y - PLAY_Y1) - CORNER_CUT) / Math.SQRT2;
@@ -1812,38 +2270,14 @@ function step() {
   }
   for (const b of balls) {
     if (!b.inPlay) continue;
-    b.vx *= FRICTION; b.vy *= FRICTION;
-    const sp = Math.hypot(b.vx, b.vy);
-    if (sp > 0) {
-      const newSp = Math.max(0, sp - ROLLING_DRAG);
-      const k = newSp / sp;
-      b.vx *= k; b.vy *= k;
-    }
-    if (Math.hypot(b.vx, b.vy) < MIN_VEL) { b.vx = 0; b.vy = 0; }
-  }
-  // Swerve-Kraft auf Weißkugel (Elevation aus spinPending – nicht aus game.cueElevation,
-  // da game.cueElevation nach startShot() bereits zurückgesetzt ist)
-  {
-    const sp = game.spinPending;
-    const cue = game.cueBall;
-    if (cue.inPlay && !sp.used && Math.abs(sp.x) > 0.02 && sp.elevation > 0.05) {
-      const speed = Math.hypot(cue.vx, cue.vy);
-      if (speed > MIN_VEL) {
-        const nx = cue.vx / speed, ny = cue.vy / speed;
-        const elevFactor = Math.sin(sp.elevation * Math.PI / 4); // 0°→0, 45°→0.707
-        // Geschwindigkeitsabhängigkeit: Swerve wirkt stärker bei langsamem Ball
-        const speedRatio = Math.min(sp.power / Math.max(speed, 0.1), 6);
-        const swerveAcc  = Math.abs(sp.x) * elevFactor * 0.012 * speedRatio;
-        cue.vx += -ny * Math.sign(sp.x) * swerveAcc;
-        cue.vy +=  nx * Math.sign(sp.x) * swerveAcc;
-      }
-    }
+    applyClothPhysics(b);
   }
   for (const b of balls) {
     if (!b.inPlay) continue;
     for (let pi = 0; pi < POCKETS.length; pi++) {
       const p = POCKETS[pi];
-      if (Math.hypot(p.x - b.x, p.y - b.y) < POCKET_CATCH_R) {
+      const catchR = (p.type === "corner" ? CFG_POCKET_R_CORNER : CFG_POCKET_R_SIDE) + 2;
+      if (Math.hypot(p.x - b.x, p.y - b.y) < catchR) {
         b.inPlay = false; b.vx = 0; b.vy = 0;
         game.ballsPottedThisShot.push(b.num);
         if (b.isCue) game.cuePotted = true;
@@ -1866,49 +2300,38 @@ function applySpinOnContact(cue, nx, ny) {
   const dx = sp.dirX, dy = sp.dirY;
   const topMag = -sp.y;
   const sideMag = sp.x;
-  cue.vx += dx * topMag * power * 0.30;
-  cue.vy += dy * topMag * power * 0.30;
-  cue.vx += -dy * sideMag * power * 0.18;
-  cue.vy +=  dx * sideMag * power * 0.18;
+
+  // Nach Objektballkontakt muss Restdrall der Weißen sichtbar bleiben.
+  // Bewusst kleiner als beim reinen Bandenball, aber nicht nur als einmaliger
+  // Geschwindigkeitskick, sondern auch als Rotationsanteil.
+  cue.vx += dx * topMag * power * 0.18;
+  cue.vy += dy * topMag * power * 0.18;
+  cue.vx += -dy * sideMag * power * 0.10;
+  cue.vy +=  dx * sideMag * power * 0.10;
+  cue.wx += dy * topMag * power * 0.30 / BALL_R;
+  cue.wy += -dx * topMag * power * 0.30 / BALL_R;
+  cue.wz += sideMag * power * 0.28 / BALL_R;
+  cue.motionState = "sliding";
   sp.used = true;
 }
 
-function applyCushionRebound(b, side) {
-  // Bei mittlerer Staerke (|vN|~15): Einfalls- = Ausfallswinkel (e_n = e_t = 0.90).
-  // Weicher Stoss -> e_n sinkt -> Ausfallwinkel waechst (flacherer Abprall).
-  // Harter Stoss  -> e_n steigt -> Ausfallwinkel sinkt (spitzerer Abprall).
-  const normalIsX = (side === "left" || side === "right");
-  const vN = normalIsX ? b.vx : b.vy;
-  const absN = Math.abs(vN);
-  const e_n = Math.min(0.97, Math.max(0.62, 0.90 + (absN - 15) * 0.015));
-  const e_t = Math.max(0.72, 0.90 - Math.max(0, (absN - 15) * 0.013));
-  if (normalIsX) { b.vx = -vN * e_n; b.vy *= e_t; }
-  else           { b.vy = -vN * e_n; b.vx *= e_t; }
-  if (b.isCue) applySpinOnCushion(b, side);
-  soundCushion();
-  game.anyCushionAfterFirstHit = true;
-  if (game.isBreakShot && !b.isCue) game.breakCushionBalls.add(b.num);
+
+function isRackBreakVariant() {
+  return game.variant === "8ball" || game.variant === "9ball";
 }
 
-function applySpinOnCushion(cue, side) {
-  const sp = game.spinPending;
-  if (Math.abs(sp.x) < 0.05) return;
-  const eng = sp.x;
-  if (side === "left" || side === "right") {
-    const absN = Math.abs(cue.vx);
-    // Leichter Anstoß → Rollkontakt → stärkere Spinübertragung (bis 2× bei sehr weichem Stoß)
-    const spinBoost = absN < 15 ? (1 + (15 - absN) / 15) : 1.0;
-    cue.vy += (side === "right" ? 1 : -1) * eng * absN * 0.18 * spinBoost;
-  } else {
-    const absN = Math.abs(cue.vy);
-    const spinBoost = absN < 15 ? (1 + (15 - absN) / 15) : 1.0;
-    cue.vx += (side === "bottom" ? -1 : 1) * eng * absN * 0.18 * spinBoost;
-  }
-  sp.x *= 0.5;
+function syncCueSelectorToShotState() {
+  // Die Queue-Auswahl ist bewusst manuell: Standard ist das Spielqueue.
+  // Auch beim Anstoß wird nicht automatisch auf Break-Queue umgestellt;
+  // der Spieler kann vor dem Stoß bewusst wechseln und muss danach selbst zurückwechseln.
+  if (!game.cueType) game.cueType = "playing";
+  updateCueTypeHint();
 }
+
 
 function startShot() {
   if (game.state !== "aiming" || game.shotInProgress) return;
+  syncCueSelectorToShotState();
   stopShotTimer();
   game.shotNumber++;
   game.placingCue = false; game.ballInHand = false;
@@ -1923,10 +2346,20 @@ function startShot() {
   }
   // 8-Ball: Tasche für die 8 muss vor dem Stoß angesagt werden
   if (needs8PocketCall()) { game.selecting8Pocket = true; updateUI(); return; }
-  if (game.variant === "basis") { game.basisCueSaveX = game.cueBall.x; game.basisCueSaveY = game.cueBall.y; }
+  if (game.variant === "basis") {
+    game.basisCueSaveX         = game.cueBall.x;
+    game.basisCueSaveY         = game.cueBall.y;
+    game.basisSaveAimAngle     = game.aimAngle;
+    game.basisSavePowerPercent = game.powerPercent;
+    game.basisSaveSpinX        = game.spinX;
+    game.basisSaveSpinY        = game.spinY;
+    game.basisSaveCueElevation = game.cueElevation;
+    game.basisSaveCueType      = game.cueType || "playing";
+  }
   const power = (game.powerPercent / 100) * MAX_POWER;
-  // Deflection (Squirt) – Predator K2 Revo: K=0.044 rad, P=0.64 (Fit aus Messtabelle)
-  const K_DEF = 0.044, P_DEF = 0.64;
+  const cueProfile = getCueProfile(game.cueType);
+  // Deflection (Squirt) – Queue-Profil-abhängig: harte Spitze = mehr Squirt
+  const K_DEF = 0.044 * cueProfile.squirt, P_DEF = 0.64;
   let shotAngle = game.aimAngle;
   if (Math.abs(game.spinX) > 0.02) {
     const pf = game.powerPercent / 100;
@@ -1940,9 +2373,9 @@ function startShot() {
   game.anyCushionAfterFirstHit = false;
   game.lowestAtShotStart = (game.variant === "9ball") ? lowestBallOnTable() : null;
   game.foulMessage = ""; game.foulTimer = 0;
-  game.spinPending = { x: game.spinX, y: game.spinY, dirX, dirY, power, elevation: game.cueElevation, used: false };
+  game.spinPending = { x: game.spinX, y: game.spinY, dirX, dirY, power, elevation: game.cueElevation, cueType: game.cueType, used: false };
   const cue = game.cueBall;
-  cue.vx = dirX * power; cue.vy = dirY * power;
+  launchCueBall(cue, dirX, dirY, power, game.spinX, game.spinY, game.cueElevation, game.cueType);
   game.shotInProgress = true; game.state = "moving";
   resetCanvasZoom();
   soundCueHit(power);
@@ -1967,7 +2400,11 @@ function onShotComplete() {
   }
   if (game.variant === "8ball") handle8BallShot();
   else if (game.variant === "9ball") handle9BallShot();
-  else if (game.variant === "drill15") handleDrill15Shot();
+  else if (game.variant === "drill15") {
+    const headX = PLAY_X1 + PLAY_W * 0.25;
+    game.drill15FromKitchen = game.cueBall.x <= headX;
+    handleDrill15Shot();
+  }
   else if (game.variant === "basis") handleBasisShot();
   else handleSoloShot();
   if (game.state === "ended") { if (game.mode === "online") sendOnlineSync(); showEndScreen(); return; }
@@ -2254,7 +2691,7 @@ function handle9BallShot() {
     // WPA 9-Ball: 3 Fouls in Folge = Spielverlust
     if (me.consecutiveFouls >= 3) {
       showRefAnnounce("3-Foul-Regel", `${me.name}: 3 Fouls in Folge – Spielverlust!`);
-      game.endMessage = `${other.name} gewinnt – ${me.name} hat 3 Fouls in Folge!`;
+      game.endMessage = `${other.name} gewinnt – ${me.name} begeht 3 Fouls in Folge (3-Foul-Regel)!`;
       game.state = "ended"; game.winner = 1 - game.currentPlayer;
       return;
     }
@@ -2313,19 +2750,23 @@ function handleSoloShot() {
 function handleDrill15Shot() {
   const currentBall = game.drill15NextBall;
   const pottedSpot = game.ballsPottedThisShot.includes(currentBall);
+  const cuePotted = game.ballsPottedThisShot.includes(0);
 
-  if (pottedSpot) {
+  if (cuePotted) {
+    game.drill15Score--;
+  } else if (pottedSpot) {
     game.drill15Potted++;
+    game.drill15Score += game.drill15FromKitchen ? 2 : 1;
   } else {
-    // 1 Stoß pro Kugel: nicht versenkt → entfernen
     const b = game.balls.find(bb => bb.num === currentBall && bb.inPlay);
     if (b) b.inPlay = false;
   }
 
   if (currentBall >= 15) {
+    const sc = game.drill15Score;
     const sub = game.drill15Potted === 15
-      ? "Perfekt – alle 15 Kugeln versenkt!"
-      : `${game.drill15Potted} von 15 versenkt.`;
+      ? `Perfekt – alle 15 Kugeln versenkt! Punkte: ${sc}`
+      : `${game.drill15Potted} von 15 versenkt. Punkte: ${sc}`;
     showRefAnnounce("Gewonnen", sub);
     game.endMessage = `Drill abgeschlossen – ${sub}`;
     game.state = "ended";
@@ -2352,8 +2793,20 @@ function handleBasisShot() {
     // Weiße an gespeicherte Position zurücksetzen – kein Ball-in-Hand nötig
     const cue = game.cueBall;
     cue.x = game.basisCueSaveX; cue.y = game.basisCueSaveY;
-    cue.vx = 0; cue.vy = 0; cue.inPlay = true;
-    game.cuePotted = false;
+    if (typeof cue.resetMotion === "function") cue.resetMotion();
+    else { cue.vx = 0; cue.vy = 0; }
+    cue.inPlay = true; game.cuePotted = false;
+    // Alle gespeicherten Parameter wiederherstellen
+    game.aimAngle     = game.basisSaveAimAngle     ?? game.aimAngle;
+    game.powerPercent = game.basisSavePowerPercent  ?? game.powerPercent;
+    game.spinX        = game.basisSaveSpinX         ?? 0;
+    game.spinY        = game.basisSaveSpinY         ?? 0;
+    game.cueElevation = game.basisSaveCueElevation  ?? 0;
+    game.cueType      = game.basisSaveCueType       ?? "playing";
+    // UI synchronisieren
+    drawSpinCanvas(); updateSpinLabel();
+    drawElevCanvas(); updateElevLabel();
+    if (typeof updateCueTypeHint === "function") updateCueTypeHint();
   } else {
     if (!game.cuePotted) {
       // Ball liegen lassen, aber respawnCueBall() für sauberen State-Reset aufrufen (mobile-kompatibel)
@@ -2426,8 +2879,8 @@ function aiApplySimCushionRebound(b, side) {
   const normalIsX = (side === "left" || side === "right");
   const vN = normalIsX ? b.vx : b.vy;
   const absN = Math.abs(vN);
-  const e_n = Math.min(0.97, Math.max(0.62, 0.90 + (absN - 15) * 0.015));
-  const e_t = Math.max(0.72, 0.90 - Math.max(0, (absN - 15) * 0.013));
+  const e_n = Math.min(0.97, Math.max(0.62, CFG_CUSHION_EN + (absN - 15) * 0.015));
+  const e_t = Math.max(0.72, CFG_CUSHION_EN - Math.max(0, (absN - 15) * 0.013));
   if (normalIsX) { b.vx = -vN * e_n; b.vy *= e_t; }
   else { b.vy = -vN * e_n; b.vx *= e_t; }
 }
@@ -2455,7 +2908,7 @@ function aiSimulateShotResult(shot) {
     for (const b of active) maxSpeed = Math.max(maxSpeed, Math.hypot(b.vx, b.vy));
     if (maxSpeed < MIN_VEL && frame > 0) break;
 
-    const SUBSTEPS = clamp(Math.ceil(maxSpeed / 4) + 2, 4, 12);
+    const SUBSTEPS = clamp(Math.ceil(maxSpeed / 4) + 2, 4, 16);
     for (let s = 0; s < SUBSTEPS; s++) {
       for (const b of active) {
         if (!b.inPlay) continue;
@@ -2479,8 +2932,8 @@ function aiSimulateShotResult(shot) {
 
             const va = a.vx * nx + a.vy * ny;
             const vc = c.vx * nx + c.vy * ny;
-            const newVa = vc * BALL_BOUNCE;
-            const newVc = va * BALL_BOUNCE;
+            const newVa = vc * CFG_BALL_BOUNCE;
+            const newVc = va * CFG_BALL_BOUNCE;
             a.vx += (newVa - va) * nx;
             a.vy += (newVa - va) * ny;
             c.vx += (newVc - vc) * nx;
@@ -2526,7 +2979,7 @@ function aiSimulateShotResult(shot) {
             b.x += nxIn * overlap; b.y += nyIn * overlap;
             const vN = b.vx * nxIn + b.vy * nyIn;
             if (vN < 0) {
-              const f = 1 + CUSHION_BOUNCE;
+              const f = 1 + CFG_CUSHION_BOUNCE;
               b.vx -= f * vN * nxIn; b.vy -= f * vN * nyIn;
               result.anyCushionAfterFirstHit = true;
             }
@@ -2558,10 +3011,10 @@ function aiSimulateShotResult(shot) {
 
     for (const b of active) {
       if (!b.inPlay) continue;
-      b.vx *= FRICTION; b.vy *= FRICTION;
+      b.vx *= CFG_FRICTION; b.vy *= CFG_FRICTION;
       const sp = Math.hypot(b.vx, b.vy);
       if (sp > 0) {
-        const k = Math.max(0, sp - ROLLING_DRAG) / sp;
+        const k = Math.max(0, sp - CFG_ROLLING_DRAG) / sp;
         b.vx *= k; b.vy *= k;
       }
       if (Math.hypot(b.vx, b.vy) < MIN_VEL) { b.vx = 0; b.vy = 0; }
@@ -3087,7 +3540,7 @@ function drawTable() {
   ctx.beginPath(); ctx.moveTo(headX, PLAY_Y1); ctx.lineTo(headX, PLAY_Y2); ctx.stroke();
   for (let pi = 0; pi < POCKETS.length; pi++) {
     const p = POCKETS[pi];
-    const pr = p.type === "side" ? POCKET_R_CORNER : POCKET_R_CORNER;
+    const pr = p.type === "corner" ? CFG_POCKET_R_CORNER : CFG_POCKET_R_SIDE;
     const isCalled = game.called8Pocket === pi;
     const isSelecting = game.selecting8Pocket;
     if (p.type === "side") {
@@ -3213,7 +3666,7 @@ function drawAimingHelp() {
   if (game.mode === "ai" && game.currentPlayer === 1) return;
   if (game.mode === "online" && game.currentPlayer !== online.myPlayer && online.role !== "spectator") return;
   // Deflection-Vorschau: Ziellinie in tatsächlicher Flugrichtung (inkl. Squirt)
-  const K_DEF_P = 0.044, P_DEF_P = 0.64;
+  const K_DEF_P = 0.044 * getCueProfile(game.cueType).squirt, P_DEF_P = 0.64;
   let aimAngle = game.aimAngle;
   if (Math.abs(game.spinX) > 0.02) {
     const pf = game.powerPercent / 100;
@@ -3274,8 +3727,8 @@ function drawAimingHelp() {
   drawCueStick(cue.x, cue.y, game.aimAngle, game.powerPercent);
   // Swerve-Pfad-Vorschau: gebogene goldene Linie wenn Élévation + Seitenschnitt aktiv
   if (Math.abs(game.spinX) > 0.02 && game.cueElevation > 0.05) {
-    const swPath = predictSwervePath(cue.x, cue.y, aimAngle, game.spinX,
-      (game.powerPercent / 100) * MAX_POWER, game.cueElevation);
+    const swPath = predictSwervePath(cue.x, cue.y, aimAngle, game.spinX, game.spinY,
+      (game.powerPercent / 100) * MAX_POWER, game.cueElevation, game.cueType);
     if (swPath.length > 1) {
       ctx.save();
       ctx.setLineDash([6, 4]); ctx.strokeStyle = "rgba(255,160,50,0.85)"; ctx.lineWidth = 2;
@@ -3289,22 +3742,54 @@ function drawAimingHelp() {
   ctx.restore();
 }
 
-function predictSwervePath(cx, cy, angle, spinX, power, elev) {
-  const path = [{x: cx, y: cy}];
-  let vx = Math.cos(angle) * power, vy = Math.sin(angle) * power;
+function predictSwervePath(cx, cy, angle, spinX, spinY, power, elev, cueType) {
+  const profile = getCueProfile(cueType);
+  const elevRad = clamp(elev || 0, 0, 1) * Math.PI / 2;
+  const vertical = Math.sin(elevRad);
+  const horizontalFactor = clamp(1 - profile.verticalLoss * Math.pow(vertical, 1.15), 0.18, 1.0);
+  const launchPower = power * profile.powerGain * horizontalFactor;
+  const dirX = Math.cos(angle), dirY = Math.sin(angle);
+
+  // Identisch zur korrigierten launchCueBall()-Initialisierung:
+  // kein künstlicher Rollbasisanteil, damit Nachlauf/Rücklauf sichtbar bleibt.
+  const spinPower = power * profile.spinTransfer * (0.92 - 0.30 * vertical);
+  const longSpin  = (-(spinY || 0)) * spinPower * 1.38 / BALL_R;
+  let wx = dirY * longSpin, wy = -dirX * longSpin;
+  let wz = spinX * power * profile.sideTransfer * (1.75 - 0.35 * vertical) / BALL_R;
+  let vx = dirX * launchPower, vy = dirY * launchPower;
+
+  if (Math.abs(spinX) > 0.03 && vertical > 0.08) {
+    const masse = Math.abs(spinX) * vertical * profile.swerve * power * 0.010;
+    vx += -dirY * Math.sign(spinX) * masse;
+    vy +=  dirX * Math.sign(spinX) * masse;
+  }
+
   let x = cx, y = cy;
-  const ef = Math.sin(elev * Math.PI / 4);
+  const path = [{x, y}];
+
   for (let i = 0; i < 300; i++) {
-    vx *= FRICTION; vy *= FRICTION;
     const sp = Math.hypot(vx, vy);
     if (sp < MIN_VEL) break;
-    const ns = Math.max(0, sp - ROLLING_DRAG) / sp;
-    vx *= ns; vy *= ns;
-    const nx = vx / sp, ny = vy / sp;
-    const speedRatio = Math.min(power / Math.max(sp, 0.1), 6);
-    const swerveAcc = Math.abs(spinX) * ef * 0.012 * speedRatio;
-    vx += -ny * Math.sign(spinX) * swerveAcc;
-    vy +=  nx * Math.sign(spinX) * swerveAcc;
+
+    const slipX = vx + BALL_R * wy, slipY = vy - BALL_R * wx;
+    const us = Math.hypot(slipX, slipY);
+
+    if (us > 0.06 && sp > 0.02) {
+      const ux = slipX / us, uy = slipY / us;
+      const accel = Math.min(CFG_CLOTH_SLIDE_ACCEL, us * 0.18);
+      vx -= ux * accel; vy -= uy * accel;
+      const spinAccel = accel * 2.45 / BALL_R;
+      wy -= ux * spinAccel; wx += uy * spinAccel;
+    } else {
+      const newSp = Math.max(0, sp - CFG_ROLLING_DRAG);
+      const k = sp > 0 ? newSp / sp : 0;
+      vx *= k; vy *= k;
+      wx = vy / BALL_R; wy = -vx / BALL_R;
+    }
+
+    vx *= CFG_FRICTION; vy *= CFG_FRICTION;
+    wx *= LONG_SPIN_DECAY; wy *= LONG_SPIN_DECAY; wz *= SIDE_SPIN_DECAY;
+
     x += vx; y += vy;
     path.push({x, y});
     if (x < PLAY_X1 || x > PLAY_X2 || y < PLAY_Y1 || y > PLAY_Y2) break;
@@ -3398,8 +3883,8 @@ function drawElevCanvas() {
   const ballX = cw * 0.65, ballY = floorY - 12;
   ectx.beginPath(); ectx.arc(ballX, ballY, 12, 0, Math.PI * 2);
   ectx.fillStyle = "#fff"; ectx.fill();
-  // Queue: von links schräg auf Ball zeigend
-  const elevDeg = game.cueElevation * 45;
+  // Queue: von links schräg auf Ball zeigend (0°–90°)
+  const elevDeg = game.cueElevation * 90;
   const elevRad = elevDeg * Math.PI / 180;
   const qLen = 70;
   const qTipX = ballX - Math.cos(elevRad) * 14;
@@ -3417,13 +3902,14 @@ function drawElevCanvas() {
   ectx.fillText(Math.round(elevDeg) + "°", cw * 0.3, floorY + 20);
   // Label
   ectx.font = "11px Inter, sans-serif"; ectx.fillStyle = "rgba(255,255,255,0.4)";
-  ectx.fillText(elevDeg === 0 ? "flach" : elevDeg <= 15 ? "leicht" : elevDeg <= 30 ? "mittel" : "steil", cw * 0.3, floorY + 33);
+  const elevLabel = elevDeg === 0 ? "flach" : elevDeg <= 20 ? "leicht" : elevDeg <= 50 ? "mittel" : elevDeg <= 75 ? "steil" : "massé";
+  ectx.fillText(elevLabel, cw * 0.3, floorY + 33);
 }
 
 function updateElevLabel() {
-  const deg = Math.round(game.cueElevation * 45);
+  const deg = Math.round(game.cueElevation * 90);
   document.getElementById("elevLabel").textContent =
-    deg === 0 ? "0° (flach)" : `${deg}° Queue-Winkel`;
+    deg === 0 ? "0° (flach)" : deg >= 75 ? `${deg}° (massé)` : `${deg}° Queue-Winkel`;
 }
 
 let _elevDragStartY = null, _elevDragStartVal = 0;
@@ -3475,8 +3961,24 @@ function updateSpinLabel() {
   ui.spinLabel.textContent = parts.length ? parts.join(" + ") : "leichter Effet";
 }
 
-function loop() {
-  if (game.shotInProgress) step();
+let _lastFrameTs = 0;
+let _physicsCarry = 0;
+function loop(ts = 0) {
+  if (!_lastFrameTs) _lastFrameTs = ts || performance.now();
+  const elapsed = clamp(((ts || performance.now()) - _lastFrameTs) / 16.6667, 0.25, 3.0);
+  _lastFrameTs = ts || performance.now();
+
+  // Bei kurzen Browser-Hängern wird die Physik in kleinen Portionen nachgeführt.
+  // Dadurch entstehen weniger sichtbare Sprünge, ohne die bewährten alten
+  // Banden-/Effetwerte vollständig umzuskalieren.
+  _physicsCarry += elapsed;
+  const updates = Math.max(1, Math.min(3, Math.floor(_physicsCarry)));
+  for (let k = 0; k < updates; k++) {
+    if (game.shotInProgress) step();
+    _physicsCarry -= 1;
+  }
+  if (_physicsCarry > 2) _physicsCarry = 1;
+
   if (game.mode === "online" && !game.shotInProgress) tryDequeueOnlineShot();
   if (game.aiThinking) {
     game.aiTimer--;
@@ -3899,8 +4401,21 @@ ui.btnPushOutAccept.addEventListener("click", () => {
 ui.btnPushOutReject.addEventListener("click", () => {
   game.awaitingPushOutDecision = false;
   // Zurückgeben: Spieler der den Push-Out gemacht hat, muss von dort spielen
-  game.currentPlayer = game.pushOutDoneBy;
+  const returnedPlayer = game.pushOutDoneBy;
+  if (returnedPlayer === 0 || returnedPlayer === 1) {
+    game.currentPlayer = returnedPlayer;
+  }
   game.pushOutDoneBy = -1;
+
+  // Wichtig im KI-Modus: Wenn die KI den Push-Out gespielt hat und der
+  // menschliche Spieler zurückgibt, ist wieder die KI am Zug. Ohne diesen
+  // Startimpuls bleibt die App zwar im Status „KI denkt nach…“, plant aber
+  // keinen Folgestoß.
+  if (game.mode === "ai" && game.currentPlayer === 1 && game.state === "aiming" && !game.shotInProgress) {
+    game.aiThinking = true;
+    game.aiTimer = 45;
+  }
+
   updateUI();
 });
 
@@ -3990,8 +4505,10 @@ function updateSetsVisibility() {
 })();
 bindOptions(ui.optVariant, v => {
   game.variant = v;
+  const isPool = !(v === "drill15" || v === "basis");
   const sec = document.getElementById("modeSection");
-  if (sec) sec.style.display = (v === "drill15" || v === "basis") ? "none" : "";
+  if (sec) sec.style.display = isPool ? "" : "none";
+  if (ui.aiSection) ui.aiSection.style.display = (isPool && game.mode === "ai") ? "" : "none";
   const rack9sec = document.getElementById("rack9Section");
   if (rack9sec) rack9sec.style.display = (v === "9ball") ? "" : "none";
   // Mini-Kugelanzahl-Abschnitt
@@ -4018,6 +4535,70 @@ bindOptions(document.getElementById("optBreak"), v => { game.breakRule = v; });
 bindOptions(ui.optDiff, v => game.difficulty = v);
 bindOptions(ui.optSound, v => game.soundOn = (v === "on"));
 bindOptions(document.getElementById("optShotTimer"), v => { game.shotTimerEnabled = (v === "on"); });
+
+// ── Tischprofil-Presets ──────────────────────────────────────────────────────
+const TABLE_PRESETS = {
+  fast:   { friction:5,  drag:10, en:93, mu:12, pocketCorner:18, pocketSide:22, slide:90,  railFric:28, railGrip:58, ballBounce:97 }, // Profiturniertisch (friction=5‰ → CFG=0.995)
+  medium: { friction:8,  drag:18, en:90, mu:18, pocketCorner:20, pocketSide:25, slide:115, railFric:34, railGrip:66, ballBounce:96 }, // Turniertisch (friction=8‰ → CFG=0.992)
+  slow:   { friction:15, drag:30, en:80, mu:22, pocketCorner:23, pocketSide:29, slide:150, railFric:42, railGrip:74, ballBounce:94 }, // Kneipentisch (friction=15‰ → CFG=0.985)
+};
+function applyTablePreset(key) {
+  const p = TABLE_PRESETS[key];
+  if (!p) return;
+  document.getElementById("slFriction").value    = p.friction;
+  document.getElementById("slRollingDrag").value = p.drag;
+  document.getElementById("slCushionEN").value   = p.en;
+  document.getElementById("slCushionMu").value   = p.mu;
+  document.getElementById("slClothSlide").value  = p.slide;
+  document.getElementById("slRailFriction").value= p.railFric;
+  document.getElementById("slRailSpinGrip").value= p.railGrip;
+  document.getElementById("slBallBounce").value  = p.ballBounce;
+  CFG_POCKET_R_CORNER = p.pocketCorner;
+  CFG_POCKET_R_SIDE   = p.pocketSide;
+  updatePhysicsSliderLabels();
+}
+function updatePhysicsSliderLabels() {
+  const fr  = parseInt(document.getElementById("slFriction").value);
+  const dr  = parseInt(document.getElementById("slRollingDrag").value);
+  const en  = parseInt(document.getElementById("slCushionEN").value);
+  const mu  = parseInt(document.getElementById("slCushionMu").value);
+  const sl  = parseInt(document.getElementById("slClothSlide").value);
+  const rf  = parseInt(document.getElementById("slRailFriction").value);
+  const rg  = parseInt(document.getElementById("slRailSpinGrip").value);
+  const bb  = parseInt(document.getElementById("slBallBounce").value);
+  CFG_FRICTION            = (1000 - fr) / 1000;  // fr=8 → 0.992; links=weniger Reibung=schneller
+  CFG_ROLLING_DRAG        = dr / 1000;
+  CFG_CUSHION_EN          = en / 100;
+  CFG_CUSHION_BOUNCE      = Math.max(0.55, (en / 100) - 0.12);
+  CFG_CUSHION_MU          = mu / 100;
+  CFG_CLOTH_SLIDE_ACCEL   = sl / 1000;
+  CFG_RAIL_FRICTION       = rf / 100;
+  CFG_RAIL_SPIN_GRIP      = rg / 100;
+  CFG_BALL_BOUNCE         = bb / 100;
+  document.getElementById("lblFriction").textContent     = fr + "‰";
+  document.getElementById("lblRollingDrag").textContent  = (dr / 1000).toFixed(3);
+  document.getElementById("lblCushionEN").textContent    = (en / 100).toFixed(2);
+  document.getElementById("lblCushionMu").textContent    = (mu / 100).toFixed(2);
+  document.getElementById("lblClothSlide").textContent   = (sl / 1000).toFixed(3);
+  document.getElementById("lblRailFriction").textContent = (rf / 100).toFixed(2);
+  document.getElementById("lblRailSpinGrip").textContent = (rg / 100).toFixed(2);
+  document.getElementById("lblBallBounce").textContent   = (bb / 100).toFixed(2);
+}
+bindOptions(document.getElementById("optTablePreset"), v => applyTablePreset(v));
+["slFriction","slRollingDrag","slCushionEN","slCushionMu","slClothSlide","slRailFriction","slRailSpinGrip","slBallBounce"].forEach(id => {
+  document.getElementById(id).addEventListener("input", updatePhysicsSliderLabels);
+});
+function updateCueTypeHint() {
+  const sel = document.getElementById("cueTypeSelect");
+  const hint = document.getElementById("cueTypeHint");
+  if (sel) sel.value = game.cueType || "playing";
+  if (hint) hint.textContent = getCueProfile(game.cueType).note;
+}
+document.getElementById("cueTypeSelect")?.addEventListener("change", e => {
+  game.cueType = e.target.value || "playing";
+  updateCueTypeHint();
+  sendPreview();
+});
 
 document.getElementById("btnTimerExtend").addEventListener("click", () => {
   if (!game.shotTimerActive) return;
@@ -4211,6 +4792,21 @@ function showMenu() {
 function hideMenu() { ui.menu.classList.add("hidden"); }
 function showEndScreen() {
   const w = game.winner;
+  const mEl    = document.getElementById("endMatchScore");
+  const scoreEl = document.getElementById("endScore");
+
+  // Drill15: keine Sätze/Score-Anzeige, nur Punkte-Ergebnis
+  if (game.variant === "drill15" || game.variant === "basis") {
+    ui.endTitle.textContent   = "Drill abgeschlossen";
+    ui.endText.textContent    = game.endMessage;
+    mEl.style.display         = "none";
+    scoreEl.style.display     = "none";
+    ui.endRestart.textContent = "Nochmal";
+    _endRestartMode           = "newMatch";
+    ui.endScreen.classList.add("show");
+    return;
+  }
+
   if (!_scoreUpdated && w !== null && w !== undefined) {
     game.matchScore[w]++;
     _scoreUpdated = true;
@@ -4220,8 +4816,6 @@ function showEndScreen() {
   }
   const matchWon = w !== null && w !== undefined && game.matchScore[w] >= game.setsTarget;
   const winName  = w !== null ? (game.players[w]?.name || `Spieler ${w + 1}`) : "?";
-  const mEl      = document.getElementById("endMatchScore");
-  const scoreEl  = document.getElementById("endScore");
 
   if (game.setsTarget > 1) {
     if (matchWon) {
@@ -4398,7 +4992,7 @@ function updateUI() {
   } else if (game.variant === "drill15" && game.placingCue) {
     ui.statusLine.textContent = "Ball-in-Hand – Weiße frei auf dem Tisch platzieren";
   } else if (game.variant === "drill15") {
-    ui.statusLine.textContent = `Kugel ${game.drill15NextBall}/15 · Versenkt: ${game.drill15Potted}`;
+    ui.statusLine.textContent = `Kugel ${game.drill15NextBall}/15 · Versenkt: ${game.drill15Potted} · Punkte: ${game.drill15Score}`;
   } else if (game.mode === "solo") {
     ui.statusLine.textContent = "Übungsmodus – versenke so viele Kugeln wie möglich";
   } else if (game.variant === "8ball" && game.isBreakShot) {
@@ -4438,6 +5032,7 @@ function updateUI() {
   ui.btnRotateTable.style.display =
     ((game.variant === "drill15" || game.variant === "basis") && !isAutoPortrait()) ? "" : "none";
   ui.btnBasisRepeat.style.display = (game.variant === "basis") ? "" : "none";
+  document.getElementById("btnPhysics").style.display = (game.variant === "basis") ? "" : "none";
   _updateTimerDisplay();
   _updateExtendBtn();
   maybeShowCallModal();
@@ -4488,7 +5083,7 @@ function setBadge(el, player) {
 
 function playerInfoText(player) {
   if (game.variant === "drill15") {
-    if (player === game.players[0]) return `Versenkt: ${game.drill15Potted} · Verfehlt: ${game.drill15NextBall - 1 - game.drill15Potted}`;
+    if (player === game.players[0]) return `Versenkt: ${game.drill15Potted} · Verfehlt: ${game.drill15NextBall - 1 - game.drill15Potted} · Punkte: ${game.drill15Score}`;
     return "—";
   }
   if (game.variant === "basis") {
@@ -4524,6 +5119,7 @@ function newGame() {
   _scoreUpdated = false;
   game.aimAngle = 0; game.powerPercent = 0;
   game.spinX = 0; game.spinY = 0; game.cueElevation = 0;
+  game.cueType = "playing";
   game.aiThinking = false;
   game.breakCushionBalls = new Set();
   game.called8Pocket = null; game.ball8PocketIdx = -1; game.selecting8Pocket = false;
@@ -4531,6 +5127,7 @@ function newGame() {
   game.awaitingPushOutDecision = false; game.pushOutDoneBy = -1;
   game.lowestAtShotStart = null;
   game.drill15Potted = 0; game.drill15Shots = 0; game.drill15NextBall = 1; game.drill15Rotated = false;
+  game.drill15Score = 0; game.drill15FromKitchen = false;
   game.basisShots = 0;
   game.basisRepeatMode = false; game.basisCueSaveX = 0; game.basisCueSaveY = 0;
   stopShotTimer();
@@ -4542,6 +5139,8 @@ function newGame() {
   applyLayout();
   game.aimActive = false; updatePowerUI(); setAimStatus("Aim: frei");
   drawSpinCanvas(); updateSpinLabel();
+  drawElevCanvas(); updateElevLabel();
+  syncCueSelectorToShotState();
   if (game.variant === "8ball") {
     if (game.miniCount8 > 0) setup8BallMiniRack(game.miniCount8);
     else setup8BallRack();
@@ -4567,7 +5166,9 @@ function init() {
   newGame(); showMenu();
   drawSpinCanvas(); updateSpinLabel();
   drawElevCanvas(); updateElevLabel();
+  syncCueSelectorToShotState();
   requestAnimationFrame(loop);
+  initPresets();
 }
 init();
 
@@ -4776,6 +5377,7 @@ function handleRelayMessage(msg) {
         game.spinX        = msg.spinX;
         game.spinY        = msg.spinY;
         if (msg.cueElevation !== undefined) game.cueElevation = msg.cueElevation;
+        if (msg.cueType !== undefined) game.cueType = msg.cueType;
         if (msg.cbX !== undefined) game.cueBall.x = msg.cbX;
         if (msg.cbY !== undefined) game.cueBall.y = msg.cbY;
         updatePowerUI();
@@ -4828,6 +5430,8 @@ function tryDequeueOnlineShot() {
   game.powerPercent = msg.power;
   game.spinX = msg.spinX;
   game.spinY = msg.spinY;
+  game.cueElevation = msg.cueElevation ?? 0;
+  game.cueType = msg.cueType || "playing";
   online.waitingForSync = true;
   applyOnlineShot();
 }
@@ -4842,13 +5446,15 @@ function applyOnlineShot() {
   game.cuePotted = false;
   game.anyCushionAfterFirstHit = false;
   game.lowestAtShotStart = (game.variant === "9ball") ? lowestBallOnTable() : null;
-  game.spinPending = { x: game.spinX, y: game.spinY, dirX, dirY, power, used: false };
+  game.spinPending = { x: game.spinX, y: game.spinY, dirX, dirY, power, elevation: game.cueElevation, cueType: game.cueType, used: false };
   const cue = game.cueBall;
-  cue.vx = dirX * power; cue.vy = dirY * power;
+  launchCueBall(cue, dirX, dirY, power, game.spinX, game.spinY, game.cueElevation, game.cueType);
   game.shotInProgress = true; game.state = "moving";
   resetCanvasZoom();
-  game.spinX = 0; game.spinY = 0;
+  game.spinX = 0; game.spinY = 0; game.cueElevation = 0;
   drawSpinCanvas(); updateSpinLabel();
+  drawElevCanvas(); updateElevLabel();
+  updateCueTypeHint();
 }
 
 function applyOnlineSync(msg) {
@@ -4876,6 +5482,8 @@ function applyOnlineSync(msg) {
   if (msg.winner !== undefined && msg.winner !== null) game.winner = msg.winner;
   if (msg.matchScore) game.matchScore = [...msg.matchScore];
   if (msg.nextBreakPlayer !== undefined) game.nextBreakPlayer = msg.nextBreakPlayer;
+  if (msg.cueType !== undefined) game.cueType = msg.cueType;
+  syncCueSelectorToShotState();
   game.aimActive        = false;
   if (msg.state === "ended") { updateUI(); showEndScreen(); return; }
   tryDequeueOnlineShot();
@@ -4907,6 +5515,7 @@ function sendOnlineSync() {
     winner: game.winner ?? null,
     matchScore: [...game.matchScore],
     nextBreakPlayer: game.nextBreakPlayer,
+    cueType: game.cueType,
   }));
 }
 
@@ -4924,6 +5533,7 @@ function sendPreview() {
     spinX: game.spinX,
     spinY: game.spinY,
     cueElevation: game.cueElevation,
+    cueType: game.cueType,
     cbX: game.cueBall.x,
     cbY: game.cueBall.y,
   }));
@@ -4941,6 +5551,8 @@ function sendOnlineShot() {
     power: game.powerPercent,
     spinX: game.spinX,
     spinY: game.spinY,
+    cueElevation: game.cueElevation,
+    cueType: game.cueType,
     cbX: game.cueBall.x,
     cbY: game.cueBall.y,
   }));
@@ -5003,6 +5615,252 @@ uiOnline.btnDisBack.addEventListener("click", () => {
   game.mode = "hotseat";
   showMenu();
 });
+
+// ── Physics Overlay ───────────────────────────────────────────────────────────
+
+function syncMenuSlidersFromCFG() {
+  document.getElementById("slFriction").value     = Math.round((1 - CFG_FRICTION) * 1000);
+  document.getElementById("slRollingDrag").value  = Math.round(CFG_ROLLING_DRAG * 1000);
+  document.getElementById("slCushionEN").value    = Math.round(CFG_CUSHION_EN * 100);
+  document.getElementById("slCushionMu").value    = Math.round(CFG_CUSHION_MU * 100);
+  document.getElementById("slClothSlide").value   = Math.round(CFG_CLOTH_SLIDE_ACCEL * 1000);
+  document.getElementById("slRailFriction").value = Math.round(CFG_RAIL_FRICTION * 100);
+  document.getElementById("slRailSpinGrip").value = Math.round(CFG_RAIL_SPIN_GRIP * 100);
+  document.getElementById("slBallBounce").value   = Math.round(CFG_BALL_BOUNCE * 100);
+  updatePhysicsSliderLabels();
+}
+
+function updatePhysicsOverlayLabels() {
+  const fr  = parseInt(document.getElementById("ovFriction").value);
+  const dr  = parseInt(document.getElementById("ovRollingDrag").value);
+  const en  = parseInt(document.getElementById("ovCushionEN").value);
+  const mu  = parseInt(document.getElementById("ovCushionMu").value);
+  const sl  = parseInt(document.getElementById("ovClothSlide").value);
+  const rf  = parseInt(document.getElementById("ovRailFriction").value);
+  const rg  = parseInt(document.getElementById("ovRailSpinGrip").value);
+  const bb  = parseInt(document.getElementById("ovBallBounce").value);
+  CFG_FRICTION            = (1000 - fr) / 1000;  // fr=8 → 0.992; links=weniger Reibung=schneller
+  CFG_ROLLING_DRAG        = dr / 1000;
+  CFG_CUSHION_EN          = en / 100;
+  CFG_CUSHION_BOUNCE      = Math.max(0.55, (en / 100) - 0.12);
+  CFG_CUSHION_MU          = mu / 100;
+  CFG_CLOTH_SLIDE_ACCEL   = sl / 1000;
+  CFG_RAIL_FRICTION       = rf / 100;
+  CFG_RAIL_SPIN_GRIP      = rg / 100;
+  CFG_BALL_BOUNCE         = bb / 100;
+  document.getElementById("ovLblFriction").textContent     = fr + "‰";
+  document.getElementById("ovLblRollingDrag").textContent  = (dr / 1000).toFixed(3);
+  document.getElementById("ovLblCushionEN").textContent    = (en / 100).toFixed(2);
+  document.getElementById("ovLblCushionMu").textContent    = (mu / 100).toFixed(2);
+  document.getElementById("ovLblClothSlide").textContent   = (sl / 1000).toFixed(3);
+  document.getElementById("ovLblRailFriction").textContent = (rf / 100).toFixed(2);
+  document.getElementById("ovLblRailSpinGrip").textContent = (rg / 100).toFixed(2);
+  document.getElementById("ovLblBallBounce").textContent   = (bb / 100).toFixed(2);
+  syncMenuSlidersFromCFG();
+}
+
+function syncOverlaySlidersFromCFG() {
+  document.getElementById("ovFriction").value     = Math.round((1 - CFG_FRICTION) * 1000);
+  document.getElementById("ovRollingDrag").value  = Math.round(CFG_ROLLING_DRAG * 1000);
+  document.getElementById("ovCushionEN").value    = Math.round(CFG_CUSHION_EN * 100);
+  document.getElementById("ovCushionMu").value    = Math.round(CFG_CUSHION_MU * 100);
+  document.getElementById("ovClothSlide").value   = Math.round(CFG_CLOTH_SLIDE_ACCEL * 1000);
+  document.getElementById("ovRailFriction").value = Math.round(CFG_RAIL_FRICTION * 100);
+  document.getElementById("ovRailSpinGrip").value = Math.round(CFG_RAIL_SPIN_GRIP * 100);
+  document.getElementById("ovBallBounce").value   = Math.round(CFG_BALL_BOUNCE * 100);
+  updatePhysicsOverlayLabels();
+}
+
+function openPhysicsOverlay() {
+  syncOverlaySlidersFromCFG();
+  document.getElementById("physicsOverlay").style.display = "flex";
+}
+function closePhysicsOverlay() {
+  document.getElementById("physicsOverlay").style.display = "none";
+}
+
+document.getElementById("btnPhysics").addEventListener("click", openPhysicsOverlay);
+document.getElementById("btnClosePhysics").addEventListener("click", closePhysicsOverlay);
+
+["ovFriction","ovRollingDrag","ovCushionEN","ovCushionMu","ovClothSlide","ovRailFriction","ovRailSpinGrip","ovBallBounce"].forEach(id => {
+  document.getElementById(id).addEventListener("input", updatePhysicsOverlayLabels);
+});
+
+bindOptions(document.getElementById("ovTablePreset"), v => {
+  applyTablePreset(v);
+  syncOverlaySlidersFromCFG();
+});
+
+// ── Preset File System ────────────────────────────────────────────────────────
+
+function _buildPresetData(name) {
+  return {
+    name,
+    friction:     Math.round((1 - CFG_FRICTION) * 1000),  // ‰ Verlust; 8 = 0.992
+    drag:         Math.round(CFG_ROLLING_DRAG * 1000),
+    en:           Math.round(CFG_CUSHION_EN * 100),
+    mu:           Math.round(CFG_CUSHION_MU * 100),
+    slide:        Math.round(CFG_CLOTH_SLIDE_ACCEL * 1000),
+    railFric:     Math.round(CFG_RAIL_FRICTION * 100),
+    railGrip:     Math.round(CFG_RAIL_SPIN_GRIP * 100),
+    ballBounce:   Math.round(CFG_BALL_BOUNCE * 100),
+    pocketCorner: CFG_POCKET_R_CORNER,
+    pocketSide:   CFG_POCKET_R_SIDE,
+  };
+}
+
+function _presetFilename(name) {
+  return name
+    ? "presets-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".html"
+    : "presets.html";
+}
+
+async function savePreset(name) {
+  const filename = _presetFilename(name);
+  const content  = JSON.stringify(_buildPresetData(name), null, 2);
+
+  // 1. File System Access API (Chrome/Edge – kann in beliebigen Ordner speichern)
+  if ("showSaveFilePicker" in window) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        startIn: "documents",
+        types: [{ description: "PBC Preset", accept: { "text/html": [".html"] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      alert("Preset gespeichert: " + handle.name);
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") return; // Nutzer hat abgebrochen
+    }
+  }
+
+  // 2. Fallback: Download (Firefox/Safari)
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], { type: "application/json" }));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function loadPresetLocal() {
+  // 1. File System Access API
+  if ("showOpenFilePicker" in window) {
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        startIn: "documents",
+        multiple: false,
+        types: [{ description: "PBC Preset", accept: { "text/html": [".html"], "application/json": [".json"] } }],
+      });
+      const file = await handle.getFile();
+      const data = JSON.parse(await file.text());
+      applyPresetData(data);
+      localStorage.setItem("pbc_lastPreset", handle.name);
+      closePhysicsOverlay();
+      alert("Preset geladen: " + handle.name);
+    } catch (e) {
+      if (e.name !== "AbortError") alert("Ungültige Preset-Datei.");
+    }
+    return;
+  }
+
+  // 2. Fallback: <input type="file">
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".html,.json";
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      applyPresetData(data);
+      localStorage.setItem("pbc_lastPreset", file.name);
+      closePhysicsOverlay();
+      alert("Preset geladen: " + file.name);
+    } catch (_) { alert("Ungültige Preset-Datei."); }
+  };
+  input.click();
+}
+
+document.getElementById("btnSavePreset").addEventListener("click", () => {
+  savePreset(document.getElementById("ovPresetName").value.trim());
+});
+document.getElementById("btnLoadPresetLocal").addEventListener("click", loadPresetLocal);
+
+function applyPresetData(data) {
+  if (data.friction    !== undefined) document.getElementById("slFriction").value     = data.friction;
+  if (data.drag        !== undefined) document.getElementById("slRollingDrag").value  = data.drag;
+  if (data.en          !== undefined) document.getElementById("slCushionEN").value    = data.en;
+  if (data.mu          !== undefined) document.getElementById("slCushionMu").value    = data.mu;
+  if (data.slide       !== undefined) document.getElementById("slClothSlide").value   = data.slide;
+  if (data.railFric    !== undefined) document.getElementById("slRailFriction").value = data.railFric;
+  if (data.railGrip    !== undefined) document.getElementById("slRailSpinGrip").value = data.railGrip;
+  if (data.ballBounce  !== undefined) document.getElementById("slBallBounce").value   = data.ballBounce;
+  if (data.pocketCorner !== undefined) CFG_POCKET_R_CORNER = data.pocketCorner;
+  if (data.pocketSide   !== undefined) CFG_POCKET_R_SIDE   = data.pocketSide;
+  updatePhysicsSliderLabels();
+  syncOverlaySlidersFromCFG();
+}
+
+function showPresetSelectModal(files, lastPreset) {
+  const list = document.getElementById("presetList");
+  list.innerHTML = "";
+  files.forEach((f, i) => {
+    const displayName = f.replace(/^presets-?/, "").replace(/\.html$/i, "") || "Standard";
+    const label = document.createElement("label");
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "presetFile";
+    radio.value = f;
+    if (f === lastPreset || (lastPreset === null && i === 0) || (i === 0 && !files.includes(lastPreset))) {
+      radio.checked = true;
+    }
+    label.appendChild(radio);
+    label.appendChild(document.createTextNode(displayName));
+    list.appendChild(label);
+  });
+  // Ensure at least the first is checked
+  const radios = list.querySelectorAll("input[type=radio]");
+  if (radios.length > 0 && !Array.from(radios).some(r => r.checked)) {
+    radios[0].checked = true;
+  }
+  document.getElementById("presetSelectModal").style.display = "flex";
+}
+
+document.getElementById("btnLoadPreset").addEventListener("click", async () => {
+  const selected = document.querySelector("#presetList input[type=radio]:checked");
+  if (!selected) return;
+  const filename = selected.value;
+  try {
+    const res = await fetch("/" + filename);
+    const text = await res.text();
+    const data = JSON.parse(text);
+    applyPresetData(data);
+    localStorage.setItem("pbc_lastPreset", filename);
+    document.getElementById("presetSelectModal").style.display = "none";
+  } catch (err) {
+    alert("Fehler beim Laden des Presets.");
+  }
+});
+
+document.getElementById("btnSkipPreset").addEventListener("click", () => {
+  document.getElementById("presetSelectModal").style.display = "none";
+});
+
+async function initPresets() {
+  try {
+    const res = await fetch("/api/presets");
+    if (!res.ok) return;
+    const files = await res.json();
+    if (!Array.isArray(files) || files.length === 0) return;
+    const lastPreset = localStorage.getItem("pbc_lastPreset");
+    showPresetSelectModal(files, lastPreset);
+  } catch (_) {
+    // silently ignore – server may not support API
+  }
+}
 </script>
 </body>
 </html>
