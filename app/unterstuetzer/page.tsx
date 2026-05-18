@@ -14,7 +14,7 @@ export default function UnterstuetzerPage() {
   const silber = sponsors.filter((s) => s.tier === 'silber')
   const bronze = sponsors.filter((s) => s.tier === 'bronze')
   const packages = [
-    { name: 'Präsenz im Clubheim', text: 'Platzierung auf Aushängen und Tafeln im Vereinsheim, Nennung bei Veranstaltungen.' },
+    { name: 'Präsenz im Club', text: 'Platzierung auf Aushängen und Werbematerial, Nennung bei Veranstaltungen.' },
     { name: 'Digitale Sichtbarkeit', text: 'Darstellung auf der Vereinswebsite und in den sozialen Medien des PBC Erding.' },
     { name: 'Turnier-Unterstützung', text: 'Namensnennung bei Vereinsformaten, Turnieren und Vereinsberichten.' },
   ]
@@ -34,7 +34,7 @@ export default function UnterstuetzerPage() {
       <section className="py-20 bg-charcoal-950">
         <Container className="space-y-16">
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-500 mb-6">Wir bieten:</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-500 mb-6">Was wir bieten</h2>
             <div className="grid gap-4 lg:grid-cols-3">
               {packages.map((item) => (
                 <div key={item.name} className="rounded-[1.5rem] border border-white/6 bg-white/[0.02] p-6 h-full">
