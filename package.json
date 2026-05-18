@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3005",
-    "build": "next build",
+    "dev": "node scripts/generate-kontakt-routing.mjs && next dev --port 3005",
+    "build": "node scripts/generate-kontakt-routing.mjs && next build",
     "start": "next start --port 3005",
     "lint": "eslint"
   },

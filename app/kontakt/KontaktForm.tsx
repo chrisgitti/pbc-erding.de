@@ -2,17 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-
-const BETREFF_OPTIONS = [
-  { value: '',               label: 'Bitte wählen…' },
-  { value: 'mitgliedschaft', label: 'Mitgliedschaft' },
-  { value: 'training',       label: 'Schnuppertraining' },
-  { value: 'turnier',        label: 'Turnieranmeldung' },
-  { value: 'unterstuetzung', label: 'Unterstützung/Partnerschaft' },
-  { value: 'sonstiges',      label: 'Sonstiges' },
-]
-
-const EMPFAENGER = 'info@pbc-erding.de'
+import { kontaktRoutes } from '@/lib/kontakt-routing'
 
 const inputClass = 'w-full bg-charcoal-900 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-white/35 focus:outline-none focus:border-gold-500/60 focus:ring-2 focus:ring-gold-500/20 transition-colors'
 
@@ -27,13 +17,14 @@ function KontaktFormInner() {
 
   useEffect(() => {
     const pre = searchParams.get('betreff') ?? ''
-    if (BETREFF_OPTIONS.some(o => o.value === pre)) setBetreff(pre)
+    if (kontaktRoutes.some(o => o.value === pre)) setBetreff(pre)
   }, [searchParams])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    const betreffLabel = BETREFF_OPTIONS.find(o => o.value === betreff)?.label ?? betreff
+    const route = kontaktRoutes.find(r => r.value === betreff) ?? kontaktRoutes[0]
+    const betreffLabel = route.label
 
     const subject = `PBC Erding – ${betreffLabel}`
 
@@ -50,7 +41,9 @@ function KontaktFormInner() {
       'Gesendet über das Kontaktformular auf www.pbc-erding.de',
     ].join('\n')
 
-    const mailto = `mailto:${EMPFAENGER}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    const toAddr = route.to.join(',')
+    const ccPart = route.cc.length > 0 ? `&cc=${encodeURIComponent(route.cc.join(','))}` : ''
+    const mailto = `mailto:${toAddr}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}${ccPart}`
 
     window.location.href = mailto
   }
@@ -96,7 +89,7 @@ function KontaktFormInner() {
           onChange={e => setBetreff(e.target.value)}
           className={inputClass}
         >
-          {BETREFF_OPTIONS.map(o => (
+          {kontaktRoutes.map(o => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>

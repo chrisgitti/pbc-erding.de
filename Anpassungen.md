@@ -13,7 +13,7 @@ Dokumentiert alle wesentlichen Änderungen an der Next.js-Website des Pool Billa
 ---
 
 <details>
-<summary><strong>Website – Phasen 1–13</strong></summary>
+<summary><strong>Website – Phasen 1–14</strong></summary>
 
 ## Phase 1 – Vorstand-Feedback (Robert) zur Startseite
 
@@ -872,6 +872,88 @@ Der `<script>`-Verweis in `veranstaltungen.html` wurde von `js/turniere.js` auf
 in den ~50 HTML-Dateien des Fallback wurden per `sed` in einem Schritt auf
 `veranstaltungen.html` aktualisiert. Der Fallback-Skill wurde auf die neuen
 Dateinamen angepasst.
+
+---
+
+## Phase 14 – BBV-Ergebnisse, Unterstützer-Umbenennung, Kontaktformular-Routing und Inhalte (18. Mai 2026)
+
+Umfangreiche Inhalts- und Feature-Runde: letzte Spieltage beider Kreisliga-Mannschaften eingetragen, vollständige Umbenennung „Sponsoren" → „Unterstützer", Datenschutz auf netcup aktualisiert, Logo-Bugfix, drei neue News-Artikel, Chronik erweitert sowie ein konfigurierbares E-Mail-Routing für das Kontaktformular eingeführt.
+
+### 14.1  BBV-Ergebnisupdate – Erding II und Erding III (letzter Spieltag)
+
+**Dateien:** `lib/data.ts`, `app/veranstaltungen/page.tsx`, `Fallback/ergebnisse.html`, `Fallback/veranstaltungen.html`, `Fallback/js/events.js`
+
+Letzter Spieltag der Kreisliga Oberbayern D eingetragen:
+- **Erding II** (16.05.2026): 7:3 gegen BSV PB München IV → Sieg, Saison ungeschlagen abgeschlossen (10S / 0U / 0N, 71:29, +42, 20:0 Punkte)
+- **Erding III** (09.05.2026): 4:6 bei PBC Lerchenau II → Niederlage (1S / 0U / 9N, 36:64, −28, 2:18 Punkte)
+
+Fallback-Spielpläne auf `spieltag-past` gesetzt, Statistik-Pills und Bilanzen aktualisiert, Stand-Datum auf 18.05.2026 gesetzt. `events.js`-Spielplan geleert (keine offenen Liga-Spiele mehr).
+
+### 14.2  Datenschutz: Hosting-Anbieter IONOS → netcup
+
+**Datei:** `app/datenschutz/page.tsx`
+
+Hosting-Anbieter in Abschnitt 3 (Hosting & technische Infrastruktur) und Abschnitt 10 (Auftragsverarbeitung) von IONOS SE (Montabaur) auf **netcup GmbH** (Emmy-Noether-Straße 10, 76131 Karlsruhe) umgestellt. Kontakt-E-Mail und Rechenzentrumsstandort (RZ Nürnberg) ergänzt. Stand des Dokuments auf „Mai 2026" aktualisiert.
+
+### 14.3  Sponsoren → Unterstützer: vollständige Umbenennung
+
+**Dateien:** `lib/navigation.ts`, `app/sitemap.ts`, `app/sponsoren/` → `app/unterstuetzer/page.tsx`, `components/sections/SponsorsSection.tsx`, `Fallback/sponsoren.html` → `Fallback/unterstuetzer.html`, ~49 weitere Fallback-HTML-Dateien
+
+Menüeintrag, Route, Dateinamen und alle Texte wurden von „Sponsoren" auf „Unterstützer" umgestellt. Auf der Unterstützer-Seite:
+- Einleitungstext bereinigt (kein Verweis mehr auf Altwebsite)
+- Neue Goldüberschrift „WAS WIR BIETEN" vor den Paket-Karten
+- Paket „Präsenz im Clubheim" → „Präsenz im Club" (Text auf Bowling-Castle-Situation angepasst: keine Aushänge im „Vereinsheim")
+- CTA „Partner werden" → „Den Verein unterstützen", Sponsor-Begriff entfernt
+- Link in SponsorsSection: `/kontakt?betreff=sponsoring` → `/kontakt?betreff=unterstuetzung`
+- 49 Fallback-Dateien per Bulk-Replace aktualisiert (`sponsoren.html` → `unterstuetzer.html`)
+
+### 14.4  Header-Logo vergrößert und Sichtbarkeits-Bugfix
+
+**Datei:** `components/layout/Header.tsx`
+
+Logo-Größe von 36 px auf 48 px erhöht. Dabei war das Logo auf Desktop-Breakpoints nicht mehr sichtbar, weil der Flex-Container es herausdrückte. Fix: `shrink-0` zur Logo-`<Link>`-Klasse ergänzt. Außerdem `NEXT_PUBLIC_BASE_PATH ?? ''` für den Bildpfad gesichert und `ring-2 ring-white/10 bg-charcoal-900` für visuelle Konsistenz hinzugefügt.
+
+### 14.5  Drei neue News-Artikel + Chronik-Erweiterung
+
+**Datei:** `lib/data.ts`, `app/news/[slug]/page.tsx` (via generateStaticParams), `Fallback/news/`, `Fallback/verein.html`
+
+Neue Artikel:
+- **Saisonabschluss Erding II** (`saisonabschluss-erding-2-2025-26`, 16.05.2026) – Kreisliga ungeschlagen, vollständige Spieltabelle
+- **Trainer-Fortbildung Bart Claessen** (`trainer-fortbildung-bart-claessen`, 09.05.2026) – DBU Trainer-Assistent zertifiziert
+- **Saisonabschluss Erding III** (`saisonabschluss-erding-3-2025-26`, 09.05.2026) – Kreisliga-Bilanz mit Spieltabelle
+
+Alle drei Artikel in `chronik[]` eingetragen (datumssortiert, 2026-Gruppe). Entsprechende Fallback-HTML-Dateien unter `Fallback/news/` erstellt. Fallback-Chronik in `Fallback/verein.html` um 5 Einträge erweitert (inkl. nachgeholter Mittwoch-Cup-April-Eintrag).
+
+### 14.6  News-Sortierung auf der Startseite
+
+**Datei:** `components/sections/NewsSection.tsx`
+
+Die drei neuesten Artikel auf der Startseite wurden bisher in Array-Reihenfolge angezeigt. Geändert auf explizite Datumsabstieg-Sortierung:
+
+```typescript
+const latest = [...news].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3)
+```
+
+Damit erscheint immer das neueste Datum links, unabhängig von der Reihenfolge in `lib/data.ts`.
+
+### 14.7  Konfigurierbares E-Mail-Routing für das Kontaktformular
+
+**Dateien:** `content/kontakt-routing.md` *(neu)*, `scripts/generate-kontakt-routing.mjs` *(neu)*, `lib/kontakt-routing.ts` *(auto-generiert)*, `app/kontakt/KontaktForm.tsx`, `package.json`
+
+Für jeden Betreff im Kontaktformular können nun individuelle Empfänger- und CC-Adressen hinterlegt werden. Architektur:
+
+- **`content/kontakt-routing.md`** – Redakteurs-freundliche Markdown-Konfigurationsdatei mit vollständiger Dokumentation (Aufbau, Regeln, Beispiele). Redakteure pflegen hier ausschließlich die E-Mail-Adressen, ohne Code zu berühren.
+- **`scripts/generate-kontakt-routing.mjs`** – Node.js-Prebuild-Skript: parst die Markdown-Datei, ignoriert Codeblöcke, und schreibt `lib/kontakt-routing.ts` mit typisiertem `kontaktRoutes`-Array (`value`, `label`, `to[]`, `cc[]`).
+- **`package.json`** – `dev`- und `build`-Scripts starten den Generator als ersten Schritt.
+- **`KontaktForm.tsx`** – importiert `kontaktRoutes` statt der bisherigen statischen `BETREFF_OPTIONS`-Konstante. Beim Absenden wird die passende Route gesucht und das `mailto:`-Link mit `to.join(',')` sowie optionalem `&cc=...`-Parameter aufgebaut.
+
+Aktuell konfiguriert: Turnieranmeldung → `turnier@pbc-erding.de` (CC: `info@pbc-erding.de`), alle anderen → `info@pbc-erding.de`.
+
+### 14.8  Hero-Section: Hintergrundbild optimiert
+
+**Datei:** `public/images/` (Bilddatei), `components/sections/HeroSection.tsx`
+
+Das Hintergrundbild der Hero-Section wurde durch eine optimierte Version ersetzt.
 
 ---
 

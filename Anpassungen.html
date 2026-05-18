@@ -327,7 +327,7 @@
 
   <!-- Gruppe Website -->
   <details class="group">
-    <summary><span class="group-label">Website – Phasen 1–13</span></summary>
+    <summary><span class="group-label">Website – Phasen 1–14</span></summary>
     <div class="group-body">
 
   <!-- Phase 1 -->
@@ -993,6 +993,54 @@
       <h3>13.3 &nbsp;Fallback bereinigt</h3>
       <p><strong>Dateien:</strong> <code>Fallback/turniere.html</code> → <code>Fallback/veranstaltungen.html</code>, <code>Fallback/js/turniere.js</code> → <code>Fallback/js/veranstaltungen.js</code>, alle ~50 HTML-Seiten in <code>Fallback/</code>, <code>.claude/skills/pbced-fallback/SKILL.md</code></p>
       <p>Die Fallback-Seite und das zugehörige JS-Modul wurden entsprechend umbenannt. Der <code>&lt;script&gt;</code>-Verweis in <code>veranstaltungen.html</code> wurde von <code>js/turniere.js</code> auf <code>js/veranstaltungen.js</code> angepasst. Alle Navigationsverlinkungen (<code>turniere.html</code>) in den ~50 HTML-Dateien des Fallback wurden per <code>sed</code> in einem Schritt auf <code>veranstaltungen.html</code> aktualisiert. Der Fallback-Skill wurde auf die neuen Dateinamen angepasst.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 14 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 14 – BBV-Ergebnisse, Unterstützer-Umbenennung, Kontaktformular-Routing und Inhalte <span class="date">(18. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Umfangreiche Inhalts- und Feature-Runde: letzte Spieltage beider Kreisliga-Mannschaften eingetragen, vollständige Umbenennung „Sponsoren" → „Unterstützer", Datenschutz auf netcup aktualisiert, Logo-Bugfix, drei neue News-Artikel, Chronik erweitert sowie ein konfigurierbares E-Mail-Routing für das Kontaktformular eingeführt.</p>
+
+      <h3>14.1 &nbsp;BBV-Ergebnisupdate – Erding II und Erding III (letzter Spieltag)</h3>
+      <p><strong>Dateien:</strong> <code>lib/data.ts</code>, <code>app/veranstaltungen/page.tsx</code>, <code>Fallback/ergebnisse.html</code>, <code>Fallback/veranstaltungen.html</code>, <code>Fallback/js/events.js</code></p>
+      <p>Letzter Spieltag der Kreisliga Oberbayern D eingetragen:</p>
+      <ul>
+        <li><strong>Erding II</strong> (16.05.2026): 7:3 gegen BSV PB München IV → Sieg, Saison ungeschlagen abgeschlossen (10S / 0U / 0N, 71:29, +42, 20:0 Punkte)</li>
+        <li><strong>Erding III</strong> (09.05.2026): 4:6 bei PBC Lerchenau II → Niederlage (1S / 0U / 9N, 36:64, −28, 2:18 Punkte)</li>
+      </ul>
+      <p>Fallback-Spielpläne auf <code>spieltag-past</code> gesetzt, Statistik-Pills und Bilanzen aktualisiert, Stand-Datum auf 18.05.2026 gesetzt. <code>events.js</code>-Spielplan geleert (keine offenen Liga-Spiele mehr).</p>
+
+      <h3>14.2 &nbsp;Datenschutz: Hosting-Anbieter IONOS → netcup</h3>
+      <p><strong>Datei:</strong> <code>app/datenschutz/page.tsx</code></p>
+      <p>Hosting-Anbieter in Abschnitt 3 und 10 von IONOS SE (Montabaur) auf <strong>netcup GmbH</strong> (Emmy-Noether-Straße 10, 76131 Karlsruhe) umgestellt. Kontakt-E-Mail und Rechenzentrumsstandort (RZ Nürnberg) ergänzt. Stand des Dokuments auf „Mai 2026" aktualisiert.</p>
+
+      <h3>14.3 &nbsp;Sponsoren → Unterstützer: vollständige Umbenennung</h3>
+      <p><strong>Dateien:</strong> <code>lib/navigation.ts</code>, <code>app/sitemap.ts</code>, <code>app/sponsoren/</code> → <code>app/unterstuetzer/page.tsx</code>, <code>components/sections/SponsorsSection.tsx</code>, <code>Fallback/sponsoren.html</code> → <code>Fallback/unterstuetzer.html</code>, ~49 weitere Fallback-HTML-Dateien</p>
+      <p>Menüeintrag, Route, Dateinamen und alle Texte von „Sponsoren" auf „Unterstützer" umgestellt. Auf der Seite: Einleitungstext bereinigt, neue Goldüberschrift „WAS WIR BIETEN" vor den Paket-Karten, Paket „Präsenz im Clubheim" → „Präsenz im Club" (auf Bowling-Castle-Situation angepasst), CTA-Text Sponsor-frei formuliert, Link in SponsorsSection auf <code>?betreff=unterstuetzung</code> geändert. 49 Fallback-Dateien per Bulk-Replace aktualisiert.</p>
+
+      <h3>14.4 &nbsp;Header-Logo vergrößert und Sichtbarkeits-Bugfix</h3>
+      <p><strong>Datei:</strong> <code>components/layout/Header.tsx</code></p>
+      <p>Logo-Größe von 36 px auf 48 px erhöht. Das Logo war auf Desktop-Breakpoints nicht sichtbar, weil der Flex-Container es herausdrückte. Fix: <code>shrink-0</code> zur Logo-<code>&lt;Link&gt;</code>-Klasse ergänzt. Außerdem <code>NEXT_PUBLIC_BASE_PATH ?? ''</code> für den Bildpfad gesichert und <code>ring-2 ring-white/10 bg-charcoal-900</code> für visuelle Konsistenz hinzugefügt.</p>
+
+      <h3>14.5 &nbsp;Drei neue News-Artikel + Chronik-Erweiterung</h3>
+      <p><strong>Dateien:</strong> <code>lib/data.ts</code>, <code>Fallback/news/</code>, <code>Fallback/verein.html</code></p>
+      <p>Neue Artikel: <em>Saisonabschluss Erding II</em> (16.05.2026, mit Spieltabelle), <em>Trainer-Fortbildung Bart Claessen</em> (09.05.2026, DBU-Zertifizierung) und <em>Saisonabschluss Erding III</em> (09.05.2026, mit Spieltabelle). Alle drei in <code>chronik[]</code> eingetragen und als Fallback-HTML-Dateien angelegt. Fallback-Chronik in <code>Fallback/verein.html</code> um 5 Einträge erweitert (inkl. nachgeholtem Mittwoch-Cup-April-Eintrag).</p>
+
+      <h3>14.6 &nbsp;News-Sortierung auf der Startseite</h3>
+      <p><strong>Datei:</strong> <code>components/sections/NewsSection.tsx</code></p>
+      <p>Die drei neuesten Artikel werden nun explizit nach Datum absteigend sortiert, unabhängig von der Reihenfolge im <code>news</code>-Array:</p>
+      <p><code>[...news].sort((a, b) =&gt; b.date.localeCompare(a.date)).slice(0, 3)</code></p>
+
+      <h3>14.7 &nbsp;Konfigurierbares E-Mail-Routing für das Kontaktformular</h3>
+      <p><strong>Dateien:</strong> <code>content/kontakt-routing.md</code> <em>(neu)</em>, <code>scripts/generate-kontakt-routing.mjs</code> <em>(neu)</em>, <code>lib/kontakt-routing.ts</code> <em>(auto-generiert)</em>, <code>app/kontakt/KontaktForm.tsx</code>, <code>package.json</code></p>
+      <p>Für jeden Betreff können nun individuelle Empfänger- und CC-Adressen hinterlegt werden. Redakteure pflegen ausschließlich <code>content/kontakt-routing.md</code> (dokumentiert, mit Beispielen). Das Prebuild-Skript generiert daraus <code>lib/kontakt-routing.ts</code> mit typisiertem <code>kontaktRoutes</code>-Array. <code>KontaktForm.tsx</code> baut das <code>mailto:</code>-Link mit <code>to.join(',')</code> und optionalem <code>&amp;cc=...</code> auf. Aktuell konfiguriert: Turnieranmeldung → <code>turnier@pbc-erding.de</code> (CC: <code>info@pbc-erding.de</code>), alle anderen → <code>info@pbc-erding.de</code>.</p>
+
+      <h3>14.8 &nbsp;Hero-Section: Hintergrundbild optimiert</h3>
+      <p><strong>Datei:</strong> <code>public/images/</code> (Bilddatei), <code>components/sections/HeroSection.tsx</code></p>
+      <p>Das Hintergrundbild der Hero-Section wurde durch eine optimierte Version ersetzt.</p>
     </div>
   </details>
 

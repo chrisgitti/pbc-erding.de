@@ -49,6 +49,26 @@ Mit seinem Zertifikat ist Bart nun bestens gerüstet, unser Training mit fachlic
 Der gesamte Verein gratuliert Bart herzlich zu diesem Erfolg!`,
   },
   {
+    id: '11',
+    title: 'Saisonabschluss: Erding III beendet die Kreisliga 2025/26',
+    excerpt:
+      'Mit einer 4:6-Niederlage beim BSV 1912 München III schließt PBC Erding III die Kreisliga-Saison 2025/26 ab: 1 Sieg, 0 Unentschieden, 9 Niederlagen.',
+    date: '2026-05-09',
+    category: 'Liga',
+    slug: 'saisonabschluss-erding-3-2025-26',
+    content: `Mit der Auswärtspartie beim BSV 1912 München III am 9. Mai 2026 hat PBC Erding III die Kreisliga-Saison 2025/26 beendet. Die Begegnung endete 4:6 aus Erding-Sicht – ein Ergebnis, das den Saisonverlauf der dritten Mannschaft treffend widerspiegelt.
+
+Die Bilanz der Saison 2025/26:
+
+– 1 Sieg · 0 Unentschieden · 9 Niederlagen
+– Frames: 36:64 (Differenz: −28)
+– Punkte: 2:18 – Platz 6
+
+Für Erding III war es eine Saison voller Lernkurven. Die Mannschaft sammelte wertvolle Erfahrung gegen starke Gegner und entwickelte sich spielerisch weiter – eine gute Grundlage für die kommende Runde.
+
+Ein Dank gilt allen Spielerinnen und Spielern für ihren Einsatz über die gesamte Saison – auf eine starke nächste Runde!`,
+  },
+  {
     id: '9',
     title: 'Saisonabschluss: Erding II beendet die Kreisliga mit makelloser Bilanz',
     excerpt:
@@ -680,7 +700,10 @@ export type ChronikEntry = {
 
 export const chronik: ChronikEntry[] = [
   // 2026
-  { title: 'Saisonabschluss: PBC Erding I gewinnt 8:2 – Bezirksliga 2025/26',  date: '2026-05-09', slug: 'saisonabschluss-erding-1-2025-26'        },
+  { title: 'Saisonabschluss: Erding II – Kreisliga 2025/26 ungeschlagen abgeschlossen', date: '2026-05-16', slug: 'saisonabschluss-erding-2-2025-26'   },
+  { title: 'Trainer-Fortbildung: Bart Claessen erfolgreich zertifiziert',               date: '2026-05-09', slug: 'trainer-fortbildung-bart-claessen'   },
+  { title: 'Saisonabschluss: PBC Erding III – Kreisliga 2025/26',                       date: '2026-05-09', slug: 'saisonabschluss-erding-3-2025-26'   },
+  { title: 'Saisonabschluss: PBC Erding I gewinnt 8:2 – Bezirksliga 2025/26',          date: '2026-05-09', slug: 'saisonabschluss-erding-1-2025-26'   },
   { title: 'Mittwoch-Cup April – Seppi Bendl holt den Sieg',                    date: '2026-04-29', slug: 'mittwoch-cup-april-2026'                 },
   { title: 'Spieltag im Bowling Castle – Teamgeist an allen Tischen',           date: '2026-04-05', slug: 'heimspieltag-bowling-castle-april-2026'   },
   { title: 'Mittwoch-Cup: Zweiter Abend – Hütti holt den Sieg',        date: '2026-03-25', slug: 'mittwoch-cup-zweiter-abend-maerz-2026'    },
