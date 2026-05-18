@@ -26,6 +26,49 @@ export type NewsItem = {
 
 export const news: NewsItem[] = [
   {
+    id: '10',
+    title: 'Trainer-Fortbildung: Bart Claessen erfolgreich zertifiziert',
+    excerpt:
+      'Unser Vereinsmitglied Bart Claessen hat die Ausbildung zum Trainer-Assistenten der Deutschen Billard Union erfolgreich abgeschlossen. Der gesamte Verein gratuliert herzlich!',
+    date: '2026-05-09',
+    category: 'Vereinsleben',
+    slug: 'trainer-fortbildung-bart-claessen',
+    content: `Wir freuen uns, bekanntzugeben, dass unser Vereinsmitglied Bart Claessen die Ausbildung zum Trainer-Assistenten erfolgreich abgeschlossen hat.
+
+Im Rahmen der aktuellen Novellierung der Trainer-Richtlinien absolvierte Bart gemeinsam mit 13 weiteren Teilnehmern eine intensive Schulung (60 Unterrichtseinheiten). Geleitet wurde die Fortbildung von Patrick Hummel – Trainer A Leistungssport und offizieller Ausbilder und Prüfer der Deutschen Billard Union (DBU).
+
+Die Schwerpunkte der Ausbildung:
+– Materialkunde: Tische, Tuche und Queues
+– Technik: Körperhaltung und Stoßarten
+– Trainingsmethodik: Wissen effektiv vermitteln
+
+Mit seinem Zertifikat ist Bart nun bestens gerüstet, unser Training mit fachlichem Know-how zu bereichern.
+
+„Die Ausbildung war intensiv und lehrreich. Es ist toll zu sehen, wie viel Präzision und Systematik hinter einem guten Training stecken."
+
+Der gesamte Verein gratuliert Bart herzlich zu diesem Erfolg!`,
+  },
+  {
+    id: '9',
+    title: 'Saisonabschluss: Erding II beendet die Kreisliga mit makelloser Bilanz',
+    excerpt:
+      'Mit einem 7:3-Heimsieg gegen BSV PB München IV schließt PBC Erding II die Saison 2025/26 ungeschlagen ab: 10 Siege, 0 Niederlagen, Platz 1 in der Kreisliga Oberbayern D.',
+    date: '2026-05-16',
+    category: 'Liga',
+    slug: 'saisonabschluss-erding-2-2025-26',
+    content: `Mit einem verdienten 7:3-Heimsieg gegen BSV PB München IV hat PBC Erding II am 16. Mai 2026 eine außergewöhnliche Saison zu Ende gespielt – und dabei die Kreisliga Oberbayern D ohne eine einzige Niederlage abgeschlossen.
+
+Die Bilanz der Saison 2025/26:
+
+– 10 Siege · 0 Unentschieden · 0 Niederlagen
+– Frames: 71:29 (Differenz: +42)
+– Punkte: 20:0 – Platz 1
+
+Erding II dominierte die Liga von Spieltag eins an. Kein Gegner konnte die Mannschaft bezwingen, und mit 71 gewonnenen Frames bei nur 29 abgegebenen unterstrich das Team seine überragende Stärke in dieser Saison.
+
+Herzlichen Glückwunsch an die gesamte Mannschaft zu dieser starken Leistung!`,
+  },
+  {
     id: '8',
     title: 'Saisonabschluss: PBC Erding I gewinnt 8:2 und beendet die Bezirksliga stark',
     excerpt:
