@@ -12,6 +12,6 @@ export const mainNav: NavItem[] = [
   { label: 'Downloads', href: '/downloads' },
   { label: 'Links', href: '/links' },
   { label: 'Galerie', href: '/galerie' },
-  { label: 'Sponsoren', href: '/sponsoren' },
+  { label: 'Unterstützer', href: '/unterstuetzer' },
   { label: 'Kontakt', href: '/kontakt' },
 ]

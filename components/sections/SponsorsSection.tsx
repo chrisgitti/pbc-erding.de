@@ -30,7 +30,7 @@ export default function SponsorsSection() {
           id="sponsors-heading"
           className="mb-12 text-center text-xs font-semibold uppercase tracking-[0.25em] text-white/65"
         >
-          Unsere Sponsoren & Partner
+          Unsere Unterstützer & Partner
         </p>
 
         <div className="mb-4 flex flex-wrap justify-center gap-4">

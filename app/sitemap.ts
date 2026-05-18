@@ -18,7 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/downloads', priority: 0.6, changeFrequency: 'monthly' as const },
     { path: '/links', priority: 0.5, changeFrequency: 'yearly' as const },
     { path: '/galerie', priority: 0.6, changeFrequency: 'monthly' as const },
-    { path: '/sponsoren', priority: 0.6, changeFrequency: 'yearly' as const },
+    { path: '/unterstuetzer', priority: 0.6, changeFrequency: 'yearly' as const },
     { path: '/kontakt', priority: 0.8, changeFrequency: 'yearly' as const },
     { path: '/impressum', priority: 0.3, changeFrequency: 'yearly' as const },
     { path: '/datenschutz', priority: 0.3, changeFrequency: 'yearly' as const },

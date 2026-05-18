@@ -5,11 +5,11 @@ import Button from '@/components/ui/Button'
 import { sponsors } from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'Sponsoren',
-  description: 'Unsere Partner und Sponsoren. Werden Sie Partner des PBC Erding.',
+  title: 'Unterstützer',
+  description: 'Unsere Unterstützer, Partner und Förderer. Werden Sie Partner des PBC Erding.',
 }
 
-export default function SponsorenPage() {
+export default function UnterstuetzerPage() {
   const gold = sponsors.filter((s) => s.tier === 'gold')
   const silber = sponsors.filter((s) => s.tier === 'silber')
   const bronze = sponsors.filter((s) => s.tier === 'bronze')
@@ -25,7 +25,7 @@ export default function SponsorenPage() {
         <Container>
           <SectionHeading
             label="Partner & Förderer"
-            title="Unsere Sponsoren"
+            title="Unsere Unterstützer"
             subtitle="Ein Teil dieser Partner und Anlaufstellen stammt direkt aus den Inhalten der bisherigen Vereinswebsite."
           />
         </Container>

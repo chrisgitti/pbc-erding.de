@@ -50,13 +50,13 @@ export default function DatenschutzPage() {
           <div className="space-y-3">
             <h2 className="text-xl font-black uppercase text-white">3. Hosting und Server-Logfiles</h2>
             <p>
-              Diese Website wird bei IONOS SE, Elgendorfer Straße 57, 56410 Montabaur,
-              E-Mail: datenschutz@ionos.de, gehostet. Beim Aufruf unserer Website
-              werden durch den Webserver technisch erforderliche Informationen
-              verarbeitet. Dazu gehören insbesondere die IP-Adresse, Datum und
-              Uhrzeit des Abrufs, die aufgerufene Datei oder URL, der HTTP-Status,
-              übertragene Datenmenge, Referrer-URL sowie Angaben zu Browser,
-              Betriebssystem und Endgerät.
+              Diese Website wird bei der netcup GmbH, Emmy-Noether-Straße 10,
+              76131 Karlsruhe, E-Mail: data-protection@anexia-it.com, gehostet.
+              Beim Aufruf unserer Website werden durch den Webserver technisch
+              erforderliche Informationen verarbeitet. Dazu gehören insbesondere
+              die IP-Adresse, Datum und Uhrzeit des Abrufs, die aufgerufene Datei
+              oder URL, der HTTP-Status, übertragene Datenmenge, Referrer-URL
+              sowie Angaben zu Browser, Betriebssystem und Endgerät.
             </p>
             <p>
               Die Verarbeitung erfolgt, um die Website technisch bereitzustellen,
@@ -66,28 +66,21 @@ export default function DatenschutzPage() {
               Betrieb der Website.
             </p>
             <p>
-              Die Logfiles werden bei IONOS für maximal 7 Tage gespeichert und
-              anschließend gelöscht oder anonymisiert, sofern keine weitere
-              Aufbewahrung zur Aufklärung von Störungen oder Sicherheitsvorfällen
-              erforderlich ist.
+              Die Daten werden auf Servern der netcup GmbH in deren Rechenzentrum
+              in Nürnberg (Deutschland) verarbeitet. Eine Übermittlung in Drittländer
+              findet nicht statt.
             </p>
             <p>
-              Die Daten werden ausschließlich auf Servern von IONOS in deutschen
-              Rechenzentren (Frankfurt am Main, Berlin) verarbeitet. Eine
-              Übermittlung in Drittländer findet nicht statt.
-            </p>
-            <p>
-              Mit IONOS SE besteht eine Vereinbarung zur Auftragsverarbeitung (AVV)
-              gemäß Art. 28 DSGVO; diese ist seit Juli 2022 automatisch Bestandteil
-              der IONOS-AGB. Weitere Informationen zum Datenschutz bei IONOS finden
-              Sie unter:{' '}
+              Mit der netcup GmbH besteht eine Vereinbarung zur Auftragsverarbeitung
+              (AVV) gemäß Art. 28 DSGVO. Weitere Informationen zum Datenschutz bei
+              netcup finden Sie unter:{' '}
               <a
-                href="https://www.ionos.de/terms-gtc/datenschutzerklaerung/"
+                href="https://www.netcup.com/de/kontakt/datenschutzerklaerung"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gold-500 hover:text-gold-400 transition-colors underline underline-offset-2"
               >
-                www.ionos.de/terms-gtc/datenschutzerklaerung/
+                www.netcup.com/de/kontakt/datenschutzerklaerung
               </a>
             </p>
           </div>
@@ -229,7 +222,7 @@ export default function DatenschutzPage() {
               dies für den Betrieb der Website, die Bearbeitung Ihrer Anfrage, die
               Erfüllung gesetzlicher Pflichten oder die Wahrung berechtigter Interessen
               erforderlich ist. Auftragsverarbeiter im Sinne von Art. 28 DSGVO ist
-              insbesondere IONOS SE, Elgendorfer Straße 57, 56410 Montabaur, als
+              insbesondere die netcup GmbH, Emmy-Noether-Straße 10, 76131 Karlsruhe, als
               Hosting-Dienstleister dieser Website.
             </p>
             <p>
@@ -274,7 +267,7 @@ export default function DatenschutzPage() {
           <div className="space-y-3">
             <h2 className="text-xl font-black uppercase text-white">13. Stand und Aktualisierung</h2>
             <p>
-              Diese Datenschutzerklärung gilt mit Stand April 2026. Wir passen sie an,
+              Diese Datenschutzerklärung gilt mit Stand Mai 2026. Wir passen sie an,
               wenn sich die Website, die eingesetzten Dienste oder die rechtlichen
               Anforderungen ändern.
             </p>
