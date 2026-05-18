@@ -2356,6 +2356,10 @@ function startShot() {
     game.basisSaveCueElevation = game.cueElevation;
     game.basisSaveCueType      = game.cueType || "playing";
   }
+  if (game.variant === "drill15") {
+    const headX = PLAY_X1 + PLAY_W * 0.25;
+    game.drill15FromKitchen = game.cueBall.x <= headX;
+  }
   const power = (game.powerPercent / 100) * MAX_POWER;
   const cueProfile = getCueProfile(game.cueType);
   // Deflection (Squirt) – Queue-Profil-abhängig: harte Spitze = mehr Squirt
@@ -2400,11 +2404,7 @@ function onShotComplete() {
   }
   if (game.variant === "8ball") handle8BallShot();
   else if (game.variant === "9ball") handle9BallShot();
-  else if (game.variant === "drill15") {
-    const headX = PLAY_X1 + PLAY_W * 0.25;
-    game.drill15FromKitchen = game.cueBall.x <= headX;
-    handleDrill15Shot();
-  }
+  else if (game.variant === "drill15") handleDrill15Shot();
   else if (game.variant === "basis") handleBasisShot();
   else handleSoloShot();
   if (game.state === "ended") { if (game.mode === "online") sendOnlineSync(); showEndScreen(); return; }
