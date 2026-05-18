@@ -957,7 +957,7 @@ Das Hintergrundbild der Hero-Section wurde durch eine optimierte Version ersetzt
 
 ---
 
-## Architektur & Seitenstruktur (Stand: April 2026)
+## Architektur & Seitenstruktur (Stand: Mai 2026)
 
 ### Technologie-Stack
 
@@ -967,14 +967,14 @@ Das Hintergrundbild der Hero-Section wurde durch eine optimierte Version ersetzt
 | UI            | React 19, Tailwind CSS 4, TypeScript             |
 | Animationen   | framer-motion (nur Hero + Stats + MembershipCTA) |
 | Schriften     | Inter (Body), Bebas Neue (Display) via next/font |
-| Deployment    | Statischer Export → robocopy → Apache/IONOS      |
+| Deployment    | Statischer Export → FTP → Wurzelverzeichnis pbc-erding.de |
 
 ---
 
 ### Seiten (Routen)
 
 ```
-pbc-erding2/
+pbc-erding.de/
 │
 ├── /                        Startseite
 ├── /verein                  Vereinsseite mit Chronik
@@ -985,8 +985,8 @@ pbc-erding2/
 ├── /galerie                 Fotogalerie mit Lightbox
 ├── /downloads               Vereinsunterlagen & Vorlagen
 ├── /links                   Externe Links (Verbände, Partner)
-├── /sponsoren               Sponsorenübersicht
-├── /kontakt                 Kontaktformular (mailto)
+├── /unterstuetzer           Unterstützer-/Sponsorenübersicht
+├── /kontakt                 Kontaktformular (mailto, konfigurierbares Routing)
 ├── /impressum               Impressum
 ├── /datenschutz             Datenschutzerklärung
 └── /sitemap.xml             Automatisch generierte Sitemap
@@ -1042,10 +1042,10 @@ app/layout.tsx                 ← Root-Layout (Header, Footer, CookieBanner)
 ├── components/sections/       Nur auf der Startseite genutzt
 │   ├── HeroSection.tsx        framer-motion Entrance-Animation
 │   ├── StatsSection.tsx       Count-up via useInView
-│   ├── NewsSection.tsx        Letzte 3 Artikel aus lib/data.ts
+│   ├── NewsSection.tsx        Letzte 3 Artikel (datumsabsteigend) aus lib/data.ts
 │   ├── EventsSection.tsx      Dynamische Terminberechnung (Build-Zeit)
 │   ├── AboutSection.tsx       Statischer Vereinstext
-│   ├── SponsorsSection.tsx    Sponsoren aus lib/data.ts
+│   ├── SponsorsSection.tsx    Unterstützer aus lib/data.ts (Route: /unterstuetzer)
 │   └── MembershipCTASection.tsx  framer-motion Orbs
 │
 ├── components/ui/
@@ -1073,10 +1073,13 @@ lib/
 │   ├── news[]           News-Artikel mit Volltext und Slug
 │   ├── mannschaften[]   3 Teams mit vollständigem Spielplan 2025/26
 │   ├── clubStats[]      4 Kennzahlen-Karten (mit href)
-│   ├── sponsors[]       Sponsorenliste (gold / silber)
+│   ├── sponsors[]       Unterstützerliste (gold / silber; Route: /unterstuetzer)
 │   ├── downloads[]      Downloaddateien und externe Links
 │   ├── links[]          Links-Seite (Gruppen mit Items)
 │   └── chronik[]        Vereinschronik-Einträge
+│
+├── kontakt-routing.ts   Auto-generiert via scripts/generate-kontakt-routing.mjs
+│                        Typisiertes Array: value, label, to[], cc[] je Betreff
 │
 ├── turnier-utils.ts     Datumslogik (Build-Zeit)
 │   ├── getNextMittwochsturnier()   letzter Mi im Monat
@@ -1091,29 +1094,28 @@ lib/
 ### Build & Deployment
 
 ```
-Quellcode (pbc-erding2/)
+Quellcode (pbc-erding.de/)
         │
         ▼
   npm run build
-  (Next.js statischer Export)
+  → generate-kontakt-routing.mjs (Prebuild)
+  → Next.js statischer Export
         │
         ▼
      out/           ← Statische HTML/CSS/JS-Dateien
         │
-        ├──▶  robocopy  ──▶  weberding/pbced/pbced2/   (lokal, Entwurf)
-        │                           │
-        │                           ▼
-        │                    weberding.de/pbced/pbced2  (nach FTP-Upload)
+        ├──▶  FTP/SFTP  ──▶  Wurzelverzeichnis pbc-erding.de
         │
-        └──▶  git push  ──▶  github.com/chrisgitti/pbc-erding2
+        └──▶  git push  ──▶  github.com/chrisgitti/pbc-erding.de
 ```
 
 **basePath-Regelung:**
 
-| Modus       | Build-Befehl                          | basePath        | URL                        |
-|-------------|---------------------------------------|-----------------|----------------------------|
-| Entwurf     | `npm run build`                       | `/pbced/pbced2` | `weberding.de/pbced/pbced2`|
-| Produktion  | `BASE_PATH='' npm run build` (PS: `$env:BASE_PATH=''; npm run build`) | *(leer)* | eigene Domain |
+| Modus       | Build-Befehl      | basePath | URL                    |
+|-------------|-------------------|----------|------------------------|
+| Produktion  | `npm run build`   | *(leer)* | `www.pbc-erding.de/`   |
+
+Kein separater Entwurfs-Modus mehr; `basePath` ist dauerhaft `''`.
 
 ---
 
@@ -1124,15 +1126,15 @@ ohne Build-Prozess, für Pflege ohne Next.js-Kenntnisse.
 
 | Eigenschaft  | Wert                                                                  |
 |--------------|-----------------------------------------------------------------------|
-| Verzeichnis  | `Fallback/` (innerhalb von `pbc-erding2/`)                           |
+| Verzeichnis  | `Fallback/` (innerhalb von `pbc-erding.de/`)                         |
 | Technologie  | Reines HTML, CSS Custom Properties, Vanilla JS (IIFE)                |
-| Deployment   | FTP → `/pbced/pbced2/fallback/` → `weberding.de/pbced/pbced2/fallback/` |
-| Seiten       | 12 HTML-Seiten + 17 News-Artikel in `news/`                          |
+| Deployment   | FTP → Wurzelverzeichnis `pbc-erding.de/fallback/`                    |
+| Seiten       | 14 HTML-Seiten + 20 News-Artikel in `news/`                          |
 | CSS          | `css/style.css` (~1700 Zeilen, ein File)                              |
 | JS           | `nav.js` · `events.js` · `veranstaltungen.js` · `galerie.js`         |
 | Assets       | Eigenständige Kopien in `Fallback/images/` (inkl. `chronik/`), `Fallback/downloads/` |
-| Pflege-Skill | `/pbced-fallback`                                                     |
-| Stand        | April 2026                                                            |
+| Pflege-Skill | `/pbc-ed_fallback`                                                    |
+| Stand        | Mai 2026                                                              |
 
 ---
 

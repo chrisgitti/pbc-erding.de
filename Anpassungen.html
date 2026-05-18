@@ -1048,7 +1048,7 @@
 
   <!-- Architektur -->
   <details class="phase">
-    <summary><span class="summary-text">Architektur &amp; Seitenstruktur <span class="date">(Stand: April 2026)</span></span></summary>
+    <summary><span class="summary-text">Architektur &amp; Seitenstruktur <span class="date">(Stand: Mai 2026)</span></span></summary>
     <div class="phase-body">
 
       <h3>Technologie-Stack</h3>
@@ -1059,12 +1059,12 @@
           <tr><td>UI</td><td>React 19, Tailwind CSS 4, TypeScript</td></tr>
           <tr><td>Animationen</td><td>framer-motion (nur Hero, Stats, MembershipCTA)</td></tr>
           <tr><td>Schriften</td><td>Inter (Body), Bebas Neue (Display) via next/font</td></tr>
-          <tr><td>Deployment</td><td>Statischer Export → robocopy → Apache / IONOS</td></tr>
+          <tr><td>Deployment</td><td>Statischer Export → FTP → Wurzelverzeichnis pbc-erding.de</td></tr>
         </tbody>
       </table>
 
       <h3>Seiten (Routen)</h3>
-      <pre style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:0.75rem; padding:1.25rem 1.5rem; font-size:0.78rem; line-height:1.8; overflow-x:auto; color:rgba(255,255,255,0.72); font-family:'Consolas','Menlo',monospace;">pbc-erding2/
+      <pre style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:0.75rem; padding:1.25rem 1.5rem; font-size:0.78rem; line-height:1.8; overflow-x:auto; color:rgba(255,255,255,0.72); font-family:'Consolas','Menlo',monospace;">pbc-erding.de/
 │
 ├── /                        Startseite
 ├── /verein                  Vereinsseite mit Chronik
@@ -1075,8 +1075,8 @@
 ├── /galerie                 Fotogalerie mit Lightbox
 ├── /downloads               Vereinsunterlagen &amp; Vorlagen
 ├── /links                   Externe Links (Verbände, Partner)
-├── /sponsoren               Sponsorenübersicht
-├── /kontakt                 Kontaktformular (mailto)
+├── /unterstuetzer           Unterstützer-/Sponsorenübersicht
+├── /kontakt                 Kontaktformular (mailto, konfigurierbares Routing)
 ├── /impressum               Impressum
 ├── /datenschutz             Datenschutzerklärung
 └── /sitemap.xml             Automatisch generierte Sitemap</pre>
@@ -1122,10 +1122,10 @@
 ├── components/sections/          Nur auf der Startseite genutzt
 │   ├── HeroSection.tsx           framer-motion Entrance-Animation
 │   ├── StatsSection.tsx          Count-up via useInView
-│   ├── NewsSection.tsx           Letzte 3 Artikel aus lib/data.ts
-│   ├── EventsSection.tsx         Dynamische Terminberechnung (Laufzeit)
+│   ├── NewsSection.tsx           Letzte 3 Artikel (datumsabsteigend) aus lib/data.ts
+│   ├── EventsSection.tsx         Dynamische Terminberechnung (Build-Zeit)
 │   ├── AboutSection.tsx          Statischer Vereinstext
-│   ├── SponsorsSection.tsx       Sponsoren aus lib/data.ts
+│   ├── SponsorsSection.tsx       Unterstützer aus lib/data.ts (Route: /unterstuetzer)
 │   └── MembershipCTASection.tsx  framer-motion Orbs
 │
 ├── components/ui/
@@ -1148,10 +1148,13 @@
 │   ├── news[]           News-Artikel mit Volltext und Slug
 │   ├── mannschaften[]   3 Teams mit vollständigem Spielplan 2025/26
 │   ├── clubStats[]      4 Kennzahlen-Karten (mit href)
-│   ├── sponsors[]       Sponsorenliste (gold / silber)
+│   ├── sponsors[]       Unterstützerliste (gold / silber; Route: /unterstuetzer)
 │   ├── downloads[]      Downloaddateien und externe Links
 │   ├── links[]          Links-Seite (Gruppen mit Items)
 │   └── chronik[]        Vereinschronik-Einträge
+│
+├── kontakt-routing.ts   Auto-generiert via scripts/generate-kontakt-routing.mjs
+│                        Typisiertes Array: value, label, to[], cc[] je Betreff
 │
 ├── turnier-utils.ts     Datumslogik (Build-Zeit)
 │   ├── getNextMittwochsturnier()   letzter Mi im Monat
@@ -1161,55 +1164,48 @@
 └── site-config.ts       Vereinsstammdaten, Kontakt, Social</pre>
 
       <h3>Build &amp; Deployment</h3>
-      <pre style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:0.75rem; padding:1.25rem 1.5rem; font-size:0.78rem; line-height:1.9; overflow-x:auto; color:rgba(255,255,255,0.72); font-family:'Consolas','Menlo',monospace;">Quellcode (pbc-erding2/)
+      <pre style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:0.75rem; padding:1.25rem 1.5rem; font-size:0.78rem; line-height:1.9; overflow-x:auto; color:rgba(255,255,255,0.72); font-family:'Consolas','Menlo',monospace;">Quellcode (pbc-erding.de/)
         │
         ▼
   npm run build
-  (Next.js statischer Export)
+  → generate-kontakt-routing.mjs (Prebuild)
+  → Next.js statischer Export
         │
         ▼
      out/           ← Statische HTML/CSS/JS-Dateien
         │
-        ├──▶  robocopy  ──▶  weberding/pbced/pbced2/   (lokal, Entwurf)
-        │                           │
-        │                           ▼
-        │                    weberding.de/pbced/pbced2  (nach FTP-Upload)
+        ├──▶  FTP/SFTP  ──▶  Wurzelverzeichnis pbc-erding.de
         │
-        └──▶  git push  ──▶  github.com/chrisgitti/pbc-erding2</pre>
+        └──▶  git push  ──▶  github.com/chrisgitti/pbc-erding.de</pre>
 
       <table>
         <thead><tr><th>Modus</th><th>Build-Befehl</th><th>basePath</th><th>URL</th></tr></thead>
         <tbody>
           <tr>
-            <td>Entwurf</td>
-            <td><code>npm run build</code></td>
-            <td><code>/pbced/pbced2</code></td>
-            <td>weberding.de/pbced/pbced2</td>
-          </tr>
-          <tr>
             <td>Produktion</td>
-            <td><code>$env:BASE_PATH=''; npm run build</code></td>
+            <td><code>npm run build</code></td>
             <td><em>(leer)</em></td>
-            <td>eigene Domain</td>
+            <td>www.pbc-erding.de/</td>
           </tr>
         </tbody>
       </table>
+      <p>Kein separater Entwurfs-Modus mehr; <code>basePath</code> ist dauerhaft <code>''</code>.</p>
 
       <h3>Fallbackvariante</h3>
       <p>Eigenständige HTML/CSS/JS-Version der Website unter <code>Fallback/</code> – ohne Framework, ohne Build-Prozess, für Pflege ohne Next.js-Kenntnisse.</p>
       <table>
         <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
         <tbody>
-          <tr><td>Verzeichnis</td><td><code>Fallback/</code> (innerhalb von pbc-erding2)</td></tr>
+          <tr><td>Verzeichnis</td><td><code>Fallback/</code> (innerhalb von pbc-erding.de/)</td></tr>
           <tr><td>Technologie</td><td>Reines HTML, CSS Custom Properties, Vanilla JS (IIFE)</td></tr>
-          <tr><td>Deployment</td><td>FTP → <code>/pbced/pbced2/fallback/</code> → <a href="https://weberding.de/pbced/pbced2/fallback/" target="_blank" rel="noopener noreferrer">weberding.de/pbced/pbced2/fallback/</a></td></tr>
-          <tr><td>Seiten</td><td>12 HTML-Seiten + 17 News-Artikel in <code>news/</code></td></tr>
+          <tr><td>Deployment</td><td>FTP → Wurzelverzeichnis <code>pbc-erding.de/fallback/</code></td></tr>
+          <tr><td>Seiten</td><td>14 HTML-Seiten + 20 News-Artikel in <code>news/</code></td></tr>
           <tr><td>CSS</td><td><code>css/style.css</code> (~1700 Zeilen, ein File)</td></tr>
-          <tr><td>JS</td><td><code>nav.js</code> · <code>events.js</code> · <code>turniere.js</code> · <code>galerie.js</code></td></tr>
+          <tr><td>JS</td><td><code>nav.js</code> · <code>events.js</code> · <code>veranstaltungen.js</code> · <code>galerie.js</code></td></tr>
           <tr><td>Bilder</td><td>Eigenständige Kopien in <code>images/</code>, <code>images/galerie/</code>, <code>images/chronik/</code></td></tr>
           <tr><td>Downloads</td><td>Eigenständige Kopien in <code>downloads/</code></td></tr>
-          <tr><td>Pflege-Skill</td><td><code>/pbced-fallback</code></td></tr>
-          <tr><td>Stand</td><td>April 2026</td></tr>
+          <tr><td>Pflege-Skill</td><td><code>/pbc-ed_fallback</code></td></tr>
+          <tr><td>Stand</td><td>Mai 2026</td></tr>
         </tbody>
       </table>
     </div>
