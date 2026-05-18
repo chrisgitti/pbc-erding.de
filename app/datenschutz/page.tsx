@@ -202,7 +202,7 @@ export default function DatenschutzPage() {
             <h2 className="text-xl font-black uppercase text-white">9. Externe Links</h2>
             <p>
               Unsere Website enthält Links zu externen Websites, zum Beispiel zu
-              Sportverbänden, Partnern, Sponsoren oder zu unserem Facebook-Auftritt.
+              Sportverbänden, Partnern, Unterstützern oder zu unserem Facebook-Auftritt.
               Beim bloßen Besuch unserer Website werden an diese Anbieter keine Daten
               übermittelt, soweit es sich nur um normale Verlinkungen handelt. Erst
               wenn Sie einen solchen Link aktiv anklicken, verlassen Sie unsere

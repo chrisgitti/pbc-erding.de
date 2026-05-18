@@ -44,7 +44,7 @@ export default function SponsorsSection() {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold-500/15 text-gold-500 text-sm font-black tracking-wider">
                 {monogram(sponsor.name)}
               </div>
-              <Badge variant="gold">Hauptsponsor</Badge>
+              <Badge variant="gold">Hauptunterstützer</Badge>
               <span className="text-xl font-bold text-white">{sponsor.name}</span>
               {sponsor.description && <span className="text-xs text-white/60">{sponsor.description}</span>}
             </motion.div>
@@ -66,7 +66,7 @@ export default function SponsorsSection() {
 
         <p className="mt-10 text-center text-sm text-white/65">
           Interesse an einer Partnerschaft?{' '}
-          <Link href="/kontakt?betreff=sponsoring" className="text-gold-500 hover:text-gold-400 transition-colors underline underline-offset-4 decoration-gold-500/40">Jetzt anfragen</Link>
+          <Link href="/kontakt?betreff=unterstuetzung" className="text-gold-500 hover:text-gold-400 transition-colors underline underline-offset-4 decoration-gold-500/40">Jetzt anfragen</Link>
         </p>
       </Container>
     </section>

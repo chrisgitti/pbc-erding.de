@@ -14,9 +14,9 @@ export default function UnterstuetzerPage() {
   const silber = sponsors.filter((s) => s.tier === 'silber')
   const bronze = sponsors.filter((s) => s.tier === 'bronze')
   const packages = [
-    { name: 'Präsenz im Clubheim', text: 'Logo-Flächen, Event-Erwähnungen und Platzierung auf Sponsorentafeln.' },
-    { name: 'Digitale Sichtbarkeit', text: 'Darstellung auf Startseite, Sponsorenübersicht und Eventseiten.' },
-    { name: 'Turnier-Unterstützung', text: 'Namensnennung bei Vereinsformaten, Turnieren und Berichten.' },
+    { name: 'Präsenz im Clubheim', text: 'Platzierung auf Aushängen und Tafeln im Vereinsheim, Nennung bei Veranstaltungen.' },
+    { name: 'Digitale Sichtbarkeit', text: 'Darstellung auf der Vereinswebsite und in den sozialen Medien des PBC Erding.' },
+    { name: 'Turnier-Unterstützung', text: 'Namensnennung bei Vereinsformaten, Turnieren und Vereinsberichten.' },
   ]
 
   return (
@@ -26,7 +26,7 @@ export default function UnterstuetzerPage() {
           <SectionHeading
             label="Partner & Förderer"
             title="Unsere Unterstützer"
-            subtitle="Ein Teil dieser Partner und Anlaufstellen stammt direkt aus den Inhalten der bisherigen Vereinswebsite."
+            subtitle="Wir freuen uns über jede Unterstützung – ob als Partner, Förderer oder durch persönliches Engagement."
           />
         </Container>
       </div>
@@ -43,7 +43,7 @@ export default function UnterstuetzerPage() {
           </div>
 
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-500 mb-8">Hauptsponsoren</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-500 mb-8">Hauptunterstützer</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/5">
               {gold.map((s) => (
                 <div key={s.id} className="bg-charcoal-950 p-10 flex flex-col gap-3">
@@ -77,10 +77,10 @@ export default function UnterstuetzerPage() {
           </div>
 
           <div className="rounded-[1.5rem] border border-gold-500/20 bg-gold-500/5 p-10">
-            <h2 className="font-display text-4xl sm:text-5xl uppercase text-white mb-4">Partner werden</h2>
+            <h2 className="font-display text-4xl sm:text-5xl uppercase text-white mb-4">Den Verein unterstützen</h2>
             <p className="text-white/80 leading-relaxed max-w-2xl mb-8">
-              Als Sponsor des PBC Erding unterstützen Sie aktiven Sport in der Region und
-              profitieren von Sichtbarkeit bei Turnieren, im Clubheim und auf unserer Website.
+              Sie möchten den PBC Erding unterstützen? Wir freuen uns über Ihre Anfrage –
+              ganz ohne vertragliche Verpflichtung, einfach aus Freude am Sport in der Region.
             </p>
             <Button href="/kontakt" variant="primary">Jetzt anfragen</Button>
           </div>

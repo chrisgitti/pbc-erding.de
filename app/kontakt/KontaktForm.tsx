@@ -8,7 +8,7 @@ const BETREFF_OPTIONS = [
   { value: 'mitgliedschaft', label: 'Mitgliedschaft' },
   { value: 'training',       label: 'Schnuppertraining' },
   { value: 'turnier',        label: 'Turnieranmeldung' },
-  { value: 'sponsoring',     label: 'Sponsoring/Partnerschaft' },
+  { value: 'unterstuetzung', label: 'Unterstützung/Partnerschaft' },
   { value: 'sonstiges',      label: 'Sonstiges' },
 ]
 
