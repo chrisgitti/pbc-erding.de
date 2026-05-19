@@ -142,12 +142,14 @@
   function scalePages() {
     const pages = document.querySelectorAll('.page');
     if (!pages.length) return;
+    // Reset transform first so offsetWidth reflects true A4 width
+    pages.forEach(p => { p.style.transform = ''; p.style.marginBottom = ''; });
     const vw = window.innerWidth;
-    const pageW = pages[0].getBoundingClientRect().width || (210 * 3.7795);
-    const scale = vw < 820 ? Math.min(1, (vw - 0) / pageW) : 1;
+    const pageW = pages[0].offsetWidth;
+    const scale = pageW > vw ? vw / pageW : 1;
     pages.forEach(p => {
       p.style.transform = scale < 1 ? `scale(${scale})` : '';
-      p.style.marginBottom = scale < 1 ? `${(p.scrollHeight * scale) - p.scrollHeight}px` : '';
+      p.style.marginBottom = scale < 1 ? `${(p.offsetHeight * scale) - p.offsetHeight}px` : '';
     });
     const stage = document.querySelector('.stage');
     if (stage) stage.style.gap = scale < 1 ? `${24 * scale}px` : '';
