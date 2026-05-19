@@ -901,6 +901,30 @@ details[open] .team-section-chevron {
   gap: 0.5rem;
 }
 
+.download-item-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.download-item-row .download-item {
+  flex: 1;
+}
+
+.download-item-html {
+  flex: 0 0 auto !important;
+  min-width: 0;
+}
+
+.download-item-html .download-title {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .download-item-html .download-title {
+    display: inline;
+  }
+}
+
 .download-item {
   display: flex;
   align-items: center;
