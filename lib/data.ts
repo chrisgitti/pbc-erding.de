@@ -924,14 +924,15 @@ export type DownloadItem = {
   href: string
   group: string
   filename?: string
+  htmlHref?: string
 }
 
 export const downloads: DownloadItem[] = [
-  { title: 'Satzung PBC Erding e.V.',                           group: 'Verein',    filename: 'PBC-Erding_Satzung.pdf',                                href: '/downloads/PBC-Erding_Satzung.pdf' },
-  { title: 'Aufnahmeantrag PBC Erding e.V.',                    group: 'Verein',    filename: 'PBC-Erding_Aufnahmeantrag.pdf',                         href: '/downloads/PBC-Erding_Aufnahmeantrag.pdf' },
-  { title: 'Einzugsermächtigung PBC Erding e.V.',               group: 'Verein',    filename: 'PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.pdf',       href: '/downloads/PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.pdf' },
-  { title: 'Informationsblatt PBC Erding e.V.',                 group: 'Verein',    filename: 'PBC-Erding_Informationsblatt.pdf',                       href: '/downloads/PBC-Erding_Informationsblatt.pdf' },
-  { title: 'Fahrtkostenzuschuss 2024/2025',                     group: 'Liga',      filename: 'PBC-Erding_Fahrtkostenzuschuss-2024-2025.pdf',           href: '/downloads/PBC-Erding_Fahrtkostenzuschuss-2024-2025.pdf' },
+  { title: 'Satzung PBC Erding e.V.',                           group: 'Verein',    filename: 'PBC-Erding_Satzung.pdf',                                href: '/downloads/PBC-Erding_Satzung.pdf',                          htmlHref: '/schriftstuecke/satzung.html' },
+  { title: 'Aufnahmeantrag PBC Erding e.V.',                    group: 'Verein',    filename: 'PBC-Erding_Aufnahmeantrag.pdf',                         href: '/downloads/PBC-Erding_Aufnahmeantrag.pdf',                    htmlHref: '/schriftstuecke/aufnahmeantrag.html' },
+  { title: 'Einzugsermächtigung PBC Erding e.V.',               group: 'Verein',    filename: 'PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.pdf',       href: '/downloads/PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.pdf', htmlHref: '/schriftstuecke/sepa.html' },
+  { title: 'Informationsblatt PBC Erding e.V.',                 group: 'Verein',    filename: 'PBC-Erding_Informationsblatt.pdf',                       href: '/downloads/PBC-Erding_Informationsblatt.pdf',                 htmlHref: '/schriftstuecke/informationsblatt.html' },
+  { title: 'Fahrtkostenzuschuss 2024/2025',                     group: 'Liga',      filename: 'PBC-Erding_Fahrtkostenzuschuss-2024-2025.pdf',           href: '/downloads/PBC-Erding_Fahrtkostenzuschuss-2024-2025.pdf',     htmlHref: '/schriftstuecke/fahrtkosten.html' },
   { title: 'Spielregeln Pool (8-Ball / 9-Ball / 10-Ball / 14-1)', group: 'Regelwerk', filename: 'Spielregeln-Pool_DBU_Stand-2009-03.pdf',              href: '/downloads/Spielregeln-Pool_DBU_Stand-2009-03.pdf' },
   { title: 'Sport- und Turnierordnung BBV-Pool',                group: 'Regelwerk', filename: 'Aktuelle_Sportordnung_BBV-Pool_24-04-01.pdf',          href: '/downloads/Aktuelle_Sportordnung_BBV-Pool_24-04-01.pdf' },
   { title: 'Spielberichtsvorlage Pool BBV',                     group: 'Vorlagen',  filename: 'BBV_Vorlage-Spielbericht-Pool.pdf',                     href: '/downloads/BBV_Vorlage-Spielbericht-Pool.pdf' },

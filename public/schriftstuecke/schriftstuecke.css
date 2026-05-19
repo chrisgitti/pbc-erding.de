@@ -1,0 +1,601 @@
+/* ============================================================================
+   PBC Erding — Schriftstück-Vorlagen (A4)
+   ============================================================================ */
+@import url('colors_and_type.css');
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: #E5DFD3;
+  font-family: var(--font-body);
+  color: var(--fg-1);
+}
+
+.tabbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; flex-wrap: wrap; gap: 4px; padding: 12px 24px;
+  background: rgba(229, 223, 211, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.tabbar .brand {
+  display: flex; align-items: center; gap: 10px;
+  margin-right: auto;
+  font: 700 14px/1 var(--font-display);
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.tabbar .brand img { width: 28px; height: 28px; }
+.tab {
+  padding: 7px 12px;
+  font: 600 12.5px/1 var(--font-body);
+  color: var(--fg-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--burgundy); }
+.tab.active {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+
+.stage {
+  display: flex; flex-direction: column; align-items: center; gap: 24px;
+  padding: 32px 16px 64px;
+}
+
+.page {
+  position: relative;
+  width: 210mm;
+  min-height: 297mm;
+  background: var(--paper);
+  box-shadow: 0 4px 28px rgb(17 16 15 / 0.18), 0 1px 2px rgb(17 16 15 / 0.08);
+  border-radius: 1.5mm;
+  overflow: hidden;
+}
+.page[hidden] { display: none; }
+
+.letterhead {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 6mm 20mm 0 25mm;
+  gap: 16mm;
+}
+.letterhead .left { display: flex; align-items: center; gap: 14px; }
+.letterhead .left img { width: 58px; height: 58px; flex-shrink: 0; }
+.letterhead .left .wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.letterhead .left .wordmark .name-1 {
+  font: 700 19px/1.05 var(--font-display);
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.letterhead .left .wordmark .name-2 {
+  font: 600 14px/1.05 var(--font-display);
+  letter-spacing: 0.04em;
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+.letterhead .left .wordmark .sub {
+  display: block;
+  font: 500 10px/1 var(--font-body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+  margin-top: 6px;
+}
+.letterhead .right {
+  text-align: right;
+  font: 400 10pt/1.45 var(--font-body);
+  color: var(--fg-2);
+}
+.letterhead .right strong { color: var(--ink); font-weight: 600; }
+
+.footer-band {
+  position: absolute;
+  left: 25mm; right: 20mm; bottom: 14mm;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8mm;
+  padding-top: 6mm;
+  border-top: 1px solid var(--line-strong);
+  font: 400 8.5pt/1.45 var(--font-body);
+  color: var(--fg-3);
+}
+.footer-band .col strong {
+  display: block;
+  font: 600 9pt/1 var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+  margin-bottom: 3mm;
+}
+.footer-band .col p { margin: 0 0 1mm 0; }
+
+.chevron-strip {
+  height: 18mm;
+  background:
+    linear-gradient(to bottom,
+      transparent 0,
+      transparent 16mm,
+      var(--burgundy) 16mm,
+      var(--burgundy) 16.8mm,
+      transparent 16.8mm,
+      transparent 100%
+    ),
+    linear-gradient(to bottom,
+      transparent 0,
+      transparent 12mm,
+      var(--burgundy) 12mm,
+      var(--burgundy) 15mm,
+      transparent 15mm,
+      transparent 100%
+    ),
+    var(--paper);
+}
+
+@media print {
+  @page { size: A4; margin: 0; }
+  html, body { background: white; }
+  .tabbar { display: none; }
+  .stage { padding: 0; gap: 0; }
+  .page { box-shadow: none; border-radius: 0; page-break-after: always; }
+}
+
+/* ============================================================================
+   INFORMATIONSBLATT
+   ============================================================================ */
+.info-blatt .body {
+  padding: 6mm 20mm 60mm 25mm;
+  font: 400 11pt/1.55 var(--font-body);
+  color: var(--fg-1);
+}
+.info-blatt h1.subject {
+  font: 700 22pt/1.1 var(--font-display);
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  margin: 4mm 0 6mm;
+}
+.info-blatt .stand {
+  font: 500 9pt/1 var(--font-mono);
+  color: var(--fg-3);
+  margin-bottom: 8mm;
+}
+.info-blatt h2 {
+  font: 700 14pt/1.1 var(--font-display);
+  color: var(--ink);
+  margin: 8mm 0 4mm;
+  letter-spacing: -0.005em;
+}
+.info-blatt h2:first-of-type { margin-top: 0; }
+.info-blatt .lead {
+  font: 400 11pt/1.5 var(--font-body);
+  color: var(--fg-2);
+  margin-bottom: 4mm;
+}
+.info-blatt .price-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6mm;
+  font: 400 10.5pt/1.4 var(--font-body);
+}
+.info-blatt .price-table th {
+  text-align: left;
+  font: 600 9pt/1 var(--font-body);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+  padding: 0 4mm 3mm 0;
+  border-bottom: 0.4mm solid var(--ink);
+}
+.info-blatt .price-table th.num { text-align: right; }
+.info-blatt .price-table td {
+  padding: 3mm 4mm 3mm 0;
+  border-bottom: 0.2mm solid var(--line);
+}
+.info-blatt .price-table td.num {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.info-blatt .price-table tr:last-child td { border-bottom: none; }
+.info-blatt .price-table .category { font-weight: 500; color: var(--ink); }
+.info-blatt p { margin: 0 0 3.5mm; text-wrap: pretty; }
+.info-blatt .signature { margin-top: 10mm; }
+.info-blatt .signature .gruss { margin-bottom: 6mm; }
+.info-blatt .vorstand {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5mm 8mm;
+  font: 400 10.5pt/1.4 var(--font-body);
+}
+.info-blatt .vorstand strong { color: var(--ink); font-weight: 600; }
+
+/* ============================================================================
+   AUFNAHMEANTRAG
+   ============================================================================ */
+.aufnahme .body {
+  padding: 6mm 20mm 60mm 25mm;
+  font: 400 11pt/1.5 var(--font-body);
+  color: var(--fg-1);
+}
+.aufnahme h1.subject {
+  font: 700 22pt/1.1 var(--font-display);
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  margin: 4mm 0 5mm;
+}
+.aufnahme .intro {
+  font: 400 11pt/1.5 var(--font-body);
+  color: var(--fg-2);
+  margin-bottom: 8mm;
+  padding: 4mm 6mm;
+  background: var(--burgundy-tint);
+  border-left: 1mm solid var(--burgundy);
+}
+.aufnahme .form-grid {
+  display: grid;
+  grid-template-columns: 35mm 1fr;
+  gap: 6mm 4mm;
+  margin-bottom: 8mm;
+}
+.aufnahme .form-grid .label {
+  font: 600 10pt/1.4 var(--font-body);
+  color: var(--ink);
+  padding-top: 2mm;
+}
+.aufnahme .form-grid .field {
+  border-bottom: 0.4mm solid var(--ink);
+  min-height: 8mm;
+  padding: 0 1mm 1mm;
+}
+.aufnahme .form-grid .field.split {
+  display: grid;
+  grid-template-columns: 1fr 30mm 1fr;
+  gap: 4mm;
+  border: none;
+  min-height: 0;
+  padding: 0;
+}
+.aufnahme .form-grid .field.split > div {
+  border-bottom: 0.4mm solid var(--ink);
+  min-height: 8mm;
+}
+.aufnahme h2 {
+  font: 700 13pt/1.1 var(--font-display);
+  color: var(--ink);
+  margin: 0 0 4mm;
+  letter-spacing: -0.005em;
+}
+.aufnahme .choices {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8mm;
+  font: 400 10.5pt/1.4 var(--font-body);
+}
+.aufnahme .choices th {
+  text-align: left;
+  font: 600 9pt/1 var(--font-body);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+  padding: 0 4mm 3mm 0;
+  border-bottom: 0.4mm solid var(--ink);
+}
+.aufnahme .choices th.num { text-align: right; }
+.aufnahme .choices td {
+  padding: 3mm 4mm 3mm 0;
+  border-bottom: 0.2mm solid var(--line);
+}
+.aufnahme .choices td.num {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.aufnahme .choices tr:last-child td { border-bottom: none; }
+.checkbox {
+  display: inline-block;
+  width: 4mm; height: 4mm;
+  border: 0.4mm solid var(--ink);
+  border-radius: 0.6mm;
+  vertical-align: -0.5mm;
+  margin-right: 2mm;
+  flex-shrink: 0;
+}
+.aufnahme .sign-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8mm;
+  margin-top: 10mm;
+}
+.aufnahme .sig-block .line {
+  border-bottom: 0.4mm solid var(--ink);
+  height: 14mm;
+  margin-bottom: 2mm;
+}
+.aufnahme .sig-block .cap {
+  font: 400 9pt/1.35 var(--font-body);
+  color: var(--fg-3);
+}
+.aufnahme .place {
+  display: flex;
+  gap: 4mm;
+  align-items: baseline;
+  margin: 8mm 0 0;
+}
+.aufnahme .place .city { font: 500 10.5pt/1 var(--font-body); color: var(--ink); }
+.aufnahme .place .date-line {
+  border-bottom: 0.4mm solid var(--ink);
+  flex: 0 0 50mm;
+  height: 8mm;
+}
+.aufnahme .place .lbl { font: 400 9pt/1.4 var(--font-body); color: var(--fg-3); }
+
+/* ============================================================================
+   SEPA
+   ============================================================================ */
+.sepa .body {
+  padding: 6mm 20mm 60mm 25mm;
+  font: 400 11pt/1.5 var(--font-body);
+}
+.sepa h1.subject {
+  font: 700 22pt/1.1 var(--font-display);
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  margin: 4mm 0 6mm;
+}
+.sepa .ids {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2mm 6mm;
+  font: 400 10pt/1.4 var(--font-body);
+  background: var(--cream);
+  padding: 4mm 6mm;
+  border-radius: 2mm;
+  margin-bottom: 8mm;
+}
+.sepa .ids .k {
+  font: 600 9pt/1.2 var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+}
+.sepa .ids .v {
+  font-family: var(--font-mono);
+  font-size: 10.5pt;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.sepa .form-grid {
+  display: grid;
+  grid-template-columns: 30mm 1fr;
+  gap: 5mm 4mm;
+  margin-bottom: 8mm;
+}
+.sepa .form-grid .label { font: 600 10pt/1.4 var(--font-body); color: var(--ink); padding-top: 2mm; }
+.sepa .form-grid .field { border-bottom: 0.4mm solid var(--ink); min-height: 8mm; }
+.sepa .form-grid .field.split-2 { display: grid; grid-template-columns: 1fr 30mm 1fr; gap: 4mm; border: none; min-height: 0; }
+.sepa .form-grid .field.split-2 > div { border-bottom: 0.4mm solid var(--ink); min-height: 8mm; }
+.sepa .form-grid .field.split-3 { display: grid; grid-template-columns: 1fr 60mm; gap: 4mm; border: none; min-height: 0; }
+.sepa .form-grid .field.split-3 > div { border-bottom: 0.4mm solid var(--ink); min-height: 8mm; }
+.sepa .mandate {
+  font: 400 11pt/1.55 var(--font-body);
+  color: var(--fg-1);
+  margin: 6mm 0 8mm;
+}
+.sepa .mandate p { margin: 0 0 3.5mm; }
+.sepa .sign-row {
+  margin-top: 10mm;
+  display: grid;
+  grid-template-columns: 50mm 1fr;
+  gap: 8mm;
+}
+.sepa .sign-row .field { border-bottom: 0.4mm solid var(--ink); height: 14mm; }
+.sepa .sign-row .cap { font: 400 9pt/1.35 var(--font-body); color: var(--fg-3); margin-top: 2mm; }
+.sepa .hinweis {
+  margin-top: 10mm;
+  padding: 4mm 6mm;
+  background: var(--burgundy-tint);
+  border-left: 1mm solid var(--burgundy);
+  font: 400 9.5pt/1.45 var(--font-body);
+  color: var(--ink);
+}
+
+/* ============================================================================
+   FAHRTKOSTEN
+   ============================================================================ */
+.fahrtkosten .body {
+  padding: 6mm 20mm 60mm 25mm;
+  font: 400 11pt/1.5 var(--font-body);
+}
+.fahrtkosten h1.subject {
+  font: 700 20pt/1.1 var(--font-display);
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  margin: 4mm 0 2mm;
+}
+.fahrtkosten .saison {
+  font: 500 11pt/1.2 var(--font-body);
+  color: var(--burgundy);
+  margin-bottom: 8mm;
+  letter-spacing: 0.04em;
+}
+.fahrtkosten .twocol { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8mm; margin-bottom: 8mm; }
+.fahrtkosten h2 {
+  font: 700 12pt/1.1 var(--font-display);
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  margin: 0 0 4mm;
+}
+.fahrtkosten .venue-list { display: flex; flex-direction: column; gap: 2mm; }
+.fahrtkosten .venue-row {
+  display: grid;
+  grid-template-columns: 4mm 1fr auto;
+  gap: 3mm;
+  padding: 1.6mm 0;
+  font: 400 10.5pt/1.3 var(--font-body);
+  border-bottom: 0.15mm solid var(--line);
+}
+.fahrtkosten .venue-row:last-child { border-bottom: none; }
+.fahrtkosten .venue-row .price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--ink);
+}
+.fahrtkosten .team-list { display: flex; flex-direction: column; gap: 3mm; }
+.fahrtkosten .team-row {
+  display: grid;
+  grid-template-columns: 4mm 1fr;
+  gap: 3mm;
+  font: 400 10.5pt/1.3 var(--font-body);
+}
+.fahrtkosten .meta-grid {
+  display: grid;
+  grid-template-columns: 30mm 1fr;
+  gap: 5mm 4mm;
+  margin-bottom: 8mm;
+}
+.fahrtkosten .meta-grid .label { font: 600 10pt/1.4 var(--font-body); color: var(--ink); padding-top: 2mm; }
+.fahrtkosten .meta-grid .field { border-bottom: 0.4mm solid var(--ink); min-height: 8mm; }
+.fahrtkosten .sign-row {
+  display: grid;
+  grid-template-columns: 50mm 1fr 1fr;
+  gap: 6mm;
+  margin-top: 10mm;
+}
+.fahrtkosten .sign-row .field { border-bottom: 0.4mm solid var(--ink); height: 14mm; }
+.fahrtkosten .sign-row .cap { font: 400 9pt/1.35 var(--font-body); color: var(--fg-3); margin-top: 2mm; }
+
+/* ============================================================================
+   SATZUNG
+   ============================================================================ */
+.satzung .body {
+  padding: 6mm 22mm 28mm 25mm;
+  font: 400 10.5pt/1.5 var(--font-body);
+  color: var(--fg-1);
+}
+.satzung h2 {
+  font: 700 12.5pt/1.15 var(--font-display);
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  margin: 6mm 0 3mm;
+  padding-bottom: 1.5mm;
+  border-bottom: 0.3mm solid var(--burgundy);
+}
+.satzung h2:first-child { margin-top: 0; }
+.satzung ol { margin: 0 0 4mm 0; padding-left: 8mm; list-style: none; counter-reset: para; }
+.satzung ol > li {
+  position: relative;
+  margin-bottom: 2mm;
+  counter-increment: para;
+}
+.satzung ol > li::before {
+  content: "(" counter(para) ")";
+  position: absolute;
+  left: -8mm;
+  font-family: var(--font-mono);
+  font-size: 9.5pt;
+  color: var(--burgundy);
+  font-weight: 500;
+}
+.satzung ol ol { margin: 1mm 0 0; padding-left: 6mm; counter-reset: sub; }
+.satzung ol ol > li { counter-increment: sub; margin-bottom: 0.6mm; }
+.satzung ol ol > li::before { content: counter(sub, lower-alpha) ")"; left: -6mm; }
+.satzung .pagenum {
+  position: absolute;
+  bottom: 14mm; right: 25mm;
+  font: 500 9pt/1 var(--font-mono);
+  color: var(--fg-3);
+}
+.satzung .historie {
+  margin-top: 8mm;
+  padding-top: 4mm;
+  border-top: 0.3mm solid var(--ink);
+  font: 400 9.5pt/1.5 var(--font-body);
+  color: var(--fg-2);
+}
+.satzung .historie .row {
+  display: grid;
+  grid-template-columns: 28mm 1fr;
+  gap: 4mm;
+  margin-bottom: 1mm;
+}
+.satzung .historie .row .date { font-family: var(--font-mono); font-weight: 500; color: var(--burgundy); }
+.satzung .closing { margin-top: 6mm; font: 500 10pt/1.4 var(--font-body); color: var(--ink); }
+.satzung .letterhead { padding-top: 6mm; }
+.satzung-page-continue .body { padding-top: 14mm; }
+.satzung-title-block {
+  padding: 8mm 25mm 0 25mm;
+  text-align: center;
+}
+.satzung-title-block .stand {
+  font: 500 9.5pt/1 var(--font-mono);
+  color: var(--fg-3);
+  margin-bottom: 12mm;
+  letter-spacing: 0.04em;
+}
+.satzung-title-block .super {
+  display: inline-block;
+  font: 600 11pt/1 var(--font-body);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+  margin-bottom: 8mm;
+}
+.satzung-title-block h1 {
+  font: 700 44pt/0.98 var(--font-display);
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin: 0 0 8mm;
+}
+.satzung-title-block .sub {
+  font: 400 13pt/1.5 var(--font-body);
+  color: var(--fg-2);
+  max-width: 130mm;
+  margin: 0 auto;
+}
+.satzung-toc {
+  margin: 22mm 25mm 0;
+  padding: 8mm 10mm;
+  background: var(--cream);
+  border-radius: 3mm;
+}
+.satzung-toc h2 {
+  font: 600 10pt/1 var(--font-body);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+  margin: 0 0 5mm;
+  border: none;
+  padding: 0;
+}
+.satzung-toc ol {
+  margin: 0; padding: 0;
+  list-style: none;
+  columns: 2;
+  column-gap: 10mm;
+}
+.satzung-toc ol li {
+  font: 400 10pt/1.6 var(--font-body);
+  color: var(--ink);
+  break-inside: avoid;
+}
+.satzung-toc ol li::before { content: none; }
+.satzung-toc .num {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--burgundy);
+  margin-right: 3mm;
+}

@@ -327,7 +327,7 @@
 
   <!-- Gruppe Website -->
   <details class="group">
-    <summary><span class="group-label">Website – Phasen 1–14</span></summary>
+    <summary><span class="group-label">Website – Phasen 1–15</span></summary>
     <div class="group-body">
 
   <!-- Phase 1 -->
@@ -1041,6 +1041,35 @@
       <h3>14.8 &nbsp;Hero-Section: Hintergrundbild optimiert</h3>
       <p><strong>Datei:</strong> <code>public/images/</code> (Bilddatei), <code>components/sections/HeroSection.tsx</code></p>
       <p>Das Hintergrundbild der Hero-Section wurde durch eine optimierte Version ersetzt.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 15 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 15 – Schriftstücke als HTML-Vorlagen &amp; Download-Links aktualisiert <span class="date">(19. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Neue HTML-Versionen der Vereinsdokumente in <code>public/schriftstuecke/</code> bereitgestellt und auf der Downloadseite als „Online anzeigen"-Button verknüpft. Außerdem wurden neue Datei-Versionen eingepflegt und Dateinamen mit Leerzeichen durch Bindestrich-Varianten ersetzt.</p>
+
+      <h3>15.1 &nbsp;Download-Dateien aktualisiert</h3>
+      <p><strong>Dateien:</strong> <code>public/downloads/</code>, <code>lib/data.ts</code></p>
+      <p>Das Informationsblatt liegt jetzt als <code>PBC-Erding_Informationsblatt.pdf</code> vor (Stand 19.05.2026, vorher <code>PBC-Erding_Informationsblatt_2024-01.pdf</code>). Zusätzlich wurden Bearbeitungsvorlagen hinzugefügt: <code>PBC-Erding_Aufnahmeantrag.odt</code>, <code>PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.odt</code>, <code>PBC-Erding_Informationsblatt.odt</code>, <code>PBC-Erding_Informationsblatt.docx</code>. Alle neuen Dateien wurden mit Bindestrichen statt Leerzeichen im Namen abgelegt. Der Link in <code>lib/data.ts</code> wurde auf den neuen PDF-Dateinamen aktualisiert.</p>
+
+      <h3>15.2 &nbsp;HTML-Schriftstücke erstellt</h3>
+      <p><strong>Dateien:</strong> <code>public/schriftstuecke/aufnahmeantrag.html</code>, <code>informationsblatt.html</code>, <code>sepa.html</code>, <code>fahrtkosten.html</code>, <code>satzung.html</code>, <code>schriftstuecke.css</code>, <code>colors_and_type.css</code></p>
+      <p>Die fünf Vereinsdokumente aus dem Design-Katalog (<code>pbc-erding-design/ui_kits/schriftstuecke/</code>) wurden als druckfertige HTML-Seiten in <code>public/schriftstuecke/</code> integriert. Anpassungen gegenüber dem Design-Katalog:</p>
+      <ul>
+        <li>Logo-Pfad: <code>../../assets/logo_pbced.png</code> → <code>/images/logo_pbced.png</code></li>
+        <li>CSS-Import: <code>../../colors_and_type.css</code> → <code>colors_and_type.css</code> (lokale Kopie im selben Verzeichnis)</li>
+        <li>Zurück-Link: <code>index.html</code> → <code>/downloads</code></li>
+        <li>Tabbar enthält „Drucken"-Button; bei <code>?bare=1</code> wird die Tabbar ausgeblendet</li>
+      </ul>
+      <p>Die Satzung umfasst 7 A4-Seiten als separate <code>&lt;article&gt;</code>-Elemente. In der Fahrtkostenabrechnung wurden die Felder „Start" und „Ziel" ergänzt (zwischen „Liga / Betreff" und „Fahrer").</p>
+
+      <h3>15.3 &nbsp;Download-Seite: „Online anzeigen"-Button</h3>
+      <p><strong>Datei:</strong> <code>app/downloads/page.tsx</code>, <code>lib/data.ts</code></p>
+      <p>Der Typ <code>DownloadItem</code> wurde um das optionale Feld <code>htmlHref?: string</code> erweitert. Die fünf betroffenen Einträge (Satzung, Aufnahmeantrag, Einzugsermächtigung, Informationsblatt, Fahrtkostenzuschuss) erhielten je einen <code>htmlHref</code>-Wert. Auf der Downloadseite erscheint bei diesen Einträgen rechts ein kompakter Auge-Icon-Button, der die HTML-Version im neuen Tab öffnet.</p>
     </div>
   </details>
 

@@ -1,0 +1,247 @@
+/* ============================================================================
+   PBC Erding — Colors & Type
+   Drop this into the <head> of any HTML file. Then use the CSS vars or
+   the semantic classes (.h1, .h2, .eyebrow, .body, .btn, .card, .badge).
+   ============================================================================ */
+
+/* -- Fonts (Google Fonts substitutes — see README) -------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ----- Color: brand ---------------------------------------------------- */
+  --ink:            #11100F;   /* near-black jersey body */
+  --ink-2:          #1F1B1A;   /* one step up — dark surfaces */
+  --ink-3:          #2D2826;   /* hover on dark surfaces */
+
+  --burgundy:       #6B1F30;   /* primary brand — jersey yoke */
+  --burgundy-deep:  #4A1320;   /* press/hover */
+  --burgundy-soft:  #8C3144;   /* hover-text on dark */
+  --burgundy-tint:  #F4E7EA;   /* tinted backgrounds, alerts */
+
+  --chalk:          #F6F2EA;   /* page background (off-white) */
+  --cream:          #FAF7F1;   /* card surface on dark */
+  --paper:          #FFFFFF;   /* hard white — modals, inputs */
+
+  --bavarian:       #3F6CB0;   /* logo blue — heritage accent */
+  --bavarian-soft:  #6B91CC;
+  --bavarian-tint:  #D6E2F1;
+
+  --felt:           #1F5C45;   /* table-cloth green */
+  --gold:           #C8A24A;   /* trophy / 1. Platz */
+
+  /* ----- Color: semantic neutrals --------------------------------------- */
+  --fg-1:           var(--ink);          /* body */
+  --fg-2:           #4A4441;             /* secondary body */
+  --fg-3:           #76706C;             /* muted/meta */
+  --fg-4:           #A39E99;             /* placeholder */
+  --fg-on-ink:      var(--cream);        /* text on dark sections */
+  --fg-on-ink-2:    #C9C3BC;             /* secondary on dark */
+  --fg-on-burgundy: var(--cream);
+
+  --bg:             var(--chalk);
+  --bg-elev:        var(--paper);
+  --bg-dark:        var(--ink);
+  --bg-dark-elev:   var(--ink-2);
+
+  --line:           rgb(17 16 15 / 0.08);
+  --line-strong:    rgb(17 16 15 / 0.16);
+  --line-on-dark:   rgb(246 242 234 / 0.12);
+
+  /* ----- Color: status -------------------------------------------------- */
+  --success:        #2E7D55;
+  --success-tint:   #E0EFE7;
+  --warning:        #B5731C;
+  --warning-tint:   #FBEFD9;
+  --danger:         #B23A3A;
+  --danger-tint:    #F8E0DF;
+  --info:           var(--bavarian);
+  --info-tint:      var(--bavarian-tint);
+
+  /* ----- Type: families ------------------------------------------------- */
+  --font-display: 'Oswald', 'Bebas Neue', 'Arial Narrow', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ----- Type: scale (desktop) ----------------------------------------- */
+  --fs-display: clamp(48px, 6.5vw, 88px);
+  --fs-h1:      clamp(36px, 4.5vw, 60px);
+  --fs-h2:      clamp(28px, 3.2vw, 44px);
+  --fs-h3:      clamp(22px, 2.2vw, 30px);
+  --fs-h4:      20px;
+  --fs-lead:    19px;
+  --fs-body:    16px;
+  --fs-small:   14px;
+  --fs-meta:    13px;
+  --fs-eyebrow: 12px;
+
+  /* ----- Spacing scale (4px base) -------------------------------------- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+  --space-9:  96px;
+  --space-10: 128px;
+
+  /* ----- Radii ---------------------------------------------------------- */
+  --r-sm:   4px;
+  --r-md:   10px;
+  --r-lg:   16px;
+  --r-xl:   24px;
+  --r-full: 999px;
+
+  /* ----- Shadows -------------------------------------------------------- */
+  --shadow-1: 0 1px 2px rgb(17 16 15 / 0.06),
+              0 2px 8px rgb(17 16 15 / 0.04);
+  --shadow-2: 0 6px 24px rgb(17 16 15 / 0.10),
+              0 2px 6px rgb(17 16 15 / 0.06);
+  --shadow-focus: 0 0 0 3px rgb(107 31 48 / 0.25);
+
+  /* ----- Motion --------------------------------------------------------- */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast:   150ms;
+  --dur-base:   220ms;
+  --dur-slow:   380ms;
+
+  /* ----- Layout --------------------------------------------------------- */
+  --container:        1200px;
+  --container-wide:   1440px;
+  --header-h:         64px;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--burgundy); color: var(--cream); }
+
+.display, .h1, .h2, .h3, .h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--fg-1);
+  margin: 0;
+  text-wrap: balance;
+}
+.display { font-size: var(--fs-display); font-weight: 700; }
+.h1      { font-size: var(--fs-h1);      font-weight: 700; }
+.h2      { font-size: var(--fs-h2);      font-weight: 600; }
+.h3      { font-size: var(--fs-h3);      font-weight: 600; line-height: 1.15; }
+.h4      { font-size: var(--fs-h4);      font-weight: 600; line-height: 1.2;  }
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--burgundy);
+}
+
+.lead {
+  font-family: var(--font-body);
+  font-size: var(--fs-lead);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+
+.body  { font-size: var(--fs-body);  line-height: 1.55; color: var(--fg-1); }
+.small { font-size: var(--fs-small); line-height: 1.5;  color: var(--fg-2); }
+.meta  { font-size: var(--fs-meta);  line-height: 1.4;  color: var(--fg-3); }
+
+.mono  { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+h1 { font: 700 var(--fs-h1)/1.05 var(--font-display); letter-spacing: -0.01em; margin: 0; }
+h2 { font: 600 var(--fs-h2)/1.05 var(--font-display); letter-spacing: -0.01em; margin: 0; }
+h3 { font: 600 var(--fs-h3)/1.15 var(--font-display); letter-spacing: -0.01em; margin: 0; }
+h4 { font: 600 var(--fs-h4)/1.2  var(--font-display); margin: 0; }
+p  { margin: 0 0 var(--space-4) 0; text-wrap: pretty; }
+a  { color: var(--burgundy); text-decoration: none; transition: color var(--dur-fast) var(--ease); }
+a:hover { color: var(--burgundy-deep); }
+code, pre { font-family: var(--font-mono); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 44px;
+  padding: 0 var(--space-5);
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.005em;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease),
+              color      var(--dur-fast) var(--ease),
+              border     var(--dur-fast) var(--ease),
+              transform  var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease);
+}
+.btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.btn:active        { transform: scale(0.98); }
+
+.btn-primary {
+  background: var(--burgundy);
+  color: var(--fg-on-burgundy);
+  border-color: var(--burgundy);
+}
+.btn-primary:hover { background: var(--burgundy-deep); border-color: var(--burgundy-deep); color: var(--cream); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--fg-1);
+  border-color: var(--fg-1);
+}
+.btn-secondary:hover { background: var(--fg-1); color: var(--cream); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--burgundy);
+  border-color: transparent;
+  padding-inline: var(--space-3);
+}
+.btn-ghost:hover { background: var(--burgundy-tint); color: var(--burgundy-deep); }
+
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+  padding: var(--space-5);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 24px;
+  padding: 0 var(--space-3);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: var(--burgundy-tint);
+  color: var(--burgundy-deep);
+}
+
+.container { max-width: var(--container); margin-inline: auto; padding-inline: var(--space-5); }
+.container-wide { max-width: var(--container-wide); margin-inline: auto; padding-inline: var(--space-5); }

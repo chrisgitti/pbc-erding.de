@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Fahrtkostenzuschuss — PBC Erding e. V.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="schriftstuecke.css">
+<style>
+  .tabbar-mini {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; gap: 8px; padding: 12px 24px; align-items: center;
+    background: rgba(229, 223, 211, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .tabbar-mini .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; font: 700 14px/1 var(--font-display); color: var(--ink); }
+  .tabbar-mini .brand img { width: 28px; height: 28px; }
+  .tabbar-mini a, .tabbar-mini button {
+    padding: 7px 12px; font: 600 12.5px/1 var(--font-body);
+    color: var(--fg-2); background: transparent; border: 1px solid transparent;
+    border-radius: 8px; cursor: pointer; text-decoration: none;
+  }
+  .tabbar-mini a:hover, .tabbar-mini button:hover { color: var(--burgundy); }
+  @media print { .tabbar-mini { display: none; } .stage { padding: 0 !important; } }
+</style>
+</head>
+<body data-screen-label="Fahrtkostenzuschuss">
+
+<div class="tabbar-mini">
+  <div class="brand">
+    <img src="/images/logo_pbced.png" alt="">
+    <span>PBC Erding · Fahrtkostenzuschuss</span>
+  </div>
+  <a href="/downloads">← Downloads</a>
+  <button onclick="window.print()">Drucken</button>
+</div>
+
+<div class="stage">
+<article class="page fahrtkosten" id="fahrtkosten" data-screen-label="Fahrtkostenzuschuss">
+    <div class="chevron-strip"></div>
+
+    <header class="letterhead">
+      <div class="left">
+        <img src="/images/logo_pbced.png" alt="PBC Erding">
+        <div class="wordmark">
+          <span class="name-1">Pool Billard Club</span>
+          <span class="name-2">Erding e.&nbsp;V.</span>
+          <span class="sub">Antrag · Fahrtkostenzuschuss</span>
+        </div>
+      </div>
+      <div class="right">
+        <strong>Bowling Castle Erding</strong><br>
+        Robert-Bosch-Straße 3<br>
+        85435 Erding<br>
+        Tel. 08122 / 54432
+      </div>
+    </header>
+
+    <div class="body">
+      <h1 class="subject">Antrag auf Fahrtkostenzuschuss</h1>
+      <div class="saison">Saison 2024 / 2025</div>
+
+      <div class="twocol">
+        <div>
+          <h2>Spielort &amp; Pauschale</h2>
+          <div class="venue-list">
+            <div class="venue-row"><span class="checkbox"></span><span>BSC Martinsried</span><span class="price">17,50 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>BSV München</span><span class="price">14,50 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>1. PBC Freising</span><span class="price">5,50 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>BSV PB München</span><span class="price">15,00 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>PBC Lerchenau</span><span class="price">11,00 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>BSV Olching</span><span class="price">18,50 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>PBC Olimpia München</span><span class="price">12,50 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>BSV Dachau</span><span class="price">13,00 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>BSV Fürstenfeldbruck</span><span class="price">20,00 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>PBC Hoaße Greim</span><span class="price">22,00 €</span></div>
+            <div class="venue-row"><span class="checkbox"></span><span>BSC Ingolstadt</span><span class="price">24,50 €</span></div>
+          </div>
+        </div>
+        <div>
+          <h2>Mannschaft / Anlass</h2>
+          <div class="team-list">
+            <div class="team-row"><span class="checkbox"></span><span>1. Mannschaft</span></div>
+            <div class="team-row"><span class="checkbox"></span><span>2. Mannschaft</span></div>
+            <div class="team-row"><span class="checkbox"></span><span>3. Mannschaft</span></div>
+            <div class="team-row"><span class="checkbox"></span><span>Bezirksmeisterschaft</span></div>
+            <div class="team-row"><span class="checkbox"></span><span>Landesmeisterschaft</span></div>
+            <div class="team-row"><span class="checkbox"></span><span>Deutsche Meisterschaft</span></div>
+          </div>
+
+          <h2 style="margin-top: 8mm;">Nur bei Meisterschaften</h2>
+          <div class="meta-grid">
+            <div class="label">Start</div>     <div class="field" style="display:flex;align-items:flex-end;padding-bottom:1mm;font:400 10pt/1.3 var(--font-body);color:var(--fg-3);">Robert-Bosch-Straße 3, 85435 Erding</div>
+            <div class="label">Ziel</div>      <div class="field"></div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Spieltag &amp; Fahrer</h2>
+      <div class="meta-grid">
+        <div class="label">Datum</div>     <div class="field"></div>
+        <div class="label">Liga / Betreff</div> <div class="field"></div>
+        <div class="label">Start</div>     <div class="field"></div>
+        <div class="label">Ziel</div>      <div class="field"></div>
+        <div class="label">Fahrer</div>    <div class="field"></div>
+      </div>
+
+      <div class="sign-row">
+        <div>
+          <div class="field"></div>
+          <div class="cap">Datum</div>
+        </div>
+        <div>
+          <div class="field"></div>
+          <div class="cap">Unterschrift Antragsteller</div>
+        </div>
+        <div>
+          <div class="field"></div>
+          <div class="cap">Unterschrift Kassier</div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer-band">
+      <div class="col">
+        <strong>Verein</strong>
+        <p>Pool Billard Club Erding e.&nbsp;V.</p>
+        <p>Robert-Bosch-Straße 3, 85435 Erding</p>
+        <p>info@pbc-erding.de</p>
+      </div>
+      <div class="col">
+        <strong>Mitglied im</strong>
+        <p>BLSV &amp; BBV</p>
+      </div>
+      <div class="col">
+        <strong>Bankverbindung</strong>
+        <p>VR-Bank Erding</p>
+        <p>DE95 7016 9605 0004 7362 73</p>
+      </div>
+    </footer>
+  </article>
+</div>
+
+<script>
+  if (new URLSearchParams(location.search).get('bare') === '1') {
+    const bar = document.querySelector('.tabbar-mini');
+    if (bar) bar.style.display = 'none';
+    const stage = document.querySelector('.stage');
+    if (stage) stage.style.padding = '0';
+  }
+</script>
+
+</body>
+</html>

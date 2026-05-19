@@ -13,7 +13,7 @@ Dokumentiert alle wesentlichen Änderungen an der Next.js-Website des Pool Billa
 ---
 
 <details>
-<summary><strong>Website – Phasen 1–14</strong></summary>
+<summary><strong>Website – Phasen 1–15</strong></summary>
 
 ## Phase 1 – Vorstand-Feedback (Robert) zur Startseite
 
@@ -954,6 +954,36 @@ Aktuell konfiguriert: Turnieranmeldung → `turnier@pbc-erding.de` (CC: `info@pb
 **Datei:** `public/images/` (Bilddatei), `components/sections/HeroSection.tsx`
 
 Das Hintergrundbild der Hero-Section wurde durch eine optimierte Version ersetzt.
+
+---
+
+## Phase 15 – Schriftstücke als HTML-Vorlagen & Download-Links aktualisiert (19. Mai 2026)
+
+Neue HTML-Versionen der Vereinsdokumente in `public/schriftstuecke/` bereitgestellt und auf der Downloadseite als „Online anzeigen"-Button verknüpft. Außerdem wurden neue Datei-Versionen eingepflegt und Dateinamen mit Leerzeichen durch Bindestrich-Varianten ersetzt.
+
+### 15.1  Download-Dateien aktualisiert
+
+**Dateien:** `public/downloads/`, `lib/data.ts`
+
+Das Informationsblatt liegt jetzt als `PBC-Erding_Informationsblatt.pdf` vor (Stand 19.05.2026, vorher `PBC-Erding_Informationsblatt_2024-01.pdf`). Zusätzlich wurden Bearbeitungsvorlagen hinzugefügt: `PBC-Erding_Aufnahmeantrag.odt`, `PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.odt`, `PBC-Erding_Informationsblatt.odt`, `PBC-Erding_Informationsblatt.docx`. Alle neuen Dateien wurden mit Bindestrichen statt Leerzeichen im Namen abgelegt. Der Link in `lib/data.ts` wurde auf den neuen PDF-Dateinamen aktualisiert.
+
+### 15.2  HTML-Schriftstücke erstellt
+
+**Dateien:** `public/schriftstuecke/aufnahmeantrag.html`, `informationsblatt.html`, `sepa.html`, `fahrtkosten.html`, `satzung.html`, `schriftstuecke.css`, `colors_and_type.css`
+
+Die fünf Vereinsdokumente aus dem Design-Katalog (`pbc-erding-design/ui_kits/schriftstuecke/`) wurden als druckfertige HTML-Seiten in `public/schriftstuecke/` integriert. Anpassungen gegenüber dem Design-Katalog:
+- Logo-Pfad: `../../assets/logo_pbced.png` → `/images/logo_pbced.png`
+- CSS-Import: `../../colors_and_type.css` → `colors_and_type.css` (lokale Kopie)
+- Zurück-Link: `index.html` → `/downloads`
+- Tabbar enthält „Drucken"-Button; bei `?bare=1` wird die Tabbar ausgeblendet
+
+Die Satzung umfasst 7 A4-Seiten als separate `<article>`-Elemente. In der Fahrtkostenabrechnung wurden die Felder „Start" und „Ziel" ergänzt (zwischen „Liga / Betreff" und „Fahrer").
+
+### 15.3  Download-Seite: „Online anzeigen"-Button
+
+**Datei:** `app/downloads/page.tsx`, `lib/data.ts`
+
+Der Typ `DownloadItem` wurde um das optionale Feld `htmlHref?: string` erweitert. Die fünf betroffenen Einträge (Satzung, Aufnahmeantrag, Einzugsermächtigung, Informationsblatt, Fahrtkostenzuschuss) erhielten je einen `htmlHref`-Wert. Auf der Downloadseite erscheint bei diesen Einträgen rechts ein kompakter Auge-Icon-Button, der die HTML-Version im neuen Tab öffnet.
 
 ---
 

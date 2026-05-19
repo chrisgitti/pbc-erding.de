@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>SEPA-Mandat — PBC Erding e. V.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="schriftstuecke.css">
+<style>
+  .tabbar-mini {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; gap: 8px; padding: 12px 24px; align-items: center;
+    background: rgba(229, 223, 211, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .tabbar-mini .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; font: 700 14px/1 var(--font-display); color: var(--ink); }
+  .tabbar-mini .brand img { width: 28px; height: 28px; }
+  .tabbar-mini a, .tabbar-mini button {
+    padding: 7px 12px; font: 600 12.5px/1 var(--font-body);
+    color: var(--fg-2); background: transparent; border: 1px solid transparent;
+    border-radius: 8px; cursor: pointer; text-decoration: none;
+  }
+  .tabbar-mini a:hover, .tabbar-mini button:hover { color: var(--burgundy); }
+  @media print { .tabbar-mini { display: none; } .stage { padding: 0 !important; } }
+</style>
+</head>
+<body data-screen-label="SEPA-Lastschrift">
+
+<div class="tabbar-mini">
+  <div class="brand">
+    <img src="/images/logo_pbced.png" alt="">
+    <span>PBC Erding · SEPA-Lastschrift</span>
+  </div>
+  <a href="/downloads">← Downloads</a>
+  <button onclick="window.print()">Drucken</button>
+</div>
+
+<div class="stage">
+<article class="page sepa" id="sepa" data-screen-label="SEPA-Mandat">
+    <div class="chevron-strip"></div>
+
+    <header class="letterhead">
+      <div class="left">
+        <img src="/images/logo_pbced.png" alt="PBC Erding">
+        <div class="wordmark">
+          <span class="name-1">Pool Billard Club</span>
+          <span class="name-2">Erding e.&nbsp;V.</span>
+          <span class="sub">SEPA-Basislastschrift · Mandat</span>
+        </div>
+      </div>
+      <div class="right">
+        <strong>Bowling Castle Erding</strong><br>
+        Robert-Bosch-Straße 3<br>
+        85435 Erding<br>
+        info@pbc-erding.de
+      </div>
+    </header>
+
+    <div class="body">
+      <h1 class="subject">SEPA-Basislastschrift</h1>
+
+      <div class="ids">
+        <div class="k">Gläubiger-Identifikationsnummer</div>
+        <div class="v">DE25ZZZ00000459105</div>
+        <div class="k">Mandatsreferenz</div>
+        <div class="v">SEPA__________________________</div>
+      </div>
+
+      <h2 style="font: 700 12pt/1.1 var(--font-display); margin-bottom: 4mm;">Angaben des Zahlers</h2>
+      <div class="form-grid">
+        <div class="label">Name</div>          <div class="field split-2"><div></div><div></div><div></div></div>
+        <div class="label">Straße, Nr.</div>   <div class="field"></div>
+        <div class="label">PLZ, Ort</div>      <div class="field"></div>
+        <div class="label">IBAN</div>          <div class="field"></div>
+        <div class="label">BIC / Bank</div>    <div class="field split-3"><div></div><div></div></div>
+      </div>
+
+      <div class="mandate">
+        <p>Hiermit ermächtige(n) ich/wir den Pool Billard Club Erding e.&nbsp;V. (kurz PBC Erding e.&nbsp;V.) widerruflich, die von mir/uns zu entrichtenden wiederkehrenden Zahlungen bei Fälligkeit mittels SEPA-Lastschrift von meinem/unserem Konto einzuziehen.</p>
+        <p>Zugleich weise(n) ich/wir mein/unser Kreditinstitut an, die vom PBC Erding e.&nbsp;V. auf mein/unser Konto gezogenen Lastschriften einzulösen.</p>
+      </div>
+
+      <div class="sign-row">
+        <div>
+          <div class="field"></div>
+          <div class="cap">Datum</div>
+        </div>
+        <div>
+          <div class="field"></div>
+          <div class="cap">Unterschrift — Das SEPA-Mandat ist nur mit Originalunterschrift gültig.</div>
+        </div>
+      </div>
+
+      <aside class="hinweis">
+        <strong>Hinweis:</strong> Ich/Wir kann/können innerhalb von acht Wochen, beginnend mit dem Belastungsdatum, die Erstattung des belasteten Betrages verlangen. Es gelten dabei die mit meinem/unserem Kreditinstitut vereinbarten Bedingungen.
+      </aside>
+    </div>
+
+    <footer class="footer-band">
+      <div class="col">
+        <strong>Verein</strong>
+        <p>Pool Billard Club Erding e.&nbsp;V.</p>
+        <p>Robert-Bosch-Straße 3, 85435 Erding</p>
+        <p>info@pbc-erding.de · www.pbc-erding.de</p>
+      </div>
+      <div class="col">
+        <strong>Mitglied im</strong>
+        <p>BLSV &amp; BBV</p>
+      </div>
+      <div class="col">
+        <strong>Bankverbindung</strong>
+        <p>VR-Bank Erding</p>
+        <p>DE95 7016 9605 0004 7362 73</p>
+      </div>
+    </footer>
+  </article>
+</div>
+
+<script>
+  if (new URLSearchParams(location.search).get('bare') === '1') {
+    const bar = document.querySelector('.tabbar-mini');
+    if (bar) bar.style.display = 'none';
+    const stage = document.querySelector('.stage');
+    if (stage) stage.style.padding = '0';
+  }
+</script>
+
+</body>
+</html>

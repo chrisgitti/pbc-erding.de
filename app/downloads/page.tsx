@@ -64,42 +64,61 @@ export default function DownloadsPage() {
                   const isLocal = !!item.filename
                   const href = isLocal ? `${base}${item.href}` : item.href
                   return (
-                    <a
-                      key={item.title}
-                      href={href}
-                      download={isLocal ? item.filename : undefined}
-                      target={isLocal ? undefined : '_blank'}
-                      rel={isLocal ? undefined : 'noopener noreferrer'}
-                      className="group flex items-center justify-between gap-4 rounded-[1.25rem] border border-white/6 bg-white/[0.02] px-6 py-5 text-white transition-colors hover:border-gold-500/30 hover:bg-gold-500/[0.04]"
-                    >
-                      <div className="min-w-0">
-                        <span className="block text-sm font-semibold leading-relaxed group-hover:text-gold-400 transition-colors">
-                          {item.title}
-                        </span>
-                        <span className="mt-1 block text-xs uppercase tracking-[0.18em] text-white/40">
-                          {isLocal ? (item.filename?.endsWith('.zip') ? 'ZIP · Download' : 'PDF · Download') : 'Externer Link'}
-                        </span>
-                      </div>
-                      <svg
-                        className="shrink-0 text-white/30 group-hover:text-gold-500 transition-colors"
-                        width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    <div key={item.title} className="flex gap-2">
+                      <a
+                        href={href}
+                        download={isLocal ? item.filename : undefined}
+                        target={isLocal ? undefined : '_blank'}
+                        rel={isLocal ? undefined : 'noopener noreferrer'}
+                        className="group flex flex-1 items-center justify-between gap-4 rounded-[1.25rem] border border-white/6 bg-white/[0.02] px-6 py-5 text-white transition-colors hover:border-gold-500/30 hover:bg-gold-500/[0.04]"
                       >
-                        {isLocal ? (
-                          <>
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                          </>
-                        ) : (
-                          <>
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                            <polyline points="15 3 21 3 21 9"/>
-                            <line x1="10" y1="14" x2="21" y2="3"/>
-                          </>
-                        )}
-                      </svg>
-                    </a>
+                        <div className="min-w-0">
+                          <span className="block text-sm font-semibold leading-relaxed group-hover:text-gold-400 transition-colors">
+                            {item.title}
+                          </span>
+                          <span className="mt-1 block text-xs uppercase tracking-[0.18em] text-white/40">
+                            {isLocal ? (item.filename?.endsWith('.zip') ? 'ZIP · Download' : 'PDF · Download') : 'Externer Link'}
+                          </span>
+                        </div>
+                        <svg
+                          className="shrink-0 text-white/30 group-hover:text-gold-500 transition-colors"
+                          width="18" height="18" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                        >
+                          {isLocal ? (
+                            <>
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                              <polyline points="7 10 12 15 17 10"/>
+                              <line x1="12" y1="15" x2="12" y2="3"/>
+                            </>
+                          ) : (
+                            <>
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                              <polyline points="15 3 21 3 21 9"/>
+                              <line x1="10" y1="14" x2="21" y2="3"/>
+                            </>
+                          )}
+                        </svg>
+                      </a>
+                      {item.htmlHref && (
+                        <a
+                          href={`${base}${item.htmlHref}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Online anzeigen"
+                          className="group flex items-center justify-center rounded-[1.25rem] border border-white/6 bg-white/[0.02] px-4 text-white transition-colors hover:border-gold-500/30 hover:bg-gold-500/[0.04]"
+                        >
+                          <svg
+                            className="shrink-0 text-white/30 group-hover:text-gold-500 transition-colors"
+                            width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                          >
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                          </svg>
+                        </a>
+                      )}
+                    </div>
                   )
                 })}
               </div>
