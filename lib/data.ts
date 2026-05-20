@@ -833,7 +833,7 @@ export const sponsors: Sponsor[] = [
     name: 'Bowling Castle Erding',
     tier: 'gold',
     website: 'https://www.bowling-castle.de',
-    description: 'Neue Spielstätte des PBC Erding seit Januar 2026',
+    description: 'Spiellokal mit Bowling, 3D-Minigolf und Pool-Billard-Sport',
     logo: 'bowling-castle.png',
   },
   {
