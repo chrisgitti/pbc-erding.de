@@ -13,7 +13,7 @@ Dokumentiert alle wesentlichen Änderungen an der Next.js-Website des Pool Billa
 ---
 
 <details>
-<summary><strong>Website – Phasen 1–16</strong></summary>
+<summary><strong>Website – Phasen 1–17</strong></summary>
 
 ## Phase 1 – Vorstand-Feedback (Robert) zur Startseite
 
@@ -1016,6 +1016,62 @@ Betroffene Artikel (Auswahl):
 - `trainer-fortbildung-bart-claessen`: Erfundener Absatz über Bart's Mehrwert für das Training entfernt
 
 Artikel mit ausschließlich Bildinhalt (kein Original-Text vorhanden) wurden unverändert belassen: `turnierserie-2022`, `stardust-open-2022/2023`, `dicup-2324`, `bezirksmeisterschaft-senioren-2024`, `spieltag-gegen-dingolfing`, `vereinsabend-stardust-2025`, `dienstags-turnierserie-2021`.
+
+---
+
+## Phase 17 – Unterstützer-Seite: Logos, Teaser, Sortierung & Fixes (20. Mai 2026)
+
+Atom Billard wurde als weiterer Förderer ergänzt. Alle Sponsor-Logos wurden skaliert, Beschreibungstexte überarbeitet, das Kontaktformular vorbelegt und die Förderer alphabetisch sortiert. Außerdem wurde ein kritischer UTF-8-Kodierungsfehler in `lib/data.ts` behoben.
+
+### 17.1  Atom Billard als Förderer ergänzt
+
+**Datei:** `lib/data.ts`
+
+Neuer Sponsor in der `sponsors[]`-Liste aufgenommen:
+
+- **Atom Billard** (`tier: 'bronze'`, Website: `https://www.atom-billard.de`)
+- Teaser: „Fachhandel für Billardtische & Queues"
+- Logo: `public/images/sponsoren/atom-billard.png` (bereits vorhanden)
+
+### 17.2  Bowling Castle – Teaser aktualisiert
+
+**Datei:** `lib/data.ts`
+
+Beschreibungstext des Hauptunterstützers geändert:
+
+- Vorher: „Neue Spielstätte des PBC Erding seit Januar 2026"
+- Nachher: „Spiellokal mit Bowling, 3D-Minigolf und Pool-Billard-Sport"
+
+### 17.3  Sponsor-Logos skaliert
+
+**Datei:** `app/unterstuetzer/page.tsx`
+
+Logo-Höhen angepasst (Tailwind-Klassen):
+
+| Tier | Vorher | Nachher |
+| --- | --- | --- |
+| gold (Hauptunterstützer) | `h-16` | `h-48` |
+| silber (Partner) | `h-12` | `h-36` |
+| bronze (Förderer) | `h-9` | `h-30` |
+
+### 17.4  Kontaktformular-Betreff bei „Jetzt anfragen" vorbelegt
+
+**Datei:** `app/unterstuetzer/page.tsx`
+
+Der CTA-Button „Jetzt anfragen" verlinkt nun auf `/kontakt?betreff=unterstuetzung`, sodass das Dropdown im Kontaktformular automatisch auf „Unterstützung/Partnerschaft" vorausgewählt ist.
+
+### 17.5  Förderer alphabetisch sortiert
+
+**Datei:** `lib/data.ts`
+
+Alle drei Sponsor-Gruppen sind jetzt alphabetisch geordnet. Förderer (bronze) neu:
+Atom Billard → Auto Baumschlager → Bendl Investment → Billard-Aktuell → Ortmann Billiards
+
+### 17.6  UTF-8-Kodierungsfehler behoben
+
+**Datei:** `lib/data.ts`
+
+Ein seit Commit `56693a4` bestehender UTF-8-BOM- und Doppelkodierungsfehler führte zu unlesbaren Umlauten im Browser (z. B. „â€"" statt „–", „NÃ¤chster" statt „Nächster"). Die Datei wurde aus dem letzten sauberen Commit (`e01012b`) wiederhergestellt und alle Inhaltsänderungen anschließend neu eingespielt.
 
 ---
 

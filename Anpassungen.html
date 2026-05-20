@@ -327,7 +327,7 @@
 
   <!-- Gruppe Website -->
   <details class="group">
-    <summary><span class="group-label">Website – Phasen 1–16</span></summary>
+    <summary><span class="group-label">Website – Phasen 1–17</span></summary>
     <div class="group-body">
 
   <!-- Phase 1 -->
@@ -1105,6 +1105,55 @@
         <li><code>trainer-fortbildung-bart-claessen</code>: Erfundener Absatz über Bart's Mehrwert für das Training entfernt</li>
       </ul>
       <p>Artikel mit ausschließlich Bildinhalt (kein Original-Text vorhanden) wurden unverändert belassen: <code>turnierserie-2022</code>, <code>stardust-open-2022/2023</code>, <code>dicup-2324</code>, <code>bezirksmeisterschaft-senioren-2024</code>, <code>spieltag-gegen-dingolfing</code>, <code>vereinsabend-stardust-2025</code>, <code>dienstags-turnierserie-2021</code>.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 17 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 17 – Unterstützer-Seite: Logos, Teaser, Sortierung &amp; Fixes <span class="date">(20. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Atom Billard wurde als weiterer Förderer ergänzt. Alle Sponsor-Logos wurden skaliert, Beschreibungstexte überarbeitet, das Kontaktformular vorbelegt und die Förderer alphabetisch sortiert. Außerdem wurde ein kritischer UTF-8-Kodierungsfehler in <code>lib/data.ts</code> behoben.</p>
+
+      <h3>17.1 &nbsp;Atom Billard als Förderer ergänzt</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Neuer Sponsor in der <code>sponsors[]</code>-Liste aufgenommen:</p>
+      <ul>
+        <li><strong>Atom Billard</strong> (<code>tier: 'bronze'</code>, Website: atom-billard.de)</li>
+        <li>Teaser: „Fachhandel für Billardtische &amp; Queues"</li>
+        <li>Logo: <code>public/images/sponsoren/atom-billard.png</code> (bereits vorhanden)</li>
+      </ul>
+
+      <h3>17.2 &nbsp;Bowling Castle – Teaser aktualisiert</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Beschreibungstext des Hauptunterstützers geändert:</p>
+      <ul>
+        <li>Vorher: „Neue Spielstätte des PBC Erding seit Januar 2026"</li>
+        <li>Nachher: „Spiellokal mit Bowling, 3D-Minigolf und Pool-Billard-Sport"</li>
+      </ul>
+
+      <h3>17.3 &nbsp;Sponsor-Logos skaliert</h3>
+      <p><strong>Datei:</strong> <code>app/unterstuetzer/page.tsx</code></p>
+      <p>Logo-Höhen angepasst (Tailwind-Klassen):</p>
+      <table>
+        <tr><th>Tier</th><th>Vorher</th><th>Nachher</th></tr>
+        <tr><td>gold (Hauptunterstützer)</td><td><code>h-16</code></td><td><code>h-48</code></td></tr>
+        <tr><td>silber (Partner)</td><td><code>h-12</code></td><td><code>h-36</code></td></tr>
+        <tr><td>bronze (Förderer)</td><td><code>h-9</code></td><td><code>h-30</code></td></tr>
+      </table>
+
+      <h3>17.4 &nbsp;Kontaktformular-Betreff bei „Jetzt anfragen" vorbelegt</h3>
+      <p><strong>Datei:</strong> <code>app/unterstuetzer/page.tsx</code></p>
+      <p>Der CTA-Button „Jetzt anfragen" verlinkt nun auf <code>/kontakt?betreff=unterstuetzung</code>, sodass das Dropdown im Kontaktformular automatisch auf „Unterstützung/Partnerschaft" vorausgewählt ist.</p>
+
+      <h3>17.5 &nbsp;Förderer alphabetisch sortiert</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Alle drei Sponsor-Gruppen sind jetzt alphabetisch geordnet. Förderer (bronze) neu: Atom Billard → Auto Baumschlager → Bendl Investment → Billard-Aktuell → Ortmann Billiards</p>
+
+      <h3>17.6 &nbsp;UTF-8-Kodierungsfehler behoben</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Ein seit Commit <code>56693a4</code> bestehender UTF-8-BOM- und Doppelkodierungsfehler führte zu unlesbaren Umlauten im Browser (z. B. „â€"" statt „–", „NÃ¤chster" statt „Nächster"). Die Datei wurde aus dem letzten sauberen Commit (<code>e01012b</code>) wiederhergestellt und alle Inhaltsänderungen anschließend neu eingespielt.</p>
     </div>
   </details>
 
