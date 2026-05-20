@@ -859,6 +859,14 @@ export const sponsors: Sponsor[] = [
     logo: 'dbu.png',
   },
   {
+    id: '9',
+    name: 'Atom Billard',
+    tier: 'bronze',
+    website: 'https://www.atom-billard.de',
+    description: 'Fachhandel für Billardtische & Queues',
+    logo: 'atom-billard.png',
+  },
+  {
     id: '7',
     name: 'Auto Baumschlager',
     tier: 'bronze',
@@ -871,14 +879,6 @@ export const sponsors: Sponsor[] = [
     tier: 'bronze',
     description: 'Finanzdienstleistungen auf einem anderen Level',
     logo: 'bendl-investment.jpg',
-  },
-  {
-    id: '9',
-    name: 'Atom Billard',
-    tier: 'bronze',
-    website: 'https://www.atom-billard.de',
-    description: 'Fachhandel für Billardtische & Queues',
-    logo: 'atom-billard.png',
   },
   {
     id: '5',
