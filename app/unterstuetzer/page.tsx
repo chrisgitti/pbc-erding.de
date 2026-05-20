@@ -55,7 +55,7 @@ export default function UnterstuetzerPage() {
                       <img
                         src={`/images/sponsoren/${s.logo}`}
                         alt={s.name}
-                        className="h-24 w-auto object-contain"
+                        className="h-48 w-auto object-contain"
                       />
                     </div>
                   )}
@@ -78,7 +78,7 @@ export default function UnterstuetzerPage() {
                       <img
                         src={`/images/sponsoren/${s.logo}`}
                         alt={s.name}
-                        className="h-16 w-auto object-contain"
+                        className="h-36 w-auto object-contain"
                       />
                     </div>
                   )}
@@ -98,7 +98,7 @@ export default function UnterstuetzerPage() {
                       <img
                         src={`/images/sponsoren/${s.logo}`}
                         alt={s.name}
-                        className="h-12 w-auto object-contain"
+                        className="h-30 w-auto object-contain"
                       />
                     </div>
                   )}
