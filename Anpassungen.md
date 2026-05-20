@@ -13,7 +13,7 @@ Dokumentiert alle wesentlichen Änderungen an der Next.js-Website des Pool Billa
 ---
 
 <details>
-<summary><strong>Website – Phasen 1–15</strong></summary>
+<summary><strong>Website – Phasen 1–16</strong></summary>
 
 ## Phase 1 – Vorstand-Feedback (Robert) zur Startseite
 
@@ -984,6 +984,38 @@ Die Satzung umfasst 7 A4-Seiten als separate `<article>`-Elemente. In der Fahrtk
 **Datei:** `app/downloads/page.tsx`, `lib/data.ts`
 
 Der Typ `DownloadItem` wurde um das optionale Feld `htmlHref?: string` erweitert. Die fünf betroffenen Einträge (Satzung, Aufnahmeantrag, Einzugsermächtigung, Informationsblatt, Fahrtkostenzuschuss) erhielten je einen `htmlHref`-Wert. Auf der Downloadseite erscheint bei diesen Einträgen rechts ein kompakter Auge-Icon-Button, der die HTML-Version im neuen Tab öffnet.
+
+## Phase 16 – Neue Förderer, Chronik-Originaltexte wiederhergestellt (20. Mai 2026)
+
+Zwei neue Sponsoren wurden als Förderer ergänzt. Alle historischen Chronik-Artikel wurden mit den Originaltexten der Live-Website abgeglichen und wiederhergestellt – der zuvor eingeführte journalistische Umschreibstil wurde rückgängig gemacht.
+
+### 16.1  Neue Förderer: Auto Baumschlager & Bendl Investment
+
+**Datei:** `lib/data.ts`
+
+Zwei neue Sponsoren wurden in die `sponsors[]`-Liste aufgenommen:
+- **Auto Baumschlager** (Autoreparatur in Wörth) – `tier: 'bronze'`
+- **Bendl Investment** (Finanzdienstleistungen auf einem anderen Level) – `tier: 'bronze'`
+
+Beide erscheinen an erster Stelle in der Förderer-Gruppe auf der Unterstützer-Seite (vor Billard-Aktuell und Ortmann Billiards).
+
+### 16.2  Chronik-Originaltexte wiederhergestellt
+
+**Datei:** `lib/data.ts`
+
+Alle historischen Artikel (2010–2026) in der `news[]`-Liste wurden mit den Originaltexten von `http://pbc-erding.de` abgeglichen. Dabei wurden die zuvor von Claude erstellten, formal-journalistischen Fassungen durch die echten Blog-Texte ersetzt – inkl. informellem Ton, Autorenunterschriften (z. B. „LG Ludwig") und originalem Zeicheneinsatz (z. B. „!!"). Nur offensichtliche Orthographie- und Grammatikfehler wurden korrigiert.
+
+Betroffene Artikel (Auswahl):
+- `umzug-bowling-castle-erding`: Namen Rudi Mathes, Stefan Knoll, Winni, Familie Meindl wiederhergestellt
+- `herzlichen-dank-stardust`: Konkrete Namen (Sabin, Andy, Paul), letzter Trainingstermin 1.1.2026
+- `tournierserienauftakt-2021`: Originaler Ludwig-Stil, vollständige Platzierten-Namen
+- `neujahrsturnier-2022`: Ludwig-Signatur und informeller Anmeldehinweis
+- `weihnachten-2010`: Auf Original-Einzeiler mit „!!" reduziert
+- `olympia-bewerbung-2010`: Auf Link-Verweis reduziert
+- `saisonstart-2010`: Jugendgruppe, Pooldragons, Weihnachtsfeier 3. Dezember
+- `trainer-fortbildung-bart-claessen`: Erfundener Absatz über Bart's Mehrwert für das Training entfernt
+
+Artikel mit ausschließlich Bildinhalt (kein Original-Text vorhanden) wurden unverändert belassen: `turnierserie-2022`, `stardust-open-2022/2023`, `dicup-2324`, `bezirksmeisterschaft-senioren-2024`, `spieltag-gegen-dingolfing`, `vereinsabend-stardust-2025`, `dienstags-turnierserie-2021`.
 
 ---
 

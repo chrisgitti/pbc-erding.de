@@ -327,7 +327,7 @@
 
   <!-- Gruppe Website -->
   <details class="group">
-    <summary><span class="group-label">Website – Phasen 1–15</span></summary>
+    <summary><span class="group-label">Website – Phasen 1–16</span></summary>
     <div class="group-body">
 
   <!-- Phase 1 -->
@@ -1070,6 +1070,41 @@
       <h3>15.3 &nbsp;Download-Seite: „Online anzeigen"-Button</h3>
       <p><strong>Datei:</strong> <code>app/downloads/page.tsx</code>, <code>lib/data.ts</code></p>
       <p>Der Typ <code>DownloadItem</code> wurde um das optionale Feld <code>htmlHref?: string</code> erweitert. Die fünf betroffenen Einträge (Satzung, Aufnahmeantrag, Einzugsermächtigung, Informationsblatt, Fahrtkostenzuschuss) erhielten je einen <code>htmlHref</code>-Wert. Auf der Downloadseite erscheint bei diesen Einträgen rechts ein kompakter Auge-Icon-Button, der die HTML-Version im neuen Tab öffnet.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 16 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 16 – Neue Förderer, Chronik-Originaltexte wiederhergestellt <span class="date">(20. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Zwei neue Sponsoren wurden als Förderer ergänzt. Alle historischen Chronik-Artikel wurden mit den Originaltexten der Live-Website abgeglichen und wiederhergestellt – der zuvor eingeführte journalistische Umschreibstil wurde rückgängig gemacht.</p>
+
+      <h3>16.1 &nbsp;Neue Förderer: Auto Baumschlager &amp; Bendl Investment</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Zwei neue Sponsoren wurden in die <code>sponsors[]</code>-Liste aufgenommen:</p>
+      <ul>
+        <li><strong>Auto Baumschlager</strong> (Autoreparatur in Wörth) – <code>tier: 'bronze'</code></li>
+        <li><strong>Bendl Investment</strong> (Finanzdienstleistungen auf einem anderen Level) – <code>tier: 'bronze'</code></li>
+      </ul>
+      <p>Beide erscheinen an erster Stelle in der Förderer-Gruppe auf der Unterstützer-Seite (vor Billard-Aktuell und Ortmann Billiards).</p>
+
+      <h3>16.2 &nbsp;Chronik-Originaltexte wiederhergestellt</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Alle historischen Artikel (2010–2026) in der <code>news[]</code>-Liste wurden mit den Originaltexten von pbc-erding.de abgeglichen. Die zuvor von Claude erstellten, formal-journalistischen Fassungen wurden durch die echten Blog-Texte ersetzt – inkl. informellem Ton, Autorenunterschriften (z. B. „LG Ludwig") und originalem Zeicheneinsatz (z. B. „!!"). Nur offensichtliche Orthographie- und Grammatikfehler wurden korrigiert.</p>
+      <p>Betroffene Artikel (Auswahl):</p>
+      <ul>
+        <li><code>umzug-bowling-castle-erding</code>: Namen Rudi Mathes, Stefan Knoll, Winni, Familie Meindl wiederhergestellt</li>
+        <li><code>herzlichen-dank-stardust</code>: Konkrete Namen (Sabin, Andy, Paul), letzter Trainingstermin 1.1.2026</li>
+        <li><code>tournierserienauftakt-2021</code>: Originaler Ludwig-Stil, vollständige Platzierten-Namen</li>
+        <li><code>neujahrsturnier-2022</code>: Ludwig-Signatur und informeller Anmeldehinweis</li>
+        <li><code>weihnachten-2010</code>: Auf Original-Einzeiler mit „!!" reduziert</li>
+        <li><code>olympia-bewerbung-2010</code>: Auf Link-Verweis reduziert</li>
+        <li><code>saisonstart-2010</code>: Jugendgruppe, Pooldragons, Weihnachtsfeier 3. Dezember</li>
+        <li><code>trainer-fortbildung-bart-claessen</code>: Erfundener Absatz über Bart's Mehrwert für das Training entfernt</li>
+      </ul>
+      <p>Artikel mit ausschließlich Bildinhalt (kein Original-Text vorhanden) wurden unverändert belassen: <code>turnierserie-2022</code>, <code>stardust-open-2022/2023</code>, <code>dicup-2324</code>, <code>bezirksmeisterschaft-senioren-2024</code>, <code>spieltag-gegen-dingolfing</code>, <code>vereinsabend-stardust-2025</code>, <code>dienstags-turnierserie-2021</code>.</p>
     </div>
   </details>
 
