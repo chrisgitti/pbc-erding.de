@@ -1,12 +1,12 @@
-import { getNextMittwochsturnier } from './turnier-utils'
+﻿import { getNextMittwochsturnier } from './turnier-utils'
 
-// Nächstes Mittwochsturnier – zur Build-Zeit berechnet
+// NÃ¤chstes Mittwochsturnier â€“ zur Build-Zeit berechnet
 const _nextT     = getNextMittwochsturnier(new Date())
 const _nextTISO  = _nextT.toISOString().slice(0, 10)
 const _nextTDE   = _nextT.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
 const _nextTWd   = _nextT.toLocaleDateString('de-DE', { weekday: 'long' })
 
-// ─── News ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ News â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type NewsImage = {
   src: string   // Dateiname in /images/chronik/, z.B. "2011-04-12.jpg"
@@ -20,7 +20,7 @@ export type NewsItem = {
   date: string
   category: string
   slug: string
-  content: string   // Volltext des Artikels (Absätze durch \n\n getrennt)
+  content: string   // Volltext des Artikels (AbsÃ¤tze durch \n\n getrennt)
   images?: NewsImage[]
 }
 
@@ -35,16 +35,16 @@ export const news: NewsItem[] = [
     slug: 'trainer-fortbildung-bart-claessen',
     content: `Wir freuen uns, bekanntzugeben, dass unser Vereinsmitglied Bart Claessen die Ausbildung zum Trainer-Assistenten erfolgreich abgeschlossen hat.
 
-Im Rahmen der aktuellen Novellierung der Trainer-Richtlinien absolvierte Bart gemeinsam mit 13 weiteren Teilnehmern eine intensive Schulung (60 Unterrichtseinheiten). Geleitet wurde die Fortbildung von Patrick Hummel – Trainer A Leistungssport und offizieller Ausbilder und Prüfer der Deutschen Billard Union (DBU).
+Im Rahmen der aktuellen Novellierung der Trainer-Richtlinien absolvierte Bart gemeinsam mit 13 weiteren Teilnehmern eine intensive Schulung (60 Unterrichtseinheiten). Geleitet wurde die Fortbildung von Patrick Hummel â€“ Trainer A Leistungssport und offizieller Ausbilder und PrÃ¼fer der Deutschen Billard Union (DBU).
 
 Die Schwerpunkte der Ausbildung:
-– Materialkunde: Tische, Tuche und Queues
-– Technik: Körperhaltung und Stoßarten
-– Trainingsmethodik: Wissen effektiv vermitteln
+â€“ Materialkunde: Tische, Tuche und Queues
+â€“ Technik: KÃ¶rperhaltung und StoÃŸarten
+â€“ Trainingsmethodik: Wissen effektiv vermitteln
 
-Mit seinem Zertifikat ist Bart nun bestens gerüstet, unser Training mit fachlichem Know-how zu bereichern.
+Mit seinem Zertifikat ist Bart nun bestens gerÃ¼stet, unser Training mit fachlichem Know-how zu bereichern.
 
-„Die Ausbildung war intensiv und lehrreich. Es ist toll zu sehen, wie viel Präzision und Systematik hinter einem guten Training stecken."
+â€žDie Ausbildung war intensiv und lehrreich. Es ist toll zu sehen, wie viel PrÃ¤zision und Systematik hinter einem guten Training stecken."
 
 Der gesamte Verein gratuliert Bart herzlich zu diesem Erfolg!`,
   },
@@ -52,182 +52,182 @@ Der gesamte Verein gratuliert Bart herzlich zu diesem Erfolg!`,
     id: '11',
     title: 'Saisonabschluss: Erding III beendet die Kreisliga 2025/26',
     excerpt:
-      'Mit einer 4:6-Niederlage beim BSV 1912 München III schließt PBC Erding III die Kreisliga-Saison 2025/26 ab: 1 Sieg, 0 Unentschieden, 9 Niederlagen.',
+      'Mit einer 4:6-Niederlage beim BSV 1912 MÃ¼nchen III schlieÃŸt PBC Erding III die Kreisliga-Saison 2025/26 ab: 1 Sieg, 0 Unentschieden, 9 Niederlagen.',
     date: '2026-05-09',
     category: 'Liga',
     slug: 'saisonabschluss-erding-3-2025-26',
-    content: `Mit der Auswärtspartie beim BSV 1912 München III am 9. Mai 2026 hat PBC Erding III die Kreisliga-Saison 2025/26 beendet. Die Begegnung endete 4:6 aus Erding-Sicht – ein Ergebnis, das den Saisonverlauf der dritten Mannschaft treffend widerspiegelt.
+    content: `Mit der AuswÃ¤rtspartie beim BSV 1912 MÃ¼nchen III am 9. Mai 2026 hat PBC Erding III die Kreisliga-Saison 2025/26 beendet. Die Begegnung endete 4:6 aus Erding-Sicht â€“ ein Ergebnis, das den Saisonverlauf der dritten Mannschaft treffend widerspiegelt.
 
 Die Bilanz der Saison 2025/26:
 
-– 1 Sieg · 0 Unentschieden · 9 Niederlagen
-– Frames: 36:64 (Differenz: −28)
-– Punkte: 2:18 – Platz 6
+â€“ 1 Sieg Â· 0 Unentschieden Â· 9 Niederlagen
+â€“ Frames: 36:64 (Differenz: âˆ’28)
+â€“ Punkte: 2:18 â€“ Platz 6
 
-Für Erding III war es eine Saison voller Lernkurven. Die Mannschaft sammelte wertvolle Erfahrung gegen starke Gegner und entwickelte sich spielerisch weiter – eine gute Grundlage für die kommende Runde.
+FÃ¼r Erding III war es eine Saison voller Lernkurven. Die Mannschaft sammelte wertvolle Erfahrung gegen starke Gegner und entwickelte sich spielerisch weiter â€“ eine gute Grundlage fÃ¼r die kommende Runde.
 
-Ein Dank gilt allen Spielerinnen und Spielern für ihren Einsatz über die gesamte Saison – auf eine starke nächste Runde!`,
+Ein Dank gilt allen Spielerinnen und Spielern fÃ¼r ihren Einsatz Ã¼ber die gesamte Saison â€“ auf eine starke nÃ¤chste Runde!`,
   },
   {
     id: '9',
     title: 'Saisonabschluss: Erding II beendet die Kreisliga mit makelloser Bilanz',
     excerpt:
-      'Mit einem 7:3-Heimsieg gegen BSV PB München IV schließt PBC Erding II die Saison 2025/26 ungeschlagen ab: 10 Siege, 0 Niederlagen, Platz 1 in der Kreisliga Oberbayern D.',
+      'Mit einem 7:3-Heimsieg gegen BSV PB MÃ¼nchen IV schlieÃŸt PBC Erding II die Saison 2025/26 ungeschlagen ab: 10 Siege, 0 Niederlagen, Platz 1 in der Kreisliga Oberbayern D.',
     date: '2026-05-16',
     category: 'Liga',
     slug: 'saisonabschluss-erding-2-2025-26',
-    content: `Mit einem verdienten 7:3-Heimsieg gegen BSV PB München IV hat PBC Erding II am 16. Mai 2026 eine außergewöhnliche Saison zu Ende gespielt – und dabei die Kreisliga Oberbayern D ohne eine einzige Niederlage abgeschlossen.
+    content: `Mit einem verdienten 7:3-Heimsieg gegen BSV PB MÃ¼nchen IV hat PBC Erding II am 16. Mai 2026 eine auÃŸergewÃ¶hnliche Saison zu Ende gespielt â€“ und dabei die Kreisliga Oberbayern D ohne eine einzige Niederlage abgeschlossen.
 
 Die Bilanz der Saison 2025/26:
 
-– 10 Siege · 0 Unentschieden · 0 Niederlagen
-– Frames: 71:29 (Differenz: +42)
-– Punkte: 20:0 – Platz 1
+â€“ 10 Siege Â· 0 Unentschieden Â· 0 Niederlagen
+â€“ Frames: 71:29 (Differenz: +42)
+â€“ Punkte: 20:0 â€“ Platz 1
 
-Erding II dominierte die Liga von Spieltag eins an. Kein Gegner konnte die Mannschaft bezwingen, und mit 71 gewonnenen Frames bei nur 29 abgegebenen unterstrich das Team seine überragende Stärke in dieser Saison.
+Erding II dominierte die Liga von Spieltag eins an. Kein Gegner konnte die Mannschaft bezwingen, und mit 71 gewonnenen Frames bei nur 29 abgegebenen unterstrich das Team seine Ã¼berragende StÃ¤rke in dieser Saison.
 
-Herzlichen Glückwunsch an die gesamte Mannschaft zu dieser starken Leistung!`,
+Herzlichen GlÃ¼ckwunsch an die gesamte Mannschaft zu dieser starken Leistung!`,
   },
   {
     id: '8',
     title: 'Saisonabschluss: PBC Erding I gewinnt 8:2 und beendet die Bezirksliga stark',
     excerpt:
-      'Mit einem überzeugenden 8:2-Heimsieg gegen 1. PBC Freising III verabschiedet sich PBC Erding I aus der Bezirksliga-Saison 2025/26: 6 Siege, 1 Remis, 3 Niederlagen.',
+      'Mit einem Ã¼berzeugenden 8:2-Heimsieg gegen 1. PBC Freising III verabschiedet sich PBC Erding I aus der Bezirksliga-Saison 2025/26: 6 Siege, 1 Remis, 3 Niederlagen.',
     date: '2026-05-09',
     category: 'Liga',
     slug: 'saisonabschluss-erding-1-2025-26',
     content: `Mit einem starken 8:2-Heimsieg gegen 1. PBC Freising III hat PBC Erding I am 9. Mai 2026 die Bezirksliga-Saison 2025/26 abgeschlossen. Ein verdienter Schlusspunkt nach einer insgesamt soliden Runde.
 
-Die Saison in der Bezirksliga Oberbayern-Nord umfasste zehn Spieltage – fünf Auswärts-, fünf Heimspiele. Die Bilanz am Ende:
+Die Saison in der Bezirksliga Oberbayern-Nord umfasste zehn Spieltage â€“ fÃ¼nf AuswÃ¤rts-, fÃ¼nf Heimspiele. Die Bilanz am Ende:
 
-– 6 Siege · 1 Unentschieden · 3 Niederlagen
-– Frames: 52:48 (Differenz: +4)
-– Punkte: 13:7
+â€“ 6 Siege Â· 1 Unentschieden Â· 3 Niederlagen
+â€“ Frames: 52:48 (Differenz: +4)
+â€“ Punkte: 13:7
 
-Der Saisonverlauf zeigte zwei Gesichter: In der Hinrunde holte die Mannschaft vier Auswärtssiege in Serie (München III, Mühldorf III, Mainburg II, Freising III) und schuf damit eine solide Basis. Die Rückrunde gestaltete sich uneinheitlicher – einem deutlichen Heimsieg gegen Moosburg (6:4) und einem respektablen Remis gegen Mühldorf III (5:5) standen zwei Heimniederlagen gegenüber.
+Der Saisonverlauf zeigte zwei Gesichter: In der Hinrunde holte die Mannschaft vier AuswÃ¤rtssiege in Serie (MÃ¼nchen III, MÃ¼hldorf III, Mainburg II, Freising III) und schuf damit eine solide Basis. Die RÃ¼ckrunde gestaltete sich uneinheitlicher â€“ einem deutlichen Heimsieg gegen Moosburg (6:4) und einem respektablen Remis gegen MÃ¼hldorf III (5:5) standen zwei Heimniederlagen gegenÃ¼ber.
 
-Den stärksten Auftritt des Jahres lieferte die Mannschaft heute: Das 8:2 gegen Freising III war die höchste Erding-Marge der gesamten Saison und ein würdiger Schlusspunkt.
+Den stÃ¤rksten Auftritt des Jahres lieferte die Mannschaft heute: Das 8:2 gegen Freising III war die hÃ¶chste Erding-Marge der gesamten Saison und ein wÃ¼rdiger Schlusspunkt.
 
-Herzlichen Glückwunsch an die gesamte Mannschaft und die Verantwortlichen – auf eine gute nächste Saison!`,
+Herzlichen GlÃ¼ckwunsch an die gesamte Mannschaft und die Verantwortlichen â€“ auf eine gute nÃ¤chste Saison!`,
   },
   {
     id: '7',
-    title: 'Mittwoch-Cup April – Seppi Bendl holt den Sieg',
+    title: 'Mittwoch-Cup April â€“ Seppi Bendl holt den Sieg',
     excerpt:
-      '8 Teilnehmer, 8-Ball auf drei Gewinnsätze: Josef „Seppi" Bendl vom BC 73 Pfeffenhausen gewinnt die April-Ausgabe des Mittwoch-Cups.',
+      '8 Teilnehmer, 8-Ball auf drei GewinnsÃ¤tze: Josef â€žSeppi" Bendl vom BC 73 Pfeffenhausen gewinnt die April-Ausgabe des Mittwoch-Cups.',
     date: '2026-04-29',
     category: 'Turnier',
     slug: 'mittwoch-cup-april-2026',
-    content: `Die April-Ausgabe des Mittwoch-Cups fand am 29. April 2026 im Bowling Castle Erding statt – und das trotz der Champions-League-Halbfinals an diesem Abend. Acht Teilnehmer ließen sich den Turnierreiz nicht nehmen und lieferten spannende Duelle im 8-Ball-Modus auf drei Gewinnsätze.
+    content: `Die April-Ausgabe des Mittwoch-Cups fand am 29. April 2026 im Bowling Castle Erding statt â€“ und das trotz der Champions-League-Halbfinals an diesem Abend. Acht Teilnehmer lieÃŸen sich den Turnierreiz nicht nehmen und lieferten spannende Duelle im 8-Ball-Modus auf drei GewinnsÃ¤tze.
 
 Das Siegertreppchen:
-– Platz 1: Josef „Seppi" Bendl 🥇 (BC 73 Pfeffenhausen)
-– Platz 2: Ludwig Weidinger 🥈 (PBC Erding)
-– Platz 3: Urban Baumschlager 🥉 (PBC Erding)
-– Platz 4: Christian Hütter (PBC Simbach)
+â€“ Platz 1: Josef â€žSeppi" Bendl ðŸ¥‡ (BC 73 Pfeffenhausen)
+â€“ Platz 2: Ludwig Weidinger ðŸ¥ˆ (PBC Erding)
+â€“ Platz 3: Urban Baumschlager ðŸ¥‰ (PBC Erding)
+â€“ Platz 4: Christian HÃ¼tter (PBC Simbach)
 
-Herzlichen Glückwunsch an alle Platzierten – und ein besonderes Dankeschön an Björn für die Organisation und das Team des Bowling Castle Erding für den reibungslosen Abend!
+Herzlichen GlÃ¼ckwunsch an alle Platzierten â€“ und ein besonderes DankeschÃ¶n an BjÃ¶rn fÃ¼r die Organisation und das Team des Bowling Castle Erding fÃ¼r den reibungslosen Abend!
 
-Der nächste Mi-Cup findet am 27. Mai statt. Anmeldungen über die Mi-Cup-WhatsApp-Gruppe oder per E-Mail an turnier@pbc-erding.de – wir freuen uns auf eure Teilnahme!`,
+Der nÃ¤chste Mi-Cup findet am 27. Mai statt. Anmeldungen Ã¼ber die Mi-Cup-WhatsApp-Gruppe oder per E-Mail an turnier@pbc-erding.de â€“ wir freuen uns auf eure Teilnahme!`,
   },
   {
     id: '1',
     title: 'PBC Erding zieht ins Bowling Castle Erding um',
     excerpt:
-      'Ab dem 4. Januar 2026 findet der Trainings- und Spielbetrieb in der neuen Spielstätte im Bowling Castle Erding statt.',
+      'Ab dem 4. Januar 2026 findet der Trainings- und Spielbetrieb in der neuen SpielstÃ¤tte im Bowling Castle Erding statt.',
     date: '2025-12-20',
     category: 'Verein',
     slug: 'umzug-bowling-castle-erding',
-    content: `Ab dem 4. Januar 2026 hat der Pool Billard Club Erding e.V. eine neue sportliche Heimat: das Bowling Castle Erding in der Robert-Bosch-Straße 3. Nach acht Jahren im Stardust Casino in Altenerding markiert dieser Umzug einen bedeutenden Schritt in der Vereinsgeschichte.
+    content: `Ab dem 4. Januar 2026 hat der Pool Billard Club Erding e.V. eine neue sportliche Heimat: das Bowling Castle Erding in der Robert-Bosch-StraÃŸe 3. Nach acht Jahren im Stardust Spielsalon in Altenerding markiert dieser Umzug einen bedeutenden Schritt in der Vereinsgeschichte.
 
-Das Bowling Castle bietet dem PBC Erding zeitgemäße Räumlichkeiten, professionelle Bedingungen für Training und Spieltage sowie eine gut erreichbare, zentrale Lage. Mehrere hochwertige Billardtische stehen den Mitgliedern für Training, Ligabetrieb und Vereinsabende zur Verfügung.
+Das Bowling Castle bietet dem PBC Erding zeitgemÃ¤ÃŸe RÃ¤umlichkeiten, professionelle Bedingungen fÃ¼r Training und Spieltage sowie eine gut erreichbare, zentrale Lage. Mehrere hochwertige Billardtische stehen den Mitgliedern fÃ¼r Training, Ligabetrieb und Vereinsabende zur VerfÃ¼gung.
 
-Die wöchentlichen Trainingszeiten am neuen Standort sind:
-– Sonntag: 13:00 – 16:00 Uhr (offenes Schnuppertraining)
-– Dienstag: ab 18:30 Uhr (Vereinstraining)
-– Donnerstag: ab 18:30 Uhr (Training und Ligavorbereitung)
+Die wÃ¶chentlichen Trainingszeiten am neuen Standort sind:
+â€“ Sonntag: 13:00 â€“ 16:00 Uhr (offenes Schnuppertraining)
+â€“ Dienstag: ab 18:30 Uhr (Vereinstraining)
+â€“ Donnerstag: ab 18:30 Uhr (Training und Ligavorbereitung)
 
-Der Vorstand freut sich, gemeinsam mit allen Mitgliedern dieses neue Kapitel des PBC Erding aufzuschlagen. Interessierte und Neueinsteiger sind herzlich willkommen – das kostenlose Schnuppertraining jeden Sonntag steht allen offen, die Poolbillard kennenlernen möchten.`,
+Der Vorstand freut sich, gemeinsam mit allen Mitgliedern dieses neue Kapitel des PBC Erding aufzuschlagen. Interessierte und Neueinsteiger sind herzlich willkommen â€“ das kostenlose Schnuppertraining jeden Sonntag steht allen offen, die Poolbillard kennenlernen mÃ¶chten.`,
   },
   {
     id: '2',
     title: 'Herzlichen Dank an das Stardust-Team',
     excerpt:
-      'Der Verein bedankt sich für acht Jahre Unterstützung und verabschiedet sich mit großer Wertschätzung aus Altenerding.',
+      'Der Verein bedankt sich fÃ¼r acht Jahre UnterstÃ¼tzung und verabschiedet sich mit groÃŸer WertschÃ¤tzung aus Altenerding.',
     date: '2025-12-20',
     category: 'Vereinsleben',
     slug: 'herzlichen-dank-stardust',
-    content: `Acht Jahre lang war das Stardust Casino in Altenerding die sportliche Heimat des Pool Billard Club Erding e.V. Mit dem Jahreswechsel 2025/2026 endete diese Ära – und der Verein blickt mit echter Dankbarkeit und großer Wertschätzung auf diese gemeinsame Zeit zurück.
+    content: `Acht Jahre lang war das Stardust Spielsalon in Altenerding die sportliche Heimat des Pool Billard Club Erding e.V. Mit dem Jahreswechsel 2025/2026 endete diese Ã„ra â€“ und der Verein blickt mit echter Dankbarkeit und groÃŸer WertschÃ¤tzung auf diese gemeinsame Zeit zurÃ¼ck.
 
-Das Team des Stardust hat den PBC Erding von Anfang an treu begleitet: als Gastgeber für Trainingsabende, Spieltage, Meisterschaften und gesellige Vereinsabende. Diese jahrelange Unterstützung hat dem Club ein verlässliches Zuhause gegeben und war ein wichtiger Grundstein für das Wachstum und die sportliche Entwicklung des Vereins.
+Das Team des Stardust hat den PBC Erding von Anfang an treu begleitet: als Gastgeber fÃ¼r Trainingsabende, Spieltage, Meisterschaften und gesellige Vereinsabende. Diese jahrelange UnterstÃ¼tzung hat dem Club ein verlÃ¤ssliches Zuhause gegeben und war ein wichtiger Grundstein fÃ¼r das Wachstum und die sportliche Entwicklung des Vereins.
 
 In den acht Jahren im Stardust hat der PBC Erding viele unvergessliche Momente erlebt: Ligasiege, Aufstiege, Turniere, aber vor allem jede Menge gemeinsame Stunden am Billardtisch mit Freunden und Mitspielern.
 
-Im Namen aller Mitglieder, des Vorstands und der Mannschaften: Herzlichen Dank an das gesamte Stardust-Team! Ihr habt dem PBC Erding ein echtes Vereinszuhause gegeben – das werden wir nicht vergessen. Wir wünschen euch weiterhin alles Gute und viel Erfolg.`,
+Im Namen aller Mitglieder, des Vorstands und der Mannschaften: Herzlichen Dank an das gesamte Stardust-Team! Ihr habt dem PBC Erding ein echtes Vereinszuhause gegeben â€“ das werden wir nicht vergessen. Wir wÃ¼nschen euch weiterhin alles Gute und viel Erfolg.`,
   },
   {
     id: '3',
-    title: `Mittwochsturnier – Nächster Termin: ${_nextTWd}, ${_nextTDE}`,
+    title: `Mittwochsturnier â€“ NÃ¤chster Termin: ${_nextTWd}, ${_nextTDE}`,
     excerpt:
-      'Jeden letzten Mittwoch im Monat: offenes Vereinsturnier mit Gruppen- und KO-Phase. Startgebühr 10 €, volle Ausschüttung für Platz 1 bis 4.',
+      'Jeden letzten Mittwoch im Monat: offenes Vereinsturnier mit Gruppen- und KO-Phase. StartgebÃ¼hr 10 â‚¬, volle AusschÃ¼ttung fÃ¼r Platz 1 bis 4.',
     date: _nextTISO,
     category: 'Turnier',
     slug: 'mittwochsturnier',
-    content: `Jeden letzten Mittwoch im Monat lädt der PBC Erding zum Mittwochsturnier – offen für Vereins- und Hobbyspieler. Turnierbeginn ist um 18:30 Uhr im Bowling Castle Erding, Robert-Bosch-Straße 3, 85055 Erding.
+    content: `Jeden letzten Mittwoch im Monat lÃ¤dt der PBC Erding zum Mittwochsturnier â€“ offen fÃ¼r Vereins- und Hobbyspieler. Turnierbeginn ist um 18:30 Uhr im Bowling Castle Erding, Robert-Bosch-StraÃŸe 3, 85055 Erding.
 
 Voranmeldung erforderlich! Die Teilnehmerzahl ist auf maximal 32 Spielerinnen und Spieler begrenzt.
 
 Turnierdetails:
-– Beginn: 18:30 Uhr
-– Offenes Turnier für Vereins- und Hobbyspieler
-– Max. 32 Teilnehmer
-– Startgebühr: 10 €
-– Voranmeldung erforderlich
+â€“ Beginn: 18:30 Uhr
+â€“ Offenes Turnier fÃ¼r Vereins- und Hobbyspieler
+â€“ Max. 32 Teilnehmer
+â€“ StartgebÃ¼hr: 10 â‚¬
+â€“ Voranmeldung erforderlich
 
-Turnierformat: In der Gruppenphase werden alle Teilnehmer auf Gruppen aufgeteilt. Gruppensieger und Gruppenzweite qualifizieren sich für die anschließende KO-Phase, in der die Platzierungen 1 bis 4 ausgespielt werden.
+Turnierformat: In der Gruppenphase werden alle Teilnehmer auf Gruppen aufgeteilt. Gruppensieger und Gruppenzweite qualifizieren sich fÃ¼r die anschlieÃŸende KO-Phase, in der die Platzierungen 1 bis 4 ausgespielt werden.
 
-Preisgeld: Die gesamte Startgebühr wird vollständig und ohne Abzug an die vier besten Platzierten ausgezahlt. Wer sich ins Halbfinale kämpft, spielt um echtes Preisgeld.
+Preisgeld: Die gesamte StartgebÃ¼hr wird vollstÃ¤ndig und ohne Abzug an die vier besten Platzierten ausgezahlt. Wer sich ins Halbfinale kÃ¤mpft, spielt um echtes Preisgeld.
 
-Nächster Termin: ${_nextTWd}, ${_nextTDE} · 18:30 Uhr · Bowling Castle Erding`,
+NÃ¤chster Termin: ${_nextTWd}, ${_nextTDE} Â· 18:30 Uhr Â· Bowling Castle Erding`,
   },
   {
     id: '6',
-    title: 'Mittwoch-Cup: Zweiter Abend der Serie – Hütti holt den Sieg',
+    title: 'Mittwoch-Cup: Zweiter Abend der Serie â€“ HÃ¼tti holt den Sieg',
     excerpt:
-      '16 Spieler, 10-Ball auf 4 Gewonnene, vier Vierergruppen: Der zweite Abend der Erdinger Mittwoch-Cup-Serie war wieder in kürzester Zeit ausgebucht.',
+      '16 Spieler, 10-Ball auf 4 Gewonnene, vier Vierergruppen: Der zweite Abend der Erdinger Mittwoch-Cup-Serie war wieder in kÃ¼rzester Zeit ausgebucht.',
     date: '2026-03-25',
     category: 'Turnier',
     slug: 'mittwoch-cup-zweiter-abend-maerz-2026',
-    content: `Zweiter Abend der Erdinger Mittwoch-Cup-Serie – und wieder war das Feld kurze Zeit nach der Ankündigung mit 16 Spielerinnen und Spielern voll besetzt. Das zeigt: Das Format trifft den Nerv der Vereinsmitglieder.
+    content: `Zweiter Abend der Erdinger Mittwoch-Cup-Serie â€“ und wieder war das Feld kurze Zeit nach der AnkÃ¼ndigung mit 16 Spielerinnen und Spielern voll besetzt. Das zeigt: Das Format trifft den Nerv der Vereinsmitglieder.
 
-Das Los entschied diesmal für 10-Ball – gespielt wurde auf vier Gewinnpartien. Die 16 Teilnehmer wurden in vier Vierergruppen aufgeteilt, in denen zunächst jeder gegen jeden antrat. Die Gruppen-Ersten und -Zweiten qualifizierten sich für die Endrunde, in der die Platzierungen 1 bis 4 ausgespielt wurden.
+Das Los entschied diesmal fÃ¼r 10-Ball â€“ gespielt wurde auf vier Gewinnpartien. Die 16 Teilnehmer wurden in vier Vierergruppen aufgeteilt, in denen zunÃ¤chst jeder gegen jeden antrat. Die Gruppen-Ersten und -Zweiten qualifizierten sich fÃ¼r die Endrunde, in der die Platzierungen 1 bis 4 ausgespielt wurden.
 
 Das Siegertreppchen:
-– Platz 1: Hütti 🥇
-– Platz 2: Leon Bozbel 🥈
-– Platz 3 & 4: Andy Galsterer und Markus Bauer 🥉
+â€“ Platz 1: HÃ¼tti ðŸ¥‡
+â€“ Platz 2: Leon Bozbel ðŸ¥ˆ
+â€“ Platz 3 & 4: Andy Galsterer und Markus Bauer ðŸ¥‰
 
-Herzlichen Glückwunsch an alle Platzierten!
+Herzlichen GlÃ¼ckwunsch an alle Platzierten!
 
-Ein besonderer Dank gilt Björn, der den Abend wieder souverän organisiert und geleitet hat, sowie dem Team des Bowling Castle Erding für die bereitgestellten Tische und den reibungslosen Service.
+Ein besonderer Dank gilt BjÃ¶rn, der den Abend wieder souverÃ¤n organisiert und geleitet hat, sowie dem Team des Bowling Castle Erding fÃ¼r die bereitgestellten Tische und den reibungslosen Service.
 
-Der nächste Cup findet am Mittwoch, 29. April 2026, statt. Anmeldung unter: turnier@pbc-erding.de – wer dabei sein möchte, sollte sich früh melden, die Plätze sind schnell vergeben.`,
+Der nÃ¤chste Cup findet am Mittwoch, 29. April 2026, statt. Anmeldung unter: turnier@pbc-erding.de â€“ wer dabei sein mÃ¶chte, sollte sich frÃ¼h melden, die PlÃ¤tze sind schnell vergeben.`,
   },
   {
     id: '5',
-    title: 'Spieltag im Bowling Castle – Teamgeist an allen Tischen',
+    title: 'Spieltag im Bowling Castle â€“ Teamgeist an allen Tischen',
     excerpt:
-      'Vier Tische, volle Konzentration, lautstarke Unterstützung: Eindrücke von einem Heimspieltag des PBC Erding im Bowling Castle.',
+      'Vier Tische, volle Konzentration, lautstarke UnterstÃ¼tzung: EindrÃ¼cke von einem Heimspieltag des PBC Erding im Bowling Castle.',
     date: '2026-04-05',
     category: 'Liga',
     slug: 'heimspieltag-bowling-castle-april-2026',
-    content: `Vier Tische gleichzeitig in Betrieb, Spieler in höchster Konzentration, Zuschauer an den Längsseiten – so sieht ein Spieltag beim Pool Billard Club Erding aus. Beim jüngsten Heimspieltag im Bowling Castle Erding zeigte der Verein, was Mannschaftsbillard ausmacht: technische Präzision, mentale Stärke und echter Teamgeist.
+    content: `Vier Tische gleichzeitig in Betrieb, Spieler in hÃ¶chster Konzentration, Zuschauer an den LÃ¤ngsseiten â€“ so sieht ein Spieltag beim Pool Billard Club Erding aus. Beim jÃ¼ngsten Heimspieltag im Bowling Castle Erding zeigte der Verein, was Mannschaftsbillard ausmacht: technische PrÃ¤zision, mentale StÃ¤rke und echter Teamgeist.
 
-An jedem Tisch lief eine eigene Partie, und doch spürte man die Verbundenheit zwischen den Spielern. Wer gerade nicht selbst am Queue stand, feuerte die Mitspieler an, verfolgte kritische Frames und zog Lehren für die eigene Partie. Genau diese Atmosphäre – konzentriert und zugleich gemeinschaftlich – ist es, die den Ligaalltag beim PBC Erding von einem reinen Trainingsbetrieb unterscheidet.
+An jedem Tisch lief eine eigene Partie, und doch spÃ¼rte man die Verbundenheit zwischen den Spielern. Wer gerade nicht selbst am Queue stand, feuerte die Mitspieler an, verfolgte kritische Frames und zog Lehren fÃ¼r die eigene Partie. Genau diese AtmosphÃ¤re â€“ konzentriert und zugleich gemeinschaftlich â€“ ist es, die den Ligaalltag beim PBC Erding von einem reinen Trainingsbetrieb unterscheidet.
 
-Das Bowling Castle bietet mit seinen hochwertigen Tischen und der professionellen Beleuchtung optimale Bedingungen für anspruchsvolle Ligapartien. Die großzügige Raumaufteilung erlaubt es, mehrere Partien parallel zu spielen, ohne dass sich die Tische gegenseitig beeinflussen – ein echter Vorteil gegenüber früheren Spielstätten.
+Das Bowling Castle bietet mit seinen hochwertigen Tischen und der professionellen Beleuchtung optimale Bedingungen fÃ¼r anspruchsvolle Ligapartien. Die groÃŸzÃ¼gige Raumaufteilung erlaubt es, mehrere Partien parallel zu spielen, ohne dass sich die Tische gegenseitig beeinflussen â€“ ein echter Vorteil gegenÃ¼ber frÃ¼heren SpielstÃ¤tten.
 
-Der PBC Erding nimmt in der Saison 2025/26 mit drei Mannschaften am Spielbetrieb des Bayerischen Billardverbands teil. Heimspieltage im Bowling Castle sind für Zuschauer und Interessierte jederzeit offen – wer Pool Billard im echten Wettkampfumfeld erleben möchte, ist herzlich willkommen.`,
+Der PBC Erding nimmt in der Saison 2025/26 mit drei Mannschaften am Spielbetrieb des Bayerischen Billardverbands teil. Heimspieltage im Bowling Castle sind fÃ¼r Zuschauer und Interessierte jederzeit offen â€“ wer Pool Billard im echten Wettkampfumfeld erleben mÃ¶chte, ist herzlich willkommen.`,
   },
   {
     id: '4',
@@ -237,111 +237,111 @@ Der PBC Erding nimmt in der Saison 2025/26 mit drei Mannschaften am Spielbetrieb
     date: '2024-04-14',
     category: 'Liga',
     slug: 'spieltag-gegen-dingolfing',
-    content: `Ligabetrieb, Spieltage, Mannschaftsgeist – das ist der Kern des sportlichen Alltags beim Pool Billard Club Erding. Spieltage wie das Aufeinandertreffen mit dem BC Dingolfing zeigen, worum es im Vereinsbillard wirklich geht: um faire Wettkämpfe, kollegiale Atmosphäre und den gemeinsamen Spaß am Sport.
+    content: `Ligabetrieb, Spieltage, Mannschaftsgeist â€“ das ist der Kern des sportlichen Alltags beim Pool Billard Club Erding. Spieltage wie das Aufeinandertreffen mit dem BC Dingolfing zeigen, worum es im Vereinsbillard wirklich geht: um faire WettkÃ¤mpfe, kollegiale AtmosphÃ¤re und den gemeinsamen SpaÃŸ am Sport.
 
-Ligaspiele im Poolbillard folgen einem klaren Format: Jede Mannschaft stellt ihre Spieler auf, die in festgelegten Einzel- und Doppelpartien gegeneinander antreten. Jeder gewonnene Frame zählt, jeder Punkt kann am Ende über Aufstieg oder Abstieg entscheiden. Dabei ist Billard zwar ein Einzelsport – aber als Mannschaft anzutreten, gemeinsam zu fiebern und sich gegenseitig anzufeuern, das macht den Reiz des Ligabetriebs aus.
+Ligaspiele im Poolbillard folgen einem klaren Format: Jede Mannschaft stellt ihre Spieler auf, die in festgelegten Einzel- und Doppelpartien gegeneinander antreten. Jeder gewonnene Frame zÃ¤hlt, jeder Punkt kann am Ende Ã¼ber Aufstieg oder Abstieg entscheiden. Dabei ist Billard zwar ein Einzelsport â€“ aber als Mannschaft anzutreten, gemeinsam zu fiebern und sich gegenseitig anzufeuern, das macht den Reiz des Ligabetriebs aus.
 
-Der PBC Erding nimmt mit seinen Mannschaften am Spielbetrieb des Bayerischen Billardverbands teil. Die Heimspieltage finden an den regulären Trainingsstandorten statt und sind für Zuschauer und Interessierte jederzeit zugänglich.
+Der PBC Erding nimmt mit seinen Mannschaften am Spielbetrieb des Bayerischen Billardverbands teil. Die Heimspieltage finden an den regulÃ¤ren Trainingsstandorten statt und sind fÃ¼r Zuschauer und Interessierte jederzeit zugÃ¤nglich.
 
-Wer selbst Teil des Mannschaftssports werden möchte, ist herzlich eingeladen, beim offenen Schnuppertraining vorbeizuschauen. Gemeinsam am Tisch stehen – beim PBC Erding ist das mehr als ein Satz.`,
+Wer selbst Teil des Mannschaftssports werden mÃ¶chte, ist herzlich eingeladen, beim offenen Schnuppertraining vorbeizuschauen. Gemeinsam am Tisch stehen â€“ beim PBC Erding ist das mehr als ein Satz.`,
     images: [
       { src: '2024-04-14-2.jpg', alt: 'Spieltag gegen BC Dingolfing 2024' },
     ],
   },
 
-  // ── Historische Artikel (2010–2024) ────────────────────────────────────────
+  // â”€â”€ Historische Artikel (2010â€“2024) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'h01',
     title: 'Bezirksmeisterschaft Senioren 10-Ball in Erding',
-    excerpt: 'Der PBC Erding richtet die Bezirksmeisterschaft Senioren 10-Ball aus – ein Highlight in der Vereinsgeschichte.',
+    excerpt: 'Der PBC Erding richtet die Bezirksmeisterschaft Senioren 10-Ball aus â€“ ein Highlight in der Vereinsgeschichte.',
     date: '2024-04-14',
     category: 'Turnier',
     slug: 'bezirksmeisterschaft-senioren-2024',
-    content: `Der PBC Erding war Gastgeber der Bezirksmeisterschaft Senioren 10-Ball in Erding. Die Veranstaltung brachte Spielerinnen und Spieler aus der ganzen Region zusammen und bot spannende Wettkämpfe auf hohem Niveau.
+    content: `Der PBC Erding war Gastgeber der Bezirksmeisterschaft Senioren 10-Ball in Erding. Die Veranstaltung brachte Spielerinnen und Spieler aus der ganzen Region zusammen und bot spannende WettkÃ¤mpfe auf hohem Niveau.
 
-10-Ball ist eine der anspruchsvollsten Pool-Billard-Disziplinen: Die Kugeln müssen in aufsteigender Reihenfolge versenkt werden, die 10 zählt als Schlusskugel. Das Format stellt hohe Anforderungen an Taktik, Präzision und mentale Stärke.
+10-Ball ist eine der anspruchsvollsten Pool-Billard-Disziplinen: Die Kugeln mÃ¼ssen in aufsteigender Reihenfolge versenkt werden, die 10 zÃ¤hlt als Schlusskugel. Das Format stellt hohe Anforderungen an Taktik, PrÃ¤zision und mentale StÃ¤rke.
 
-Der Verein freute sich, eine solche Meisterschaft ausrichten zu dürfen, und dankt allen Teilnehmern, Helfern und Unterstützern für einen reibungslosen Turniertag.`,
+Der Verein freute sich, eine solche Meisterschaft ausrichten zu dÃ¼rfen, und dankt allen Teilnehmern, Helfern und UnterstÃ¼tzern fÃ¼r einen reibungslosen Turniertag.`,
     images: [
       { src: '2024-04-14.jpg', alt: 'Bezirksmeisterschaft Senioren 10-Ball Erding 2024' },
     ],
   },
   {
     id: 'h02',
-    title: 'DiCup 23/24 – Turnierserie für Jedermann',
-    excerpt: 'Der DiCup startet in die Saison 23/24 – eine wöchentliche Turnierserie im Stardust, offen für alle.',
+    title: 'DiCup 23/24 â€“ Turnierserie fÃ¼r Jedermann',
+    excerpt: 'Der DiCup startet in die Saison 23/24 â€“ eine wÃ¶chentliche Turnierserie im Stardust, offen fÃ¼r alle.',
     date: '2023-10-15',
     category: 'Turnier',
     slug: 'dicup-2324',
-    content: `Der DiCup geht in die nächste Runde: Die Turnierserie der Saison 2023/24 startet wieder jeden Dienstag im Stardust Casino Erding. Das Format ist offen für alle – Vereinsmitglieder ebenso wie Gastspieler.
+    content: `Der DiCup geht in die nÃ¤chste Runde: Die Turnierserie der Saison 2023/24 startet wieder jeden Dienstag im Stardust Spielsalon Erding. Das Format ist offen fÃ¼r alle â€“ Vereinsmitglieder ebenso wie Gastspieler.
 
-Gespielt wird abwechselnd 8-Ball und 9-Ball im Gruppen- und KO-System. Das Handicap-System sorgt dafür, dass Spieler aller Stärken faire Chancen haben und die Spannung bis zum Finale erhalten bleibt.
+Gespielt wird abwechselnd 8-Ball und 9-Ball im Gruppen- und KO-System. Das Handicap-System sorgt dafÃ¼r, dass Spieler aller StÃ¤rken faire Chancen haben und die Spannung bis zum Finale erhalten bleibt.
 
 Startgeld, genaue Startzeiten und Anmeldemodus werden zu Beginn jedes Turniers bekanntgegeben. Alle bisherigen Teilnehmer freuen sich auf einen weiteren spannenden DiCup-Winter.`,
     images: [
-      { src: '2023-10-15.jpg', alt: 'DiCup 23/24 – Einladungsflyer' },
+      { src: '2023-10-15.jpg', alt: 'DiCup 23/24 â€“ Einladungsflyer' },
     ],
   },
   {
     id: 'h03',
     title: 'Stardust Open 2023',
-    excerpt: 'Das Stardust Open 2023 lädt alle Pool-Billardspieler der Region zu einem offenen Turnier ins Stardust Casino ein.',
+    excerpt: 'Das Stardust Open 2023 lÃ¤dt alle Pool-Billardspieler der Region zu einem offenen Turnier ins Stardust Spielsalon ein.',
     date: '2023-10-15',
     category: 'Turnier',
     slug: 'stardust-open-2023',
-    content: `Das Stardust Open 2023 öffnet seine Tore für alle Pool-Billardspieler der Region. Das offene Turnier findet im Stardust Casino Erding statt und bietet sowohl erfahrenen Spielern als auch Amateuren eine attraktive Bühne.
+    content: `Das Stardust Open 2023 Ã¶ffnet seine Tore fÃ¼r alle Pool-Billardspieler der Region. Das offene Turnier findet im Stardust Spielsalon Erding statt und bietet sowohl erfahrenen Spielern als auch Amateuren eine attraktive BÃ¼hne.
 
-Gespielt wird im KO-System auf mehreren hochwertigen Poolbillardtischen. Das Startgeld wird vollständig als Preisgeld ausgeschüttet. Meldeformulare und weitere Details stehen auf der Vereins-Website zur Verfügung.
+Gespielt wird im KO-System auf mehreren hochwertigen Poolbillardtischen. Das Startgeld wird vollstÃ¤ndig als Preisgeld ausgeschÃ¼ttet. Meldeformulare und weitere Details stehen auf der Vereins-Website zur VerfÃ¼gung.
 
-Der PBC Erding freut sich auf rege Beteiligung und wünscht allen Teilnehmern viel Erfolg und faire Partien.`,
+Der PBC Erding freut sich auf rege Beteiligung und wÃ¼nscht allen Teilnehmern viel Erfolg und faire Partien.`,
     images: [
-      { src: '2023-10-15-2.jpg', alt: 'Stardust Open 2023 – Turnierankündigung' },
+      { src: '2023-10-15-2.jpg', alt: 'Stardust Open 2023 â€“ TurnierankÃ¼ndigung' },
     ],
   },
   {
     id: 'h04',
     title: 'Stardust Open 2022',
-    excerpt: 'Das Stardust Open 2022 – ein offenes Turnier für Pool-Billardspieler aus der ganzen Region.',
+    excerpt: 'Das Stardust Open 2022 â€“ ein offenes Turnier fÃ¼r Pool-Billardspieler aus der ganzen Region.',
     date: '2022-11-03',
     category: 'Turnier',
     slug: 'stardust-open-2022',
-    content: `Das Stardust Open 2022 zog wieder zahlreiche Pool-Billardspieler aus der Region ins Stardust Casino Erding. Das offene Turnier bot spannende Partien in verschiedenen Disziplinen und ein vollständig ausgeschüttetes Preisgeld.
+    content: `Das Stardust Open 2022 zog wieder zahlreiche Pool-Billardspieler aus der Region ins Stardust Spielsalon Erding. Das offene Turnier bot spannende Partien in verschiedenen Disziplinen und ein vollstÃ¤ndig ausgeschÃ¼ttetes Preisgeld.
 
-Das Turnier wurde im bewährten KO-Format ausgetragen. Gespielt wurde auf den hochwertigen K-Steel-Poolbillardtischen des Stardust, die beste Voraussetzungen für ein faires und spannendes Turnier boten.
+Das Turnier wurde im bewÃ¤hrten KO-Format ausgetragen. Gespielt wurde auf den hochwertigen K-Steel-Poolbillardtischen des Stardust, die beste Voraussetzungen fÃ¼r ein faires und spannendes Turnier boten.
 
-Der PBC Erding dankt dem Stardust-Team für die Unterstützung und allen Teilnehmern für ihre sportliche Leistung.`,
+Der PBC Erding dankt dem Stardust-Team fÃ¼r die UnterstÃ¼tzung und allen Teilnehmern fÃ¼r ihre sportliche Leistung.`,
     images: [
-      { src: '2022-11-03.jpg', alt: 'Stardust Open 2022 – Turnierflyer' },
+      { src: '2022-11-03.jpg', alt: 'Stardust Open 2022 â€“ Turnierflyer' },
     ],
   },
   {
     id: 'h05',
     title: 'Neujahrsturnier am 1. Januar 2022',
-    excerpt: 'Ein kleines Neujahrsturnier am 1. Januar 2022 – Anwesend ab 13:30 Uhr, Beginn 14:00 Uhr.',
+    excerpt: 'Ein kleines Neujahrsturnier am 1. Januar 2022 â€“ Anwesend ab 13:30 Uhr, Beginn 14:00 Uhr.',
     date: '2021-12-30',
     category: 'Turnier',
     slug: 'neujahrsturnier-2022',
-    content: `Zum Jahresauftakt lädt der PBC Erding zum kleinen Neujahrsturnier am 1. Januar 2022. Anwesend sein bitte ab 13:30 Uhr, Turnierbeginn ist um 14:00 Uhr.
+    content: `Zum Jahresauftakt lÃ¤dt der PBC Erding zum kleinen Neujahrsturnier am 1. Januar 2022. Anwesend sein bitte ab 13:30 Uhr, Turnierbeginn ist um 14:00 Uhr.
 
-Startgeld: 5 € bei voller Ausschüttung. Der Modus richtet sich nach der Teilnehmerzahl. Das Turnier ist gemütlich und gesellig gehalten – ein guter Start ins neue Jahr am Billardtisch.
+Startgeld: 5 â‚¬ bei voller AusschÃ¼ttung. Der Modus richtet sich nach der Teilnehmerzahl. Das Turnier ist gemÃ¼tlich und gesellig gehalten â€“ ein guter Start ins neue Jahr am Billardtisch.
 
 Alle Mitglieder und Freunde des Vereins sind herzlich eingeladen. Neujahrsprosit danach inklusive!`,
     images: [
-      { src: '2021-12-30.jpg', alt: 'Neujahrsturnier 1. Januar 2022 – Ankündigung' },
+      { src: '2021-12-30.jpg', alt: 'Neujahrsturnier 1. Januar 2022 â€“ AnkÃ¼ndigung' },
     ],
   },
   {
     id: 'h06',
     title: 'Tournierserienauftakt im Stardust: 14 Spieler, Sepp Scharl gewinnt',
-    excerpt: 'Ein gelungener Auftakt: 14 Spieler beim ersten Turnier der neuen Serie im Stardust – nächster Termin 30. November 2021.',
+    excerpt: 'Ein gelungener Auftakt: 14 Spieler beim ersten Turnier der neuen Serie im Stardust â€“ nÃ¤chster Termin 30. November 2021.',
     date: '2021-10-28',
     category: 'Turnier',
     slug: 'tournierserienauftakt-2021',
-    content: `Es war ein gelungener Tournierserienauftakt im Stardust! 14 Spielerinnen und Spieler nahmen am ersten Abend teil und sorgten für eine tolle Atmosphäre an den Tischen.
+    content: `Es war ein gelungener Tournierserienauftakt im Stardust! 14 Spielerinnen und Spieler nahmen am ersten Abend teil und sorgten fÃ¼r eine tolle AtmosphÃ¤re an den Tischen.
 
-Das Turnier lief reibungslos, die Partien waren spannend und die Stimmung bestens. Den Sieg holte sich am Ende Sepp Scharl, der sich in einem starken Feld durchsetzte. Dahinter folgten Daniel auf Platz 2, Hütter auf Platz 3 und Garhammer auf Platz 4 – herzlichen Glückwunsch an alle Platzierten!
+Das Turnier lief reibungslos, die Partien waren spannend und die Stimmung bestens. Den Sieg holte sich am Ende Sepp Scharl, der sich in einem starken Feld durchsetzte. Dahinter folgten Daniel auf Platz 2, HÃ¼tter auf Platz 3 und Garhammer auf Platz 4 â€“ herzlichen GlÃ¼ckwunsch an alle Platzierten!
 
-Der nächste Termin der Serie findet am 30. November 2021 statt. Wer noch nicht dabei war: Es lohnt sich – einfach vorbeikommen!`,
+Der nÃ¤chste Termin der Serie findet am 30. November 2021 statt. Wer noch nicht dabei war: Es lohnt sich â€“ einfach vorbeikommen!`,
     images: [
       { src: '2021-10-28.jpg',   alt: 'Tournierserienauftakt im Stardust Oktober 2021' },
       { src: '2021-10-28-2.jpg', alt: 'Teilnehmer des Tournierserienauftakts Oktober 2021' },
@@ -354,11 +354,11 @@ Der nächste Termin der Serie findet am 30. November 2021 statt. Wer noch nicht 
     date: '2021-10-03',
     category: 'Turnier',
     slug: 'dienstags-turnierserie-2021',
-    content: `Die Dienstags-Turnierserie beim PBC Erding startet nach der langen Pause wieder durch. Jeden Dienstag treffen sich Mitglieder und Gastspieler im Stardust Casino Erding zum Turnier.
+    content: `Die Dienstags-Turnierserie beim PBC Erding startet nach der langen Pause wieder durch. Jeden Dienstag treffen sich Mitglieder und Gastspieler im Stardust Spielsalon Erding zum Turnier.
 
-Der Modus wechselt wöchentlich zwischen 8-Ball und 9-Ball. Das Handicap-System stellt sicher, dass alle Stärkeklassen faire Chancen haben und die Serie bis zum Ende offen bleibt.
+Der Modus wechselt wÃ¶chentlich zwischen 8-Ball und 9-Ball. Das Handicap-System stellt sicher, dass alle StÃ¤rkeklassen faire Chancen haben und die Serie bis zum Ende offen bleibt.
 
-Alle Interessierten sind herzlich eingeladen – einfach dienstags vorbeikommen und mitspielen!`,
+Alle Interessierten sind herzlich eingeladen â€“ einfach dienstags vorbeikommen und mitspielen!`,
     images: [
       { src: '2021-10-03.jpg', alt: 'Dienstags-Turnierserie im Stardust Erding 2021' },
     ],
@@ -366,108 +366,108 @@ Alle Interessierten sind herzlich eingeladen – einfach dienstags vorbeikommen 
   {
     id: 'h08',
     title: 'Aktueller Stand der Hausturnierserie',
-    excerpt: 'Update zur laufenden Hausturnierserie des PBC Erding – Zwischenstand und nächste Termine.',
+    excerpt: 'Update zur laufenden Hausturnierserie des PBC Erding â€“ Zwischenstand und nÃ¤chste Termine.',
     date: '2013-10-09',
     category: 'Turnier',
     slug: 'hausturnierserie-update-2013',
-    content: `Die Hausturnierserie des PBC Erding läuft weiterhin auf vollen Touren. Im aktuellen Zwischenstand zeigt sich ein enges Rennen zwischen mehreren Spielern um die vorderen Plätze in der Gesamtwertung.
+    content: `Die Hausturnierserie des PBC Erding lÃ¤uft weiterhin auf vollen Touren. Im aktuellen Zwischenstand zeigt sich ein enges Rennen zwischen mehreren Spielern um die vorderen PlÃ¤tze in der Gesamtwertung.
 
-Die Serie wird über mehrere Turniertage ausgetragen. Punkte werden pro Teilnahme und pro Matchsieg vergeben. Wer am Ende die meisten Punkte gesammelt hat, sichert sich den Serientitel.
+Die Serie wird Ã¼ber mehrere Turniertage ausgetragen. Punkte werden pro Teilnahme und pro Matchsieg vergeben. Wer am Ende die meisten Punkte gesammelt hat, sichert sich den Serientitel.
 
-Weitere Termine und der aktuelle Tabellenstand werden rechtzeitig bekanntgegeben. Alle Mitglieder sind aufgerufen, möglichst viele Turniertage wahrzunehmen, um sich für das Finale zu qualifizieren.`,
+Weitere Termine und der aktuelle Tabellenstand werden rechtzeitig bekanntgegeben. Alle Mitglieder sind aufgerufen, mÃ¶glichst viele Turniertage wahrzunehmen, um sich fÃ¼r das Finale zu qualifizieren.`,
   },
   {
     id: 'h09',
     title: 'Neue Presseartikel zur Vereinsmeisterschaft 2013',
-    excerpt: 'Neue Berichte des Pressewarts zur Vereinsmeisterschaft 2013 – inklusive Jugendaktivitäten.',
+    excerpt: 'Neue Berichte des Pressewarts zur Vereinsmeisterschaft 2013 â€“ inklusive JugendaktivitÃ¤ten.',
     date: '2013-07-10',
     category: 'Verein',
     slug: 'presseartikel-vereinsmeisterschaft-2013',
-    content: `In der Rubrik „Presse" finden sich neue Artikel und Berichte des vereinseigenen Pressewarts zur Vereinsmeisterschaft 2013. Dokumentiert werden außerdem die jüngsten Aktivitäten der Vereinsjugend – darunter die Jugendvereinsmeisterschaft und ein Mannschaftsturnier.
+    content: `In der Rubrik â€žPresse" finden sich neue Artikel und Berichte des vereinseigenen Pressewarts zur Vereinsmeisterschaft 2013. Dokumentiert werden auÃŸerdem die jÃ¼ngsten AktivitÃ¤ten der Vereinsjugend â€“ darunter die Jugendvereinsmeisterschaft und ein Mannschaftsturnier.
 
-Die ausführlichen Berichte spiegeln ein lebendiges Vereinsjahr wider und zeigen, dass beim PBC Erding neben dem Ligabetrieb auch die interne Turnierkultur und die Nachwuchsarbeit einen hohen Stellenwert genießen.
+Die ausfÃ¼hrlichen Berichte spiegeln ein lebendiges Vereinsjahr wider und zeigen, dass beim PBC Erding neben dem Ligabetrieb auch die interne Turnierkultur und die Nachwuchsarbeit einen hohen Stellenwert genieÃŸen.
 
-Die Artikel sind im Pressebereich der Website einsehbar und dokumentieren die Entwicklung des Vereins über das gesamte Spieljahr 2013.`,
+Die Artikel sind im Pressebereich der Website einsehbar und dokumentieren die Entwicklung des Vereins Ã¼ber das gesamte Spieljahr 2013.`,
   },
   {
     id: 'h10',
     title: '2. Mannschaft steigt vorzeitig in die Landesliga auf',
-    excerpt: 'Vorzeitiger Aufstieg der 2. Mannschaft des PBC Erding in die Landesliga – ein weiterer Meilenstein.',
+    excerpt: 'Vorzeitiger Aufstieg der 2. Mannschaft des PBC Erding in die Landesliga â€“ ein weiterer Meilenstein.',
     date: '2013-03-18',
     category: 'Liga',
     slug: 'aufstieg-landesliga-2013',
-    content: `Die 2. Mannschaft des PBC Erding hat es geschafft: Der Aufstieg in die Landesliga ist vorzeitig perfekt. Mit einer überzeugenden Leistung in der laufenden Saison konnte das Team die entscheidenden Punkte einfahren und den Aufstieg bereits vor dem Saisonende sichern.
+    content: `Die 2. Mannschaft des PBC Erding hat es geschafft: Der Aufstieg in die Landesliga ist vorzeitig perfekt. Mit einer Ã¼berzeugenden Leistung in der laufenden Saison konnte das Team die entscheidenden Punkte einfahren und den Aufstieg bereits vor dem Saisonende sichern.
 
-Dieser Erfolg ist das Ergebnis harter Arbeit, guter Teamchemie und eines breiten Kaders, der in dieser Saison seine volle Stärke gezeigt hat. Der Aufstieg in die Landesliga ist ein bedeutender Schritt und zeigt, dass der PBC Erding auch mit seiner zweiten Mannschaft zu den stärksten Vereinen der Region zählt.
+Dieser Erfolg ist das Ergebnis harter Arbeit, guter Teamchemie und eines breiten Kaders, der in dieser Saison seine volle StÃ¤rke gezeigt hat. Der Aufstieg in die Landesliga ist ein bedeutender Schritt und zeigt, dass der PBC Erding auch mit seiner zweiten Mannschaft zu den stÃ¤rksten Vereinen der Region zÃ¤hlt.
 
-Herzlichen Glückwunsch an alle Spieler, den Mannschaftsführer und den Verein! Wir freuen uns auf den Ligabetrieb in der Landesliga.`,
+Herzlichen GlÃ¼ckwunsch an alle Spieler, den MannschaftsfÃ¼hrer und den Verein! Wir freuen uns auf den Ligabetrieb in der Landesliga.`,
   },
   {
     id: 'h11',
-    title: 'HC-Turnierserie startet am 19. März 2013 im Stardust',
-    excerpt: 'Eine neue Handicap-Turnierserie startet am 19. März 2013 – offene Einladung für alle Spieler.',
+    title: 'HC-Turnierserie startet am 19. MÃ¤rz 2013 im Stardust',
+    excerpt: 'Eine neue Handicap-Turnierserie startet am 19. MÃ¤rz 2013 â€“ offene Einladung fÃ¼r alle Spieler.',
     date: '2013-02-28',
     category: 'Turnier',
     slug: 'hc-turnierserie-2013',
-    content: `Eine neue Handicap-Turnierserie (HC-Turnierserie) startet am 19. März 2013 im Stardust Casino Erding. Die Serie richtet sich an alle Spielerinnen und Spieler, unabhängig von ihrer aktuellen Spielstärke.
+    content: `Eine neue Handicap-Turnierserie (HC-Turnierserie) startet am 19. MÃ¤rz 2013 im Stardust Spielsalon Erding. Die Serie richtet sich an alle Spielerinnen und Spieler, unabhÃ¤ngig von ihrer aktuellen SpielstÃ¤rke.
 
-Das Handicap-System gleicht Stärkeunterschiede aus und sorgt dafür, dass jeder Teilnehmer faire Chancen hat. Gespielt wird in mehreren Runden an verschiedenen Turniertagen. Die Gesamtwertung läuft über die gesamte Serie.
+Das Handicap-System gleicht StÃ¤rkeunterschiede aus und sorgt dafÃ¼r, dass jeder Teilnehmer faire Chancen hat. Gespielt wird in mehreren Runden an verschiedenen Turniertagen. Die Gesamtwertung lÃ¤uft Ã¼ber die gesamte Serie.
 
-Startgeld: 5 € pro Turniertag. Anmeldung direkt vor Ort ab 19:00 Uhr, Turnierbeginn 19:30 Uhr. Alle sind herzlich eingeladen – neue Gesichter willkommen!`,
+Startgeld: 5 â‚¬ pro Turniertag. Anmeldung direkt vor Ort ab 19:00 Uhr, Turnierbeginn 19:30 Uhr. Alle sind herzlich eingeladen â€“ neue Gesichter willkommen!`,
   },
   {
     id: 'h12',
     title: 'Trainingsbetrieb nach Sommerpause wieder aufgenommen',
-    excerpt: 'Nach der Sommerpause startet der PBC Erding wieder ins Training – jeden Mittwoch im Stardust Casino.',
+    excerpt: 'Nach der Sommerpause startet der PBC Erding wieder ins Training â€“ jeden Mittwoch im Stardust Spielsalon.',
     date: '2012-09-14',
     category: 'Verein',
     slug: 'sommerpause-2012',
-    content: `Die Sommerpause ist vorbei und der Trainingsbetrieb beim PBC Erding startet wieder. Gespielt wird jeden Mittwoch im Stardust Casino 1 in Erding, Rennweg 59.
+    content: `Die Sommerpause ist vorbei und der Trainingsbetrieb beim PBC Erding startet wieder. Gespielt wird jeden Mittwoch im Stardust Spielsalon in Erding, Rennweg 59.
 
 Trainingszeiten:
-– Jugend: 18:30 – 20:00 Uhr
-– Erwachsene: 19:00 – 22:00 Uhr
+â€“ Jugend: 18:30 â€“ 20:00 Uhr
+â€“ Erwachsene: 19:00 â€“ 22:00 Uhr
 
-Interessierte, die ein kostenloses Probetraining absolvieren möchten, sind herzlich willkommen.`,
+Interessierte, die ein kostenloses Probetraining absolvieren mÃ¶chten, sind herzlich willkommen.`,
   },
   {
     id: 'h13',
     title: 'Neue Pool-Billard-Turnierserie im Stardust Erding',
-    excerpt: 'Jeden Dienstag ab 19:30 Uhr: neue Turnierserie im Stardust Casino auf neun K-Steel-Tischen.',
+    excerpt: 'Jeden Dienstag ab 19:30 Uhr: neue Turnierserie im Stardust Spielsalon auf neun K-Steel-Tischen.',
     date: '2012-08-01',
     category: 'Turnier',
     slug: 'turnierserie-stardust-2012',
-    content: `Eine neue Pool-Billard-Turnierserie startet im Stardust Casino in Erding, Rennweg 59, 85435 Erding – jeden Dienstag ab 19:30 Uhr. Gespielt wird auf neun frisch betucht K-Steel-Poolbillardtischen.
+    content: `Eine neue Pool-Billard-Turnierserie startet im Stardust Spielsalon in Erding, Rennweg 59, 85435 Erding â€“ jeden Dienstag ab 19:30 Uhr. Gespielt wird auf neun frisch betucht K-Steel-Poolbillardtischen.
 
-Startgeld: 10 € (oder 5 € ohne Ausschüttung). Preisverteilung: 1. Platz 50 %, 2. Platz 30 %, 3./4. Platz je 10 %.
+Startgeld: 10 â‚¬ (oder 5 â‚¬ ohne AusschÃ¼ttung). Preisverteilung: 1. Platz 50 %, 2. Platz 30 %, 3./4. Platz je 10 %.
 
-Spielmodus: Gruppenphase, dann KO-Runde – mindestens 3 Spiele pro Turnier, wöchentlich wechselnd 8-Ball und 9-Ball.
+Spielmodus: Gruppenphase, dann KO-Runde â€“ mindestens 3 Spiele pro Turnier, wÃ¶chentlich wechselnd 8-Ball und 9-Ball.
 
-Die Serie läuft über 20 Turniertage vom 4. September 2012 bis 29. Januar 2013, Finale am 2. Februar 2013. Die Top 16 Spieler mit mindestens 8 Teilnahmen qualifizieren sich für das Jackpot-Finale. Punktewertung: 10 Punkte pro Teilnahme, 5 Punkte pro Matchsieg.`,
+Die Serie lÃ¤uft Ã¼ber 20 Turniertage vom 4. September 2012 bis 29. Januar 2013, Finale am 2. Februar 2013. Die Top 16 Spieler mit mindestens 8 Teilnahmen qualifizieren sich fÃ¼r das Jackpot-Finale. Punktewertung: 10 Punkte pro Teilnahme, 5 Punkte pro Matchsieg.`,
   },
   {
     id: 'h14',
-    title: 'Spiellokal wechselt ins Stardust Casino Erding',
-    excerpt: 'Nach dem Beschluss der Mitgliederversammlung verlegt der PBC Erding sein Training ins Stardust Casino.',
+    title: 'Spiellokal wechselt ins Stardust Spielsalon Erding',
+    excerpt: 'Nach dem Beschluss der Mitgliederversammlung verlegt der PBC Erding sein Training ins Stardust Spielsalon.',
     date: '2012-04-12',
     category: 'Verein',
     slug: 'lokalwechsel-stardust-2012',
-    content: `Liebe Mitglieder, vielen Dank für die zahlreiche Anwesenheit bei der gestrigen außerordentlichen Mitgliederversammlung und den klaren Beschluss.
+    content: `Liebe Mitglieder, vielen Dank fÃ¼r die zahlreiche Anwesenheit bei der gestrigen auÃŸerordentlichen Mitgliederversammlung und den klaren Beschluss.
 
-Im Namen des gesamten Vorstands möchten wir Günter und Heike herzlich danken – ohne die beiden wäre die Vereinsgründung und die ersten erfolgreichen Jahre nicht möglich gewesen. Wir hoffen, dass die bevorstehenden Veränderungen unseren Verein voranbringen werden, und freuen uns auf eine harmonische Zusammenarbeit mit Herrn und Frau Meindl.
+Im Namen des gesamten Vorstands mÃ¶chten wir GÃ¼nter und Heike herzlich danken â€“ ohne die beiden wÃ¤re die VereinsgrÃ¼ndung und die ersten erfolgreichen Jahre nicht mÃ¶glich gewesen. Wir hoffen, dass die bevorstehenden VerÃ¤nderungen unseren Verein voranbringen werden, und freuen uns auf eine harmonische Zusammenarbeit mit Herrn und Frau Meindl.
 
-Das Mittwochstraining wird ab nächster Woche ins Stardust Casino 1 in Erding verlegt. Ludwig wird alle Mitglieder bezüglich des neuen Trainingssystems, der Terminplanung und der Gruppeneinteilung kontaktieren. Das Modell der „kostenlosen Trainingskarte" entfällt; der Vorstand arbeitet an einem geeigneten Ersatz.
+Das Mittwochstraining wird ab nÃ¤chster Woche ins Stardust Spielsalon in Erding verlegt. Ludwig wird alle Mitglieder bezÃ¼glich des neuen Trainingssystems, der Terminplanung und der Gruppeneinteilung kontaktieren. Das Modell der â€žkostenlosen Trainingskarte" entfÃ¤llt; der Vorstand arbeitet an einem geeigneten Ersatz.
 
 Marcel Kupsch, Kassenwart PBC Erding e.V.`,
   },
   {
     id: 'h15',
-    title: 'Außerordentliche Mitgliederversammlung zum Lokalwechsel',
-    excerpt: 'Einladung zur außerordentlichen Mitgliederversammlung am 11. April 2012 – Thema: möglicher Wechsel des Spiellokals.',
+    title: 'AuÃŸerordentliche Mitgliederversammlung zum Lokalwechsel',
+    excerpt: 'Einladung zur auÃŸerordentlichen Mitgliederversammlung am 11. April 2012 â€“ Thema: mÃ¶glicher Wechsel des Spiellokals.',
     date: '2012-04-03',
     category: 'Verein',
     slug: 'mitgliederversammlung-2012',
-    content: `Eine außerordentliche Mitgliederversammlung findet am Mittwoch, 11. April 2012, statt, um die Zukunft des Vereins zu besprechen – konkret: einen möglichen Wechsel des Spiellokals.
+    content: `Eine auÃŸerordentliche Mitgliederversammlung findet am Mittwoch, 11. April 2012, statt, um die Zukunft des Vereins zu besprechen â€“ konkret: einen mÃ¶glichen Wechsel des Spiellokals.
 
 Mitglieder, die keine E-Mail-Einladung erhalten haben, wenden sich bitte an den Kassenwart unter kassenwart@pbc-erding.de.
 
@@ -478,218 +478,218 @@ Marcel Kupsch, Kassenwart PBC Erding e.V.`,
   {
     id: 'h16',
     title: '2. Offene Erdinger Stadtmeisterschaft am 2. Oktober',
-    excerpt: 'Der PBC Erding richtet die 2. Offene Erdinger Stadtmeisterschaft aus – Double-Elimination mit 32 Startplätzen.',
+    excerpt: 'Der PBC Erding richtet die 2. Offene Erdinger Stadtmeisterschaft aus â€“ Double-Elimination mit 32 StartplÃ¤tzen.',
     date: '2011-09-09',
     category: 'Turnier',
     slug: 'erdinger-stadtmeisterschaft-2011',
-    content: `Der PBC Erding richtet in diesem Jahr die 2. Offene Erdinger Stadtmeisterschaft im Pool-Billard aus. Das Turnier wird im Double-Elimination-Modus ausgetragen und bietet Platz für maximal 32 Teilnehmer.
+    content: `Der PBC Erding richtet in diesem Jahr die 2. Offene Erdinger Stadtmeisterschaft im Pool-Billard aus. Das Turnier wird im Double-Elimination-Modus ausgetragen und bietet Platz fÃ¼r maximal 32 Teilnehmer.
 
-Gespielt wird sowohl 8-Ball als auch 9-Ball. Die Stadtmeisterschaft richtet sich an alle Billardspieler aus Erding und der näheren Umgebung – Vereinsmitgliedschaft ist keine Voraussetzung.
+Gespielt wird sowohl 8-Ball als auch 9-Ball. Die Stadtmeisterschaft richtet sich an alle Billardspieler aus Erding und der nÃ¤heren Umgebung â€“ Vereinsmitgliedschaft ist keine Voraussetzung.
 
-Termin: 2. Oktober 2011. Weitere Details zu Uhrzeit und Startgeld können beim Verein erfragt werden. Interessierte können sich bereits jetzt beim Verein vormerken lassen.`,
+Termin: 2. Oktober 2011. Weitere Details zu Uhrzeit und Startgeld kÃ¶nnen beim Verein erfragt werden. Interessierte kÃ¶nnen sich bereits jetzt beim Verein vormerken lassen.`,
   },
   {
     id: 'h17',
     title: 'Dienstags-Cup startet in die 8. Runde',
-    excerpt: 'Ab 23. August 2011 startet der Dienstags-Cup in seine 8. Runde – 20 Turniertage mit Handicap-System.',
+    excerpt: 'Ab 23. August 2011 startet der Dienstags-Cup in seine 8. Runde â€“ 20 Turniertage mit Handicap-System.',
     date: '2011-07-27',
     category: 'Turnier',
     slug: 'dienstags-cup-8-runde-2011',
     content: `Der beliebte Dienstags-Cup beim PBC Erding geht in seine achte Runde. Ab dem 23. August 2011 starten wieder 20 Turniertage, die sich bis in den Winter erstrecken.
 
-Das bewährte Handicap-System bleibt erhalten und sorgt dafür, dass Spieler aller Stärken faire Chancen haben. Die Serie ist offen für Vereinsmitglieder sowie Gastspieler.
+Das bewÃ¤hrte Handicap-System bleibt erhalten und sorgt dafÃ¼r, dass Spieler aller StÃ¤rken faire Chancen haben. Die Serie ist offen fÃ¼r Vereinsmitglieder sowie Gastspieler.
 
-Startgeld und genaue Modalitäten werden beim Auftaktturnier bekanntgegeben. Alle bisherigen Teilnehmer werden persönlich informiert.`,
+Startgeld und genaue ModalitÃ¤ten werden beim Auftaktturnier bekanntgegeben. Alle bisherigen Teilnehmer werden persÃ¶nlich informiert.`,
   },
   {
     id: 'h18',
     title: 'Bayerischer Meister: 1. Mannschaft gewinnt 8-Ball-Cup-Mannschaftsmeisterschaft',
-    excerpt: 'Richard Bendl wird Bayerischer Meister – starke Leistungen auch von Stefan Mooser, Ludwig Weidinger und Josef Bendl.',
+    excerpt: 'Richard Bendl wird Bayerischer Meister â€“ starke Leistungen auch von Stefan Mooser, Ludwig Weidinger und Josef Bendl.',
     date: '2011-06-27',
     category: 'Liga',
     slug: 'bayerischer-meister-2011',
     content: `Gleich mehrere Spieler des PBC Erding konnten bei der Bayerischen Meisterschaft 2011 im Pool-Billard hervorragende Ergebnisse erzielen.
 
-Richard Bendl holte sich den Titel des Bayerischen Meisters und krönte damit eine starke Saison. Auch Stefan Mooser, Ludwig Weidinger und Josef Bendl überzeugten mit starken Leistungen und platzierten sich im vorderen Bereich der Wertung.
+Richard Bendl holte sich den Titel des Bayerischen Meisters und krÃ¶nte damit eine starke Saison. Auch Stefan Mooser, Ludwig Weidinger und Josef Bendl Ã¼berzeugten mit starken Leistungen und platzierten sich im vorderen Bereich der Wertung.
 
 Der Verein gratuliert allen Teilnehmern herzlich zu ihren Leistungen bei dieser renommierten Meisterschaft des Bayerischen Billard Verbands.`,
     images: [
-      { src: '2011-06-27.png', alt: 'Bayerische Meister 2011 – Mannschaftsfoto' },
+      { src: '2011-06-27.png', alt: 'Bayerische Meister 2011 â€“ Mannschaftsfoto' },
     ],
   },
   {
     id: 'h19',
-    title: 'Vereinsmeisterschaft 2011: Josef „Seppi" Bendl erneut Vereinsmeister',
-    excerpt: 'Josef „Seppi" Bendl holt sich zum zweiten Mal in Folge den Titel des Vereinsmeisters beim PBC Erding.',
+    title: 'Vereinsmeisterschaft 2011: Josef â€žSeppi" Bendl erneut Vereinsmeister',
+    excerpt: 'Josef â€žSeppi" Bendl holt sich zum zweiten Mal in Folge den Titel des Vereinsmeisters beim PBC Erding.',
     date: '2011-05-05',
     category: 'Turnier',
     slug: 'vereinsmeisterschaft-2011',
-    content: `Die Vereinsmeisterschaft 2011 des PBC Erding ist entschieden: Josef „Seppi" Bendl sichert sich zum zweiten Mal in Folge den Titel des Vereinsmeisters.
+    content: `Die Vereinsmeisterschaft 2011 des PBC Erding ist entschieden: Josef â€žSeppi" Bendl sichert sich zum zweiten Mal in Folge den Titel des Vereinsmeisters.
 
-In einem spannenden Turnier setzte sich Seppi Bendl gegen alle Mitbewerber durch und bewies damit einmal mehr seine Klasse. Der zweifache Vereinsmeister ist damit nicht nur eine Stütze der Ligamannschaft, sondern auch die Nummer eins im vereinsinternen Turnier.
+In einem spannenden Turnier setzte sich Seppi Bendl gegen alle Mitbewerber durch und bewies damit einmal mehr seine Klasse. Der zweifache Vereinsmeister ist damit nicht nur eine StÃ¼tze der Ligamannschaft, sondern auch die Nummer eins im vereinsinternen Turnier.
 
 Der Vorstand gratuliert herzlich und freut sich auf weitere spannende Vereinsmeisterschaften in den kommenden Jahren.`,
     images: [
-      { src: '2011-05-05.jpg',   alt: 'Vereinsmeisterschaft 2011 – alle Teilnehmer' },
-      { src: '2011-05-05-2.jpg', alt: 'Vereinsmeisterschaft 2011 – Halbfinalisten' },
-      { src: '2011-05-05-3.png', alt: 'Vereinsmeisterschaft 2011 – Finalisten' },
+      { src: '2011-05-05.jpg',   alt: 'Vereinsmeisterschaft 2011 â€“ alle Teilnehmer' },
+      { src: '2011-05-05-2.jpg', alt: 'Vereinsmeisterschaft 2011 â€“ Halbfinalisten' },
+      { src: '2011-05-05-3.png', alt: 'Vereinsmeisterschaft 2011 â€“ Finalisten' },
     ],
   },
   {
     id: 'h20',
     title: 'Aufstieg in die Verbandsliga perfekt',
-    excerpt: 'Der PBC Erding steigt in die Verbandsliga auf – der dritte Aufstieg in Folge seit Vereinsgründung.',
+    excerpt: 'Der PBC Erding steigt in die Verbandsliga auf â€“ der dritte Aufstieg in Folge seit VereinsgrÃ¼ndung.',
     date: '2011-05-04',
     category: 'Liga',
     slug: 'aufstieg-verbandsliga-2011',
-    content: `Der PBC Erding schreibt Vereinsgeschichte: Mit dem Aufstieg in die Verbandsliga gelingt dem Verein der dritte Aufstieg in Folge seit seiner Gründung.
+    content: `Der PBC Erding schreibt Vereinsgeschichte: Mit dem Aufstieg in die Verbandsliga gelingt dem Verein der dritte Aufstieg in Folge seit seiner GrÃ¼ndung.
 
-Diese außergewöhnliche Erfolgsserie unterstreicht die beeindruckende Entwicklung des Clubs in kürzester Zeit. Was im Jahr 2008 als junger Verein begann, hat sich durch konsequente Nachwuchsarbeit und sportlichen Ehrgeiz zu einer echten Größe im bayerischen Pool-Billard entwickelt.
+Diese auÃŸergewÃ¶hnliche Erfolgsserie unterstreicht die beeindruckende Entwicklung des Clubs in kÃ¼rzester Zeit. Was im Jahr 2008 als junger Verein begann, hat sich durch konsequente Nachwuchsarbeit und sportlichen Ehrgeiz zu einer echten GrÃ¶ÃŸe im bayerischen Pool-Billard entwickelt.
 
-Der Vorstand dankt allen Spielerinnen und Spielern für ihren unermüdlichen Einsatz und freut sich auf die neue Herausforderung in der Verbandsliga.`,
+Der Vorstand dankt allen Spielerinnen und Spielern fÃ¼r ihren unermÃ¼dlichen Einsatz und freut sich auf die neue Herausforderung in der Verbandsliga.`,
     images: [
-      { src: '2011-05-04.jpg', alt: 'Aufstieg in die Verbandsliga 2011 – PBC Erding' },
+      { src: '2011-05-04.jpg', alt: 'Aufstieg in die Verbandsliga 2011 â€“ PBC Erding' },
     ],
   },
   {
     id: 'h21',
     title: '3. Mannschaft steigt direkt in die Bezirksliga auf',
-    excerpt: 'Christian Herzog, Ernst Hillmann, Torsten Sanders und David Restle führen die 3. Mannschaft in die Bezirksliga.',
+    excerpt: 'Christian Herzog, Ernst Hillmann, Torsten Sanders und David Restle fÃ¼hren die 3. Mannschaft in die Bezirksliga.',
     date: '2011-04-12',
     category: 'Liga',
     slug: 'aufstieg-bezirksliga-2011',
-    content: `Der PBC Erding steigt in die Bezirksliga auf! Die Mannschaft um Christian Herzog, Ernst Hillmann, Torsten Sanders und David Restle sicherte sich den Aufstieg und belohnte sich damit für eine starke Saison.
+    content: `Der PBC Erding steigt in die Bezirksliga auf! Die Mannschaft um Christian Herzog, Ernst Hillmann, Torsten Sanders und David Restle sicherte sich den Aufstieg und belohnte sich damit fÃ¼r eine starke Saison.
 
-Der Aufstieg ist ein weiterer Meilenstein in der noch jungen Geschichte des Vereins und zeigt, dass der eingeschlagene Weg der richtige ist. Die Leistungsdichte im Kader wächst stetig, und mit dem Bezirksliga-Aufstieg wartet nun eine neue sportliche Herausforderung.
+Der Aufstieg ist ein weiterer Meilenstein in der noch jungen Geschichte des Vereins und zeigt, dass der eingeschlagene Weg der richtige ist. Die Leistungsdichte im Kader wÃ¤chst stetig, und mit dem Bezirksliga-Aufstieg wartet nun eine neue sportliche Herausforderung.
 
 Der gesamte Verein gratuliert der Aufstiegsmannschaft herzlich und fiebert mit ihr der neuen Spielklasse entgegen.`,
     images: [
-      { src: '2011-04-12.jpg',   alt: 'PBC Erding III – Aufstiegsteam Bezirksliga (1)' },
-      { src: '2011-04-12-2.jpg', alt: 'PBC Erding III – Aufstiegsteam Bezirksliga (2)' },
+      { src: '2011-04-12.jpg',   alt: 'PBC Erding III â€“ Aufstiegsteam Bezirksliga (1)' },
+      { src: '2011-04-12-2.jpg', alt: 'PBC Erding III â€“ Aufstiegsteam Bezirksliga (2)' },
     ],
   },
   {
     id: 'h22',
     title: 'Dienstags-Cup: Super-Seppi gewinnt die Turnierserie',
-    excerpt: 'Josef „Super-Seppi" Bendl gewinnt den Dienstags-Cup – starke Leistungen auch von Scharl, Claessen und Gruß.',
+    excerpt: 'Josef â€žSuper-Seppi" Bendl gewinnt den Dienstags-Cup â€“ starke Leistungen auch von Scharl, Claessen und GruÃŸ.',
     date: '2011-01-11',
     category: 'Turnier',
     slug: 'dienstags-cup-news-2011',
-    content: `Der Dienstags-Cup beim PBC Erding hat einen neuen Seriensieger: Josef „Super-Seppi" Bendl setzt sich am Ende der Turnierserie durch und gewinnt den Titel.
+    content: `Der Dienstags-Cup beim PBC Erding hat einen neuen Seriensieger: Josef â€žSuper-Seppi" Bendl setzt sich am Ende der Turnierserie durch und gewinnt den Titel.
 
-Auch Scharl, Claessen und Gruß zeigten sich über die gesamte Serie in ausgezeichneter Form und sorgten für spannende Partien. Die Turnierserie hat einmal mehr gezeigt, wie stark die Breite des Vereins ist.
+Auch Scharl, Claessen und GruÃŸ zeigten sich Ã¼ber die gesamte Serie in ausgezeichneter Form und sorgten fÃ¼r spannende Partien. Die Turnierserie hat einmal mehr gezeigt, wie stark die Breite des Vereins ist.
 
-Die nächste Runde des Dienstags-Cups startet bald. Neue Teilnehmer sind jederzeit willkommen – einfach dienstags vorbeikommen!`,
+Die nÃ¤chste Runde des Dienstags-Cups startet bald. Neue Teilnehmer sind jederzeit willkommen â€“ einfach dienstags vorbeikommen!`,
     images: [
-      { src: '2011-01-11.jpg', alt: 'Dienstags-Cup Januar 2011 – Turnierfoto' },
+      { src: '2011-01-11.jpg', alt: 'Dienstags-Cup Januar 2011 â€“ Turnierfoto' },
     ],
   },
   {
     id: 'h23',
     title: 'Frohe Weihnachten vom PBC Erding',
-    excerpt: 'Der PBC Erding wünscht allen Mitgliedern und Freunden frohe Weihnachten und ein gutes neues Jahr 2011.',
+    excerpt: 'Der PBC Erding wÃ¼nscht allen Mitgliedern und Freunden frohe Weihnachten und ein gutes neues Jahr 2011.',
     date: '2010-12-23',
     category: 'Verein',
     slug: 'weihnachten-2010',
-    content: `Der Pool Billard Club Erding e.V. wünscht allen Mitgliedern, Freunden und Unterstützern des Vereins ein frohes und besinnliches Weihnachtsfest sowie einen guten Rutsch ins neue Jahr 2011.
+    content: `Der Pool Billard Club Erding e.V. wÃ¼nscht allen Mitgliedern, Freunden und UnterstÃ¼tzern des Vereins ein frohes und besinnliches Weihnachtsfest sowie einen guten Rutsch ins neue Jahr 2011.
 
-Das erste Jahr des Vereins war geprägt von sportlichen Erfolgen, wachsender Mitgliederzahl und einer tollen Gemeinschaft. Wir freuen uns auf alles, was 2011 bringen wird.
+Das erste Jahr des Vereins war geprÃ¤gt von sportlichen Erfolgen, wachsender Mitgliederzahl und einer tollen Gemeinschaft. Wir freuen uns auf alles, was 2011 bringen wird.
 
 Der Vorstand des PBC Erding e.V.`,
   },
   {
     id: 'h24',
-    title: 'PBC Erding unterstützt Münchens Olympia-Bewerbung 2018',
-    excerpt: 'Als Sportverein aus der Region unterstützt der PBC Erding die Münchner Bewerbung für die Olympischen Winterspiele 2018.',
+    title: 'PBC Erding unterstÃ¼tzt MÃ¼nchens Olympia-Bewerbung 2018',
+    excerpt: 'Als Sportverein aus der Region unterstÃ¼tzt der PBC Erding die MÃ¼nchner Bewerbung fÃ¼r die Olympischen Winterspiele 2018.',
     date: '2010-12-05',
     category: 'Verein',
     slug: 'olympia-bewerbung-2010',
-    content: `Der PBC Erding unterstützt die Bewerbung Münchens für die Olympischen Winterspiele 2018. Als Sportverein aus der Region freuen wir uns über das internationale Interesse an der Sportregion München und Oberbayern.
+    content: `Der PBC Erding unterstÃ¼tzt die Bewerbung MÃ¼nchens fÃ¼r die Olympischen Winterspiele 2018. Als Sportverein aus der Region freuen wir uns Ã¼ber das internationale Interesse an der Sportregion MÃ¼nchen und Oberbayern.
 
-Billard als Präzisionssport profitiert von einer lebendigen Sportlandschaft – die Olympia-Bewerbung ist ein positives Signal für den Sport in Bayern insgesamt. Wir drücken der Münchner Bewerbung die Daumen.`,
+Billard als PrÃ¤zisionssport profitiert von einer lebendigen Sportlandschaft â€“ die Olympia-Bewerbung ist ein positives Signal fÃ¼r den Sport in Bayern insgesamt. Wir drÃ¼cken der MÃ¼nchner Bewerbung die Daumen.`,
   },
   {
     id: 'h25',
-    title: 'Saisonstart 2010: PBC Erding wächst auf 45 Mitglieder',
-    excerpt: 'Der PBC Erding startet mit 45 Mitgliedern in die Saison 2010/11 – Jugendprogramm unter Leitung von Ekkhard Schneider-Lombard gestartet.',
+    title: 'Saisonstart 2010: PBC Erding wÃ¤chst auf 45 Mitglieder',
+    excerpt: 'Der PBC Erding startet mit 45 Mitgliedern in die Saison 2010/11 â€“ Jugendprogramm unter Leitung von Ekkhard Schneider-Lombard gestartet.',
     date: '2010-11-22',
     category: 'Verein',
     slug: 'saisonstart-2010',
-    content: `Der PBC Erding startet mit großem Schwung in die Saison 2010/11. Der Verein zählt mittlerweile 45 Mitglieder – ein beeindruckendes Wachstum in so kurzer Zeit seit der Gründung.
+    content: `Der PBC Erding startet mit groÃŸem Schwung in die Saison 2010/11. Der Verein zÃ¤hlt mittlerweile 45 Mitglieder â€“ ein beeindruckendes Wachstum in so kurzer Zeit seit der GrÃ¼ndung.
 
-Besonders erfreulich ist das neu eingeführte Jugendprogramm: Unter der Leitung von Ekkhard Schneider-Lombard werden junge Talente gezielt gefördert und an den Ligabetrieb herangeführt. Der Verein setzt damit ein klares Zeichen für nachhaltige Nachwuchsarbeit.
+Besonders erfreulich ist das neu eingefÃ¼hrte Jugendprogramm: Unter der Leitung von Ekkhard Schneider-Lombard werden junge Talente gezielt gefÃ¶rdert und an den Ligabetrieb herangefÃ¼hrt. Der Verein setzt damit ein klares Zeichen fÃ¼r nachhaltige Nachwuchsarbeit.
 
-Das Training findet regelmäßig statt und bietet sowohl Anfängern als auch erfahrenen Spielern die Möglichkeit, ihre Fähigkeiten weiterzuentwickeln. Neue Mitglieder sind jederzeit herzlich willkommen – ein kostenloses Probetraining ist jederzeit möglich.`,
+Das Training findet regelmÃ¤ÃŸig statt und bietet sowohl AnfÃ¤ngern als auch erfahrenen Spielern die MÃ¶glichkeit, ihre FÃ¤higkeiten weiterzuentwickeln. Neue Mitglieder sind jederzeit herzlich willkommen â€“ ein kostenloses Probetraining ist jederzeit mÃ¶glich.`,
   },
 
-  // ── Neue Artikel zu Bildern ohne bisherigen Artikel ────────────────────────
+  // â”€â”€ Neue Artikel zu Bildern ohne bisherigen Artikel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'h04b',
     title: 'Turnier-Serie 2022 startet im Stardust',
-    excerpt: 'Die neue Turnier-Serie 2022 im Stardust Casino Erding nimmt Gestalt an – Termine und Details für die kommende Saison.',
+    excerpt: 'Die neue Turnier-Serie 2022 im Stardust Spielsalon Erding nimmt Gestalt an â€“ Termine und Details fÃ¼r die kommende Saison.',
     date: '2022-01-20',
     category: 'Turnier',
     slug: 'turnierserie-2022',
-    content: `Das neue Jahr startet sportlich: Im Stardust Casino Erding läuft die Planung für die Turnier-Serie 2022 auf Hochtouren. Die Serie richtet sich an alle Billard-Begeisterten aus der Region – Vereinsmitglieder und Gastspieler gleichsam.
+    content: `Das neue Jahr startet sportlich: Im Stardust Spielsalon Erding lÃ¤uft die Planung fÃ¼r die Turnier-Serie 2022 auf Hochtouren. Die Serie richtet sich an alle Billard-Begeisterten aus der Region â€“ Vereinsmitglieder und Gastspieler gleichsam.
 
-Gespielt wird im bewährten Einzel-KO-Format, wöchentlich wechselnd zwischen 8-Ball und 9-Ball. Das Startgeld wird vollständig als Preisgeld ausgeschüttet. Näheres zu Terminen und Anmeldung folgt in Kürze.
+Gespielt wird im bewÃ¤hrten Einzel-KO-Format, wÃ¶chentlich wechselnd zwischen 8-Ball und 9-Ball. Das Startgeld wird vollstÃ¤ndig als Preisgeld ausgeschÃ¼ttet. NÃ¤heres zu Terminen und Anmeldung folgt in KÃ¼rze.
 
-Wer mitmachen möchte: einfach dienstags vorbeikommen oder sich beim Verein melden. Plätze sind begrenzt.`,
+Wer mitmachen mÃ¶chte: einfach dienstags vorbeikommen oder sich beim Verein melden. PlÃ¤tze sind begrenzt.`,
     images: [
       { src: '2022-01-20.jpg', alt: 'Turnier-Serie 2022 im Stardust Erding' },
     ],
   },
   {
     id: 'h12b',
-    title: 'Vereinsabend im Stardust – Gemeinschaft abseits des Wettkampfs',
-    excerpt: 'Geselligkeit und Billard: Ein Abend im Stardust Casino, der zeigt, was den PBC Erding als Gemeinschaft ausmacht.',
+    title: 'Vereinsabend im Stardust â€“ Gemeinschaft abseits des Wettkampfs',
+    excerpt: 'Geselligkeit und Billard: Ein Abend im Stardust Spielsalon, der zeigt, was den PBC Erding als Gemeinschaft ausmacht.',
     date: '2025-02-18',
     category: 'Verein',
     slug: 'vereinsabend-stardust-2025',
-    content: `Nicht nur Ligabetrieb und Turniere gehören zum PBC Erding – auch gemeinschaftliche Abende, bei denen Billard im Mittelpunkt steht, aber das Miteinander genauso wichtig ist. Ein solcher Abend fand im Februar 2025 im Stardust Casino statt.
+    content: `Nicht nur Ligabetrieb und Turniere gehÃ¶ren zum PBC Erding â€“ auch gemeinschaftliche Abende, bei denen Billard im Mittelpunkt steht, aber das Miteinander genauso wichtig ist. Ein solcher Abend fand im Februar 2025 im Stardust Spielsalon statt.
 
-Die Atmosphäre im Stardust, das der Verein seit 2012 als Heimat kennt, ist für viele Mitglieder längst vertraut: die Geräusche der Queue-Stöße, das Lachen nach einer gelungenen Kombination, die Gespräche an der Bar. Momente wie diese halten eine Vereinsgemeinschaft zusammen.
+Die AtmosphÃ¤re im Stardust, das der Verein seit 2012 als Heimat kennt, ist fÃ¼r viele Mitglieder lÃ¤ngst vertraut: die GerÃ¤usche der Queue-StÃ¶ÃŸe, das Lachen nach einer gelungenen Kombination, die GesprÃ¤che an der Bar. Momente wie diese halten eine Vereinsgemeinschaft zusammen.
 
-Der PBC Erding dankt dem Stardust-Team einmal mehr für die herzliche Bewirtung und die bereitgestellten Tische.`,
+Der PBC Erding dankt dem Stardust-Team einmal mehr fÃ¼r die herzliche Bewirtung und die bereitgestellten Tische.`,
     images: [
-      { src: '2025-02-18.jpg', alt: 'Vereinsabend im Stardust Casino Erding Februar 2025' },
+      { src: '2025-02-18.jpg', alt: 'Vereinsabend im Stardust Spielsalon Erding Februar 2025' },
     ],
   },
   {
     id: 'h26',
-    title: 'Starte durch beim PBC Erding – Billard für junge und alte Talente',
-    excerpt: 'Neuer Standort, neue Chancen: Der PBC Erding lädt im Bowling Castle Erding zum Schnuppertraining ein.',
+    title: 'Starte durch beim PBC Erding â€“ Billard fÃ¼r junge und alte Talente',
+    excerpt: 'Neuer Standort, neue Chancen: Der PBC Erding lÃ¤dt im Bowling Castle Erding zum Schnuppertraining ein.',
     date: '2026-01-16',
     category: 'Verein',
     slug: 'starte-durch-pbc-erding',
-    content: `Der PBC Erding hat eine neue Heimat – und mit ihr neue Möglichkeiten: Im Bowling Castle Erding bietet der Verein regelmäßiges Training für alle, die Pool-Billard kennenlernen oder ihr Spiel verbessern möchten. Ob jung oder alt, Anfänger oder Fortgeschrittener – beim PBC Erding ist jeder willkommen.
+    content: `Der PBC Erding hat eine neue Heimat â€“ und mit ihr neue MÃ¶glichkeiten: Im Bowling Castle Erding bietet der Verein regelmÃ¤ÃŸiges Training fÃ¼r alle, die Pool-Billard kennenlernen oder ihr Spiel verbessern mÃ¶chten. Ob jung oder alt, AnfÃ¤nger oder Fortgeschrittener â€“ beim PBC Erding ist jeder willkommen.
 
-Das offene Schnuppertraining findet jeden Sonntag von 13:00 bis 16:00 Uhr statt. Kein Startgeld, keine Vereinsmitgliedschaft nötig – einfach vorbeikommen, Queue in die Hand nehmen und loslegen. Erfahrene Vereinsspieler stehen als Ansprechpartner zur Verfügung.
+Das offene Schnuppertraining findet jeden Sonntag von 13:00 bis 16:00 Uhr statt. Kein Startgeld, keine Vereinsmitgliedschaft nÃ¶tig â€“ einfach vorbeikommen, Queue in die Hand nehmen und loslegen. Erfahrene Vereinsspieler stehen als Ansprechpartner zur VerfÃ¼gung.
 
-Wer Gefallen findet und regelmäßig mitmachen möchte, kann jederzeit Mitglied werden. Weitere Trainingszeiten für Mitglieder: Dienstag und Donnerstag ab 18:00 Uhr. Informationen unter info@pbc-erding.de.`,
+Wer Gefallen findet und regelmÃ¤ÃŸig mitmachen mÃ¶chte, kann jederzeit Mitglied werden. Weitere Trainingszeiten fÃ¼r Mitglieder: Dienstag und Donnerstag ab 18:00 Uhr. Informationen unter info@pbc-erding.de.`,
     images: [
-      { src: '2026-01-16.jpg', alt: 'Training im Bowling Castle Erding – Billard für alle' },
+      { src: '2026-01-16.jpg', alt: 'Training im Bowling Castle Erding â€“ Billard fÃ¼r alle' },
     ],
   },
   {
     id: 'h27',
-    title: 'Mittwoch Cup 2026 – jeden letzten Mittwoch im Bowling Castle',
-    excerpt: 'Der Mittwoch Cup startet am 25. Februar 2026 – offene Turnierserie jeden letzten Mittwoch des Monats.',
+    title: 'Mittwoch Cup 2026 â€“ jeden letzten Mittwoch im Bowling Castle',
+    excerpt: 'Der Mittwoch Cup startet am 25. Februar 2026 â€“ offene Turnierserie jeden letzten Mittwoch des Monats.',
     date: '2026-01-16',
     category: 'Turnier',
     slug: 'mittwoch-cup-ankuendigung-2026',
     content: `Die Turnierserie 2026 nimmt Form an: Der Mittwoch Cup findet jeden letzten Mittwoch im Monat im Bowling Castle Erding statt. Startschuss ist am 25. Februar 2026 um 18:30 Uhr.
 
-Das Format ist offen für Vereinsmitglieder und Gastspieler. Gespielt wird im Gruppen- und KO-System, der genaue Modus (8-Ball oder 9-Ball) wird vor dem Turnier bekanntgegeben. Startgeld: 10 € bei voller Ausschüttung.
+Das Format ist offen fÃ¼r Vereinsmitglieder und Gastspieler. Gespielt wird im Gruppen- und KO-System, der genaue Modus (8-Ball oder 9-Ball) wird vor dem Turnier bekanntgegeben. Startgeld: 10 â‚¬ bei voller AusschÃ¼ttung.
 
-Anmeldung unter turnier@pbc-erding.de oder direkt vor Ort ab 18:00 Uhr. Plätze sind begrenzt – wer sicher dabei sein möchte, sollte sich frühzeitig anmelden.`,
+Anmeldung unter turnier@pbc-erding.de oder direkt vor Ort ab 18:00 Uhr. PlÃ¤tze sind begrenzt â€“ wer sicher dabei sein mÃ¶chte, sollte sich frÃ¼hzeitig anmelden.`,
     images: [
-      { src: '2026-01-16-2.jpg', alt: 'Mittwoch Cup 2026 – Ankündigung' },
+      { src: '2026-01-16-2.jpg', alt: 'Mittwoch Cup 2026 â€“ AnkÃ¼ndigung' },
     ],
   },
 ]
 
-// ─── Chronik ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Chronik â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type ChronikEntry = {
   title: string
@@ -700,25 +700,25 @@ export type ChronikEntry = {
 
 export const chronik: ChronikEntry[] = [
   // 2026
-  { title: 'Saisonabschluss: Erding II – Kreisliga 2025/26 ungeschlagen abgeschlossen', date: '2026-05-16', slug: 'saisonabschluss-erding-2-2025-26'   },
+  { title: 'Saisonabschluss: Erding II â€“ Kreisliga 2025/26 ungeschlagen abgeschlossen', date: '2026-05-16', slug: 'saisonabschluss-erding-2-2025-26'   },
   { title: 'Trainer-Fortbildung: Bart Claessen erfolgreich zertifiziert',               date: '2026-05-09', slug: 'trainer-fortbildung-bart-claessen'   },
-  { title: 'Saisonabschluss: PBC Erding III – Kreisliga 2025/26',                       date: '2026-05-09', slug: 'saisonabschluss-erding-3-2025-26'   },
-  { title: 'Saisonabschluss: PBC Erding I gewinnt 8:2 – Bezirksliga 2025/26',          date: '2026-05-09', slug: 'saisonabschluss-erding-1-2025-26'   },
-  { title: 'Mittwoch-Cup April – Seppi Bendl holt den Sieg',                    date: '2026-04-29', slug: 'mittwoch-cup-april-2026'                 },
-  { title: 'Spieltag im Bowling Castle – Teamgeist an allen Tischen',           date: '2026-04-05', slug: 'heimspieltag-bowling-castle-april-2026'   },
-  { title: 'Mittwoch-Cup: Zweiter Abend – Hütti holt den Sieg',        date: '2026-03-25', slug: 'mittwoch-cup-zweiter-abend-maerz-2026'    },
-  { title: 'Mittwoch Cup 2026 – jeden letzten Mittwoch im Bowling Castle', date: '2026-01-16', slug: 'mittwoch-cup-ankuendigung-2026'        },
-  { title: 'Starte durch beim PBC Erding – Billard für junge und alte Talente', date: '2026-01-16', slug: 'starte-durch-pbc-erding'         },
+  { title: 'Saisonabschluss: PBC Erding III â€“ Kreisliga 2025/26',                       date: '2026-05-09', slug: 'saisonabschluss-erding-3-2025-26'   },
+  { title: 'Saisonabschluss: PBC Erding I gewinnt 8:2 â€“ Bezirksliga 2025/26',          date: '2026-05-09', slug: 'saisonabschluss-erding-1-2025-26'   },
+  { title: 'Mittwoch-Cup April â€“ Seppi Bendl holt den Sieg',                    date: '2026-04-29', slug: 'mittwoch-cup-april-2026'                 },
+  { title: 'Spieltag im Bowling Castle â€“ Teamgeist an allen Tischen',           date: '2026-04-05', slug: 'heimspieltag-bowling-castle-april-2026'   },
+  { title: 'Mittwoch-Cup: Zweiter Abend â€“ HÃ¼tti holt den Sieg',        date: '2026-03-25', slug: 'mittwoch-cup-zweiter-abend-maerz-2026'    },
+  { title: 'Mittwoch Cup 2026 â€“ jeden letzten Mittwoch im Bowling Castle', date: '2026-01-16', slug: 'mittwoch-cup-ankuendigung-2026'        },
+  { title: 'Starte durch beim PBC Erding â€“ Billard fÃ¼r junge und alte Talente', date: '2026-01-16', slug: 'starte-durch-pbc-erding'         },
   // 2025
   { title: 'PBC Erding zieht ins Bowling Castle Erding um',            date: '2025-12-20', slug: 'umzug-bowling-castle-erding'               },
-  { title: 'Vereinsabend im Stardust – Gemeinschaft abseits des Wettkampfs', date: '2025-02-18', slug: 'vereinsabend-stardust-2025'          },
+  { title: 'Vereinsabend im Stardust â€“ Gemeinschaft abseits des Wettkampfs', date: '2025-02-18', slug: 'vereinsabend-stardust-2025'          },
   { title: 'Herzlichen Dank an das Stardust-Team',                     date: '2025-12-20', slug: 'herzlichen-dank-stardust'                  },
-  { title: 'Mittwochsturnier – offenes Turnier im PBC Erding',         date: '2025-12-01', slug: 'mittwochsturnier'                          },
+  { title: 'Mittwochsturnier â€“ offenes Turnier im PBC Erding',         date: '2025-12-01', slug: 'mittwochsturnier'                          },
   // 2024
   { title: 'Bezirksmeisterschaft Senioren 10-Ball in Erding',                              date: '2024-04-14', slug: 'bezirksmeisterschaft-senioren-2024'      },
   { title: 'Spieltag gegen Dingolfing',                                                    date: '2024-04-14', slug: 'spieltag-gegen-dingolfing'               },
   // 2023
-  { title: 'DiCup 23/24 – Turnierserie für Jedermann',                                    date: '2023-10-15', slug: 'dicup-2324'                              },
+  { title: 'DiCup 23/24 â€“ Turnierserie fÃ¼r Jedermann',                                    date: '2023-10-15', slug: 'dicup-2324'                              },
   { title: 'Stardust Open 2023',                                                           date: '2023-10-15', slug: 'stardust-open-2023'                      },
   // 2022
   { title: 'Stardust Open 2022',                                                           date: '2022-11-03', slug: 'stardust-open-2022'                      },
@@ -731,27 +731,27 @@ export const chronik: ChronikEntry[] = [
   { title: 'Aktueller Stand der Hausturnierserie',                                        date: '2013-10-09', slug: 'hausturnierserie-update-2013'             },
   { title: 'Neue Presseartikel zur Vereinsmeisterschaft 2013',                            date: '2013-07-10', slug: 'presseartikel-vereinsmeisterschaft-2013'  },
   { title: '2. Mannschaft steigt vorzeitig in die Landesliga auf',                        date: '2013-03-18', slug: 'aufstieg-landesliga-2013'                 },
-  { title: 'HC-Turnierserie startet am 19. März 2013 im Stardust',                       date: '2013-02-28', slug: 'hc-turnierserie-2013'                     },
+  { title: 'HC-Turnierserie startet am 19. MÃ¤rz 2013 im Stardust',                       date: '2013-02-28', slug: 'hc-turnierserie-2013'                     },
   // 2012
   { title: 'Trainingsbetrieb nach Sommerpause wieder aufgenommen',                        date: '2012-09-14', slug: 'sommerpause-2012'                         },
   { title: 'Neue Pool-Billard-Turnierserie im Stardust Erding',                           date: '2012-08-01', slug: 'turnierserie-stardust-2012'               },
-  { title: 'Spiellokal wechselt ins Stardust Casino Erding',                              date: '2012-04-12', slug: 'lokalwechsel-stardust-2012'               },
-  { title: 'Außerordentliche Mitgliederversammlung zum Lokalwechsel',                    date: '2012-04-03', slug: 'mitgliederversammlung-2012'                },
+  { title: 'Spiellokal wechselt ins Stardust Spielsalon Erding',                              date: '2012-04-12', slug: 'lokalwechsel-stardust-2012'               },
+  { title: 'AuÃŸerordentliche Mitgliederversammlung zum Lokalwechsel',                    date: '2012-04-03', slug: 'mitgliederversammlung-2012'                },
   // 2011
   { title: '2. Offene Erdinger Stadtmeisterschaft am 2. Oktober',                         date: '2011-09-09', slug: 'erdinger-stadtmeisterschaft-2011'          },
   { title: 'Dienstags-Cup startet in die 8. Runde',                                      date: '2011-07-27', slug: 'dienstags-cup-8-runde-2011'               },
   { title: 'Bayerischer Meister: 1. Mannschaft gewinnt 8-Ball-Cup-Mannschaftsmeisterschaft', date: '2011-06-27', slug: 'bayerischer-meister-2011'              },
-  { title: 'Vereinsmeisterschaft 2011: Josef „Seppi" Bendl erneut Vereinsmeister',       date: '2011-05-05', slug: 'vereinsmeisterschaft-2011'                 },
+  { title: 'Vereinsmeisterschaft 2011: Josef â€žSeppi" Bendl erneut Vereinsmeister',       date: '2011-05-05', slug: 'vereinsmeisterschaft-2011'                 },
   { title: 'Aufstieg in die Verbandsliga perfekt',                                        date: '2011-05-04', slug: 'aufstieg-verbandsliga-2011'                },
   { title: '3. Mannschaft steigt direkt in die Bezirksliga auf',                          date: '2011-04-12', slug: 'aufstieg-bezirksliga-2011'                 },
   { title: 'Dienstags-Cup: Super-Seppi gewinnt die Turnierserie',                         date: '2011-01-11', slug: 'dienstags-cup-news-2011'                  },
   // 2010
   { title: 'Frohe Weihnachten vom PBC Erding',                                           date: '2010-12-23', slug: 'weihnachten-2010'                         },
-  { title: 'PBC Erding unterstützt Münchens Olympia-Bewerbung 2018',                     date: '2010-12-05', slug: 'olympia-bewerbung-2010'                   },
-  { title: 'Saisonstart 2010: PBC Erding wächst auf 45 Mitglieder',                      date: '2010-11-22', slug: 'saisonstart-2010'                         },
+  { title: 'PBC Erding unterstÃ¼tzt MÃ¼nchens Olympia-Bewerbung 2018',                     date: '2010-12-05', slug: 'olympia-bewerbung-2010'                   },
+  { title: 'Saisonstart 2010: PBC Erding wÃ¤chst auf 45 Mitglieder',                      date: '2010-11-22', slug: 'saisonstart-2010'                         },
 ]
 
-// ─── Events ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type Event = {
   id: string
@@ -802,7 +802,7 @@ export const events: Event[] = [
   },
 ]
 
-// ─── Teams ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Teams â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type Team = {
   id: string
@@ -840,7 +840,7 @@ export const teams: Team[] = [
       'Claessen',
       'Gilik',
       'Hecht',
-      'Mittermüller',
+      'MittermÃ¼ller',
     ],
   },
   {
@@ -851,7 +851,7 @@ export const teams: Team[] = [
     season: '2025/2026',
     position: null,
     players: [
-      'Fläxl',
+      'FlÃ¤xl',
       'Glaubitz',
       'Haase',
       'Herrera',
@@ -859,7 +859,7 @@ export const teams: Team[] = [
   },
 ]
 
-// ─── Sponsors ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Sponsors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type Sponsor = {
   id: string
@@ -879,7 +879,7 @@ export const sponsors: Sponsor[] = [
   },
   {
     id: '2',
-    name: 'Stardust Casinos',
+    name: 'Stardust Spielsalon',
     tier: 'gold',
     website: 'https://www.stardust.de',
     description: 'Langjaehriger Gastgeber und Partner des Vereins',
@@ -910,11 +910,11 @@ export const sponsors: Sponsor[] = [
   },
 ]
 
-// ─── Stats ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const clubStats = [
-  { label: 'Gründung',          value: '2008', suffix: '',        href: '/verein' },
-  { label: 'Neue Spielstätte',  value: '2026', suffix: '',        href: '/galerie' },
+  { label: 'GrÃ¼ndung',          value: '2008', suffix: '',        href: '/verein' },
+  { label: 'Neue SpielstÃ¤tte',  value: '2026', suffix: '',        href: '/galerie' },
   { label: 'Schnuppertraining', value: '3',    suffix: ' Termine', href: '/kontakt?betreff=training' },
   { label: 'Downloads',         value: '9',    suffix: '+',        href: '/downloads' },
 ]
@@ -930,7 +930,7 @@ export type DownloadItem = {
 export const downloads: DownloadItem[] = [
   { title: 'Satzung PBC Erding e.V.',                           group: 'Verein',    filename: 'PBC-Erding_Satzung.pdf',                                href: '/downloads/PBC-Erding_Satzung.pdf',                          htmlHref: '/schriftstuecke/satzung.html' },
   { title: 'Aufnahmeantrag PBC Erding e.V.',                    group: 'Verein',    filename: 'PBC-Erding_Aufnahmeantrag.pdf',                         href: '/downloads/PBC-Erding_Aufnahmeantrag.pdf',                    htmlHref: '/schriftstuecke/aufnahmeantrag.html' },
-  { title: 'Einzugsermächtigung PBC Erding e.V.',               group: 'Verein',    filename: 'PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.pdf',       href: '/downloads/PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.pdf', htmlHref: '/schriftstuecke/sepa.html' },
+  { title: 'EinzugsermÃ¤chtigung PBC Erding e.V.',               group: 'Verein',    filename: 'PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.pdf',       href: '/downloads/PBC-Erding_Einzugsermaechtigung-SEPA_Vorlage.pdf', htmlHref: '/schriftstuecke/sepa.html' },
   { title: 'Informationsblatt PBC Erding e.V.',                 group: 'Verein',    filename: 'PBC-Erding_Informationsblatt.pdf',                       href: '/downloads/PBC-Erding_Informationsblatt.pdf',                 htmlHref: '/schriftstuecke/informationsblatt.html' },
   { title: 'Fahrtkostenzuschuss 2024/2025',                     group: 'Liga',      filename: 'PBC-Erding_Fahrtkostenzuschuss-2024-2025.pdf',           href: '/downloads/PBC-Erding_Fahrtkostenzuschuss-2024-2025.pdf',     htmlHref: '/schriftstuecke/fahrtkosten.html' },
   { title: 'Spielregeln Pool (8-Ball / 9-Ball / 10-Ball / 14-1)', group: 'Regelwerk', filename: 'Spielregeln-Pool_DBU_Stand-2009-03.pdf',              href: '/downloads/Spielregeln-Pool_DBU_Stand-2009-03.pdf' },
@@ -939,10 +939,10 @@ export const downloads: DownloadItem[] = [
   { title: 'Spielberichtsvorlage Pool BBV (selbstrechnend)',    group: 'Vorlagen',  filename: 'BBV_Vorlage-Spielbericht-Pool_selbstrechnend.pdf',      href: '/downloads/BBV_Vorlage-Spielbericht-Pool_selbstrechnend.pdf' },
   { title: '14-1 Endlos Spielberichtsvorlage',                  group: 'Vorlagen',  filename: '14-1-Endlos_Vorlage.pdf',                               href: '/downloads/14-1-Endlos_Vorlage.pdf' },
   { title: 'Turnier im Schweizer System (Excel-Anwendung)',     group: 'Vorlagen',  filename: 'SchweizerSystem_XLSM.zip',                          href: '/downloads/SchweizerSystem_XLSM.zip' },
-  { title: 'Turnierpläne Doppel-KO 16er, 32er und 64er-Feld',   group: 'Vorlagen',  filename: 'Turnierplan-dko_16_32_64.zip', href: '/downloads/Turnierplan-dko_16_32_64.zip' },
+  { title: 'TurnierplÃ¤ne Doppel-KO 16er, 32er und 64er-Feld',   group: 'Vorlagen',  filename: 'Turnierplan-dko_16_32_64.zip', href: '/downloads/Turnierplan-dko_16_32_64.zip' },
 ]
 
-// ─── Mannschaften / Spielplan ────────────────────────────────────────────────
+// â”€â”€â”€ Mannschaften / Spielplan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type Wertung = 'sieg' | 'niederlage' | 'unentschieden' | 'offen'
 
@@ -982,14 +982,14 @@ export const mannschaften: Mannschaft[] = [
     diff: '+4',
     punkte: '13:7',
     spielplan: [
-      { datum: '2025-09-27', uhrzeit: '14:00', heim: 'BSV 1912 München III',  gast: 'PBC Erding I',         ergebnis: '4:6', wertung: 'sieg'          },
+      { datum: '2025-09-27', uhrzeit: '14:00', heim: 'BSV 1912 MÃ¼nchen III',  gast: 'PBC Erding I',         ergebnis: '4:6', wertung: 'sieg'          },
       { datum: '2025-10-25', uhrzeit: '14:00', heim: '1. PBC Moosburg',        gast: 'PBC Erding I',         ergebnis: '9:1', wertung: 'niederlage'    },
-      { datum: '2025-11-22', uhrzeit: '14:00', heim: '1. PBC Mühldorf III',    gast: 'PBC Erding I',         ergebnis: '4:6', wertung: 'sieg'          },
+      { datum: '2025-11-22', uhrzeit: '14:00', heim: '1. PBC MÃ¼hldorf III',    gast: 'PBC Erding I',         ergebnis: '4:6', wertung: 'sieg'          },
       { datum: '2025-12-20', uhrzeit: '14:00', heim: 'BC Mainburg II',         gast: 'PBC Erding I',         ergebnis: '4:6', wertung: 'sieg'          },
       { datum: '2026-01-24', uhrzeit: '10:00', heim: '1. PBC Freising III',    gast: 'PBC Erding I',         ergebnis: '4:6', wertung: 'sieg'          },
-      { datum: '2026-02-07', uhrzeit: '14:00', heim: 'PBC Erding I',           gast: 'BSV 1912 München III', ergebnis: '4:6', wertung: 'niederlage'    },
+      { datum: '2026-02-07', uhrzeit: '14:00', heim: 'PBC Erding I',           gast: 'BSV 1912 MÃ¼nchen III', ergebnis: '4:6', wertung: 'niederlage'    },
       { datum: '2026-03-07', uhrzeit: '14:00', heim: 'PBC Erding I',           gast: '1. PBC Moosburg',      ergebnis: '6:4', wertung: 'sieg'          },
-      { datum: '2026-03-21', uhrzeit: '14:00', heim: 'PBC Erding I',           gast: '1. PBC Mühldorf III',  ergebnis: '5:5', wertung: 'unentschieden' },
+      { datum: '2026-03-21', uhrzeit: '14:00', heim: 'PBC Erding I',           gast: '1. PBC MÃ¼hldorf III',  ergebnis: '5:5', wertung: 'unentschieden' },
       { datum: '2026-04-18', uhrzeit: '14:00', heim: 'PBC Erding I',           gast: 'BC Mainburg II',       ergebnis: '4:6', wertung: 'niederlage'    },
       { datum: '2026-05-09', uhrzeit: '14:00', heim: 'PBC Erding I',           gast: '1. PBC Freising III',  ergebnis: '8:2', wertung: 'sieg'          },
     ],
@@ -1009,13 +1009,13 @@ export const mannschaften: Mannschaft[] = [
       { datum: '2025-09-20', uhrzeit: '14:00', heim: 'PBC Erding III',          gast: 'PBC Erding II',        ergebnis: '4:6', wertung: 'sieg' },
       { datum: '2025-11-15', uhrzeit: '14:00', heim: 'PBC Markt Schwaben II',   gast: 'PBC Erding II',        ergebnis: '4:6', wertung: 'sieg' },
       { datum: '2025-11-22', uhrzeit: '14:00', heim: 'PBC Lerchenau II',        gast: 'PBC Erding II',        ergebnis: '1:9', wertung: 'sieg' },
-      { datum: '2025-12-06', uhrzeit: '11:00', heim: 'BSV PB München III',      gast: 'PBC Erding II',        ergebnis: '3:7', wertung: 'sieg' },
-      { datum: '2026-01-10', uhrzeit: '11:00', heim: 'BSV PB München IV',       gast: 'PBC Erding II',        ergebnis: '1:9', wertung: 'sieg' },
+      { datum: '2025-12-06', uhrzeit: '11:00', heim: 'BSV PB MÃ¼nchen III',      gast: 'PBC Erding II',        ergebnis: '3:7', wertung: 'sieg' },
+      { datum: '2026-01-10', uhrzeit: '11:00', heim: 'BSV PB MÃ¼nchen IV',       gast: 'PBC Erding II',        ergebnis: '1:9', wertung: 'sieg' },
       { datum: '2026-01-31', uhrzeit: '14:00', heim: 'PBC Erding II',           gast: 'PBC Erding III',       ergebnis: '6:4', wertung: 'sieg' },
       { datum: '2026-02-28', uhrzeit: '14:00', heim: 'PBC Erding II',           gast: 'PBC Lerchenau II',     ergebnis: '8:2', wertung: 'sieg' },
       { datum: '2026-03-14', uhrzeit: '14:00', heim: 'PBC Erding II',           gast: 'PBC Markt Schwaben II', ergebnis: '7:3', wertung: 'sieg' },
-      { datum: '2026-04-11', uhrzeit: '14:00', heim: 'PBC Erding II',           gast: 'BSV PB München III',   ergebnis: '6:4', wertung: 'sieg'  },
-      { datum: '2026-05-16', uhrzeit: '14:00', heim: 'PBC Erding II',           gast: 'BSV PB München IV',    ergebnis: '7:3', wertung: 'sieg'  },
+      { datum: '2026-04-11', uhrzeit: '14:00', heim: 'PBC Erding II',           gast: 'BSV PB MÃ¼nchen III',   ergebnis: '6:4', wertung: 'sieg'  },
+      { datum: '2026-05-16', uhrzeit: '14:00', heim: 'PBC Erding II',           gast: 'BSV PB MÃ¼nchen IV',    ergebnis: '7:3', wertung: 'sieg'  },
     ],
   },
   {
@@ -1031,13 +1031,13 @@ export const mannschaften: Mannschaft[] = [
     punkte: '2:18',
     spielplan: [
       { datum: '2025-09-20', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'PBC Erding II',         ergebnis: '4:6', wertung: 'niederlage' },
-      { datum: '2025-10-18', uhrzeit: '11:00', heim: 'BSV PB München III',     gast: 'PBC Erding III',        ergebnis: '6:4', wertung: 'niederlage' },
-      { datum: '2025-11-08', uhrzeit: '11:00', heim: 'BSV PB München IV',      gast: 'PBC Erding III',        ergebnis: '6:4', wertung: 'niederlage' },
+      { datum: '2025-10-18', uhrzeit: '11:00', heim: 'BSV PB MÃ¼nchen III',     gast: 'PBC Erding III',        ergebnis: '6:4', wertung: 'niederlage' },
+      { datum: '2025-11-08', uhrzeit: '11:00', heim: 'BSV PB MÃ¼nchen IV',      gast: 'PBC Erding III',        ergebnis: '6:4', wertung: 'niederlage' },
       { datum: '2025-12-13', uhrzeit: '14:00', heim: 'PBC Markt Schwaben II',  gast: 'PBC Erding III',        ergebnis: '7:3', wertung: 'niederlage' },
       { datum: '2026-01-31', uhrzeit: '14:00', heim: 'PBC Erding II',          gast: 'PBC Erding III',        ergebnis: '6:4', wertung: 'niederlage' },
-      { datum: '2026-02-21', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'BSV PB München III',    ergebnis: '2:8', wertung: 'niederlage' },
+      { datum: '2026-02-21', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'BSV PB MÃ¼nchen III',    ergebnis: '2:8', wertung: 'niederlage' },
       { datum: '2026-03-07', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'PBC Lerchenau II',      ergebnis: '4:6', wertung: 'niederlage' },
-      { datum: '2026-03-14', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'BSV PB München IV',     ergebnis: '6:4', wertung: 'sieg'       },
+      { datum: '2026-03-14', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'BSV PB MÃ¼nchen IV',     ergebnis: '6:4', wertung: 'sieg'       },
       { datum: '2026-04-25', uhrzeit: '14:00', heim: 'PBC Erding III',         gast: 'PBC Markt Schwaben II', ergebnis: '1:9', wertung: 'niederlage' },
       { datum: '2026-05-09', uhrzeit: '14:00', heim: 'PBC Lerchenau II',       gast: 'PBC Erding III',        ergebnis: '6:4', wertung: 'niederlage' },
     ],
@@ -1051,7 +1051,7 @@ export type LinkGroup = {
 
 export const links: LinkGroup[] = [
   {
-    title: 'Verbände',
+    title: 'VerbÃ¤nde',
     items: [
       { label: 'Bayerischer Billardverband (BBV)', href: 'https://billardbayern.de/' },
       { label: 'Bayerischer Landes-Sportverband (BLSV)', href: 'https://www.blsv.de' },
@@ -1080,22 +1080,23 @@ export const links: LinkGroup[] = [
       { label: 'ED-live', href: 'https://www.ed-live.de' },
       { label: 'Ortmann Billiards', href: 'https://www.ortmann-billiards.com' },
       { label: 'Ralf Souquet', href: 'https://ralf-souquet.com' },
-      { label: 'Wikipedia – Billard', href: 'https://de.wikipedia.org/wiki/Billard' },
+      { label: 'Wikipedia â€“ Billard', href: 'https://de.wikipedia.org/wiki/Billard' },
     ],
   },
   {
     title: 'Sonstiges',
     items: [
       { label: 'Bowling Castle Erding', href: 'https://www.bowling-castle.de' },
-      { label: 'Stardust Casinos', href: 'https://www.stardust.de' },
+      { label: 'Stardust Spielsalon', href: 'https://www.stardust.de' },
       { label: 'Atom Billard', href: 'https://www.atom-billard.de' },
       { label: 'Open Heaven e.V.', href: 'https://open-heaven.com/' },
     ],
   },
   {
-    title: 'Spiel & Spaß',
+    title: 'Spiel & SpaÃŸ',
     items: [
-      { label: 'Pool Billard – 8-Ball & 9-Ball (Browser-Spiel)', href: '/spiel-spass/billardapp/index.html', newTab: true },
+      { label: 'Pool Billard â€“ 8-Ball & 9-Ball (Browser-Spiel)', href: '/spiel-spass/billardapp/index.html', newTab: true },
     ],
   },
 ]
+
