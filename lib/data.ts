@@ -873,6 +873,14 @@ export const sponsors: Sponsor[] = [
     logo: 'bendl-investment.jpg',
   },
   {
+    id: '9',
+    name: 'Atom Billard',
+    tier: 'bronze',
+    website: 'https://www.atom-billard.de',
+    description: 'Fachhandel für Billardtische & Queues',
+    logo: 'atom-billard.png',
+  },
+  {
     id: '5',
     name: 'Billard-Aktuell',
     tier: 'bronze',
