@@ -49,9 +49,20 @@ export default function UnterstuetzerPage() {
             <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-500 mb-8">Hauptunterstützer</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/5">
               {gold.map((s) => (
-                <div key={s.id} className="bg-charcoal-950 p-10 flex flex-col gap-3">
-                  <p className="text-2xl font-bold text-white">{s.name}</p>
-                  {s.description && <p className="text-sm text-white/70">{s.description}</p>}
+                <div key={s.id} className="bg-charcoal-950 p-10 flex flex-col gap-5">
+                  {s.logo && (
+                    <div className="bg-white rounded-xl px-5 py-4 w-fit">
+                      <img
+                        src={`/images/sponsoren/${s.logo}`}
+                        alt={s.name}
+                        className="h-16 w-auto object-contain"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-2xl font-bold text-white">{s.name}</p>
+                    {s.description && <p className="mt-1 text-sm text-white/70">{s.description}</p>}
+                  </div>
                 </div>
               ))}
             </div>
@@ -61,7 +72,16 @@ export default function UnterstuetzerPage() {
             <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-white/80 mb-8">Partner</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5">
               {silber.map((s) => (
-                <div key={s.id} className="bg-charcoal-950 p-8">
+                <div key={s.id} className="bg-charcoal-950 p-8 flex flex-col gap-4">
+                  {s.logo && (
+                    <div className="bg-white rounded-lg px-4 py-3 w-fit">
+                      <img
+                        src={`/images/sponsoren/${s.logo}`}
+                        alt={s.name}
+                        className="h-12 w-auto object-contain"
+                      />
+                    </div>
+                  )}
                   <p className="text-lg font-bold text-white/90">{s.name}</p>
                 </div>
               ))}
@@ -72,7 +92,16 @@ export default function UnterstuetzerPage() {
             <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70 mb-8">Förderer</h2>
             <div className="flex flex-wrap gap-px bg-white/5">
               {bronze.map((s) => (
-                <div key={s.id} className="bg-charcoal-950 px-8 py-6 flex-1 min-w-[200px]">
+                <div key={s.id} className="bg-charcoal-950 px-8 py-6 flex-1 min-w-[200px] flex flex-col gap-3">
+                  {s.logo && (
+                    <div className="bg-white rounded-lg px-3 py-2 w-fit">
+                      <img
+                        src={`/images/sponsoren/${s.logo}`}
+                        alt={s.name}
+                        className="h-9 w-auto object-contain"
+                      />
+                    </div>
+                  )}
                   <p className="text-base font-semibold text-white/80">{s.name}</p>
                 </div>
               ))}

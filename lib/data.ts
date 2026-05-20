@@ -824,6 +824,7 @@ export type Sponsor = {
   tier: 'gold' | 'silber' | 'bronze'
   website?: string
   description?: string
+  logo?: string   // Dateiname in /images/sponsoren/, z.B. "bowling-castle.png"
 }
 
 export const sponsors: Sponsor[] = [
@@ -832,38 +833,44 @@ export const sponsors: Sponsor[] = [
     name: 'Bowling Castle Erding',
     tier: 'gold',
     website: 'https://www.bowling-castle.de',
-    description: 'Neue Spielstaette des PBC Erding seit Januar 2026',
+    description: 'Neue Spielstätte des PBC Erding seit Januar 2026',
+    logo: 'bowling-castle.png',
   },
   {
     id: '2',
     name: 'Stardust Spielsalon',
     tier: 'gold',
     website: 'https://www.stardust.de',
-    description: 'Langjaehriger Gastgeber und Partner des Vereins',
+    description: 'Langjähriger Gastgeber und Partner des Vereins',
+    logo: 'stardust.png',
   },
   {
     id: '3',
     name: 'Bayerischer Billardverband',
     tier: 'silber',
     website: 'https://bbv.billardarea.de',
+    logo: 'bbv.png',
   },
   {
     id: '4',
     name: 'Deutsche Billard Union',
     tier: 'silber',
     website: 'https://portal.billardarea.de',
+    logo: 'dbu.png',
   },
   {
     id: '7',
     name: 'Auto Baumschlager',
     tier: 'bronze',
     description: 'Autoreparatur in Wörth',
+    logo: 'auto-baumschlager.jpg',
   },
   {
     id: '8',
     name: 'Bendl Investment',
     tier: 'bronze',
     description: 'Finanzdienstleistungen auf einem anderen Level',
+    logo: 'bendl-investment.jpg',
   },
   {
     id: '5',
