@@ -115,7 +115,7 @@ export default function UnterstuetzerPage() {
               Sie möchten den PBC Erding unterstützen? Wir freuen uns über Ihre Anfrage –
               ganz ohne vertragliche Verpflichtung, einfach aus Freude am Sport in der Region.
             </p>
-            <Button href="/kontakt" variant="primary">Jetzt anfragen</Button>
+            <Button href="/kontakt?betreff=unterstuetzung" variant="primary">Jetzt anfragen</Button>
           </div>
         </Container>
       </section>
