@@ -886,7 +886,7 @@ export const sponsors: Sponsor[] = [
   },
   {
     id: '7',
-    name: 'Auto Baumschlager GbR',
+    name: 'Auto Baumschlager',
     tier: 'gold',
     description: 'Autoreparatur in Wörth',
   },
