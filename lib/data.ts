@@ -885,18 +885,6 @@ export const sponsors: Sponsor[] = [
     description: 'Langjaehriger Gastgeber und Partner des Vereins',
   },
   {
-    id: '7',
-    name: 'Auto Baumschlager',
-    tier: 'gold',
-    description: 'Autoreparatur in Wörth',
-  },
-  {
-    id: '8',
-    name: 'Bendl Investment',
-    tier: 'gold',
-    description: 'Finanzdienstleistungen auf einem anderen Level',
-  },
-  {
     id: '3',
     name: 'Bayerischer Billardverband',
     tier: 'silber',
@@ -907,6 +895,18 @@ export const sponsors: Sponsor[] = [
     name: 'Deutsche Billard Union',
     tier: 'silber',
     website: 'https://portal.billardarea.de',
+  },
+  {
+    id: '7',
+    name: 'Auto Baumschlager',
+    tier: 'bronze',
+    description: 'Autoreparatur in Wörth',
+  },
+  {
+    id: '8',
+    name: 'Bendl Investment',
+    tier: 'bronze',
+    description: 'Finanzdienstleistungen auf einem anderen Level',
   },
   {
     id: '5',
