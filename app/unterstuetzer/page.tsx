@@ -103,6 +103,7 @@ export default function UnterstuetzerPage() {
                     </div>
                   )}
                   <p className="text-base font-semibold text-white/80">{s.name}</p>
+                  {s.description && <p className="text-sm text-white/55">{s.description}</p>}
                 </div>
               ))}
             </div>
