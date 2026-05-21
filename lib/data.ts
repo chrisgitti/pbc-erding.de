@@ -878,6 +878,7 @@ export const sponsors: Sponsor[] = [
     id: '8',
     name: 'Bendl Investment',
     tier: 'bronze',
+    website: 'https://beninv.com/',
     description: 'Finanzdienstleistungen auf einem anderen Level',
     logo: 'bendl-investment.jpg',
   },
