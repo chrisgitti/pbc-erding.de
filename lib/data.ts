@@ -871,6 +871,7 @@ export const sponsors: Sponsor[] = [
     id: '7',
     name: 'Auto Baumschlager',
     tier: 'bronze',
+    website: 'https://www.auto-werkstatt.de/woerth/daniel-und-urban-baumschlager-kfz-werkstaette-aULN2y',
     description: 'Autoreparatur in Wörth',
     logo: 'auto-baumschlager.jpg',
   },
