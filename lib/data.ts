@@ -1,10 +1,13 @@
 import { getNextMittwochsturnier } from './turnier-utils'
 
 // Nächstes Mittwochsturnier – zur Build-Zeit berechnet
-const _nextT     = getNextMittwochsturnier(new Date())
-const _nextTISO  = _nextT.toISOString().slice(0, 10)
-const _nextTDE   = _nextT.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
-const _nextTWd   = _nextT.toLocaleDateString('de-DE', { weekday: 'long' })
+const _nextT    = getNextMittwochsturnier(new Date())
+const _nextTDE  = _nextT.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+const _nextTWd  = _nextT.toLocaleDateString('de-DE', { weekday: 'long' })
+
+// Build-Datum als Artikelpublikationsdatum (lokale Zeit, kein UTC-Offset)
+const _now = new Date()
+const _buildDateISO = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`
 
 // ─── News ────────────────────────────────────────────────────────────────────
 
@@ -161,7 +164,7 @@ Herzlichen Dank an Sabin, Andy und Paul sowie das gesamte Stardust-Team!`,
     title: `Mittwochsturnier – Nächster Termin: ${_nextTWd}, ${_nextTDE}`,
     excerpt:
       'Jeden letzten Mittwoch im Monat: offenes Vereinsturnier mit Gruppen- und KO-Phase. Startgebühr 10 €, volle Ausschüttung für Platz 1 bis 4.',
-    date: _nextTISO,
+    date: _buildDateISO,
     category: 'Turnier',
     slug: 'mittwochsturnier',
     content: `Jeden letzten Mittwoch im Monat lädt der PBC Erding zum Mittwochsturnier – offen für Vereins- und Hobbyspieler. Turnierbeginn ist um 18:30 Uhr im Bowling Castle Erding, Robert-Bosch-Straße 3, 85055 Erding.
