@@ -888,6 +888,7 @@ export const sponsors: Sponsor[] = [
     name: 'Billard-Aktuell',
     tier: 'bronze',
     website: 'https://www.billard-aktuell.de',
+    logo: 'BillardAktuell.png',
   },
   {
     id: '6',
