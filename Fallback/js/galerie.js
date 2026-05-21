@@ -16,6 +16,10 @@
     { src: 'images/galerie/spieler8.jpg',      alt: 'Spielszene am Billardtisch',             label: 'Spielszene',  quote: 'Billard ist nicht nur Zeitvertreib. Es ist ein Spiel mit Blick fürs Detail.' },
     { src: 'images/galerie/spieler9.jpg',      alt: 'Spielszene am Billardtisch',             label: 'Spielszene',  quote: 'Jeder Stoß ist eine kleine Entscheidung zwischen Gefühl, Technik und Strategie.' },
     { src: 'images/galerie/spieler10.jpg',     alt: 'Spielszene am Billardtisch',             label: 'Spielszene',  quote: 'Der Tisch ist klein – aber die Möglichkeiten sind endlos.' },
+    { src: 'images/galerie/spieler11.jpg',     alt: 'Spielszene am Billardtisch',             label: 'Spielszene',  quote: 'Wer am Tisch geduldig bleibt, gewinnt am Ende die entscheidenden Bälle.' },
+    { src: 'images/galerie/spieler12.jpg',     alt: 'Spielszene am Billardtisch',             label: 'Spielszene',  quote: 'Pool Billard ist die Kunst, Kraft und Kontrolle ins Gleichgewicht zu bringen.' },
+    { src: 'images/galerie/spieler13.jpg',     alt: 'Spielszene am Billardtisch',             label: 'Spielszene',  quote: 'Nicht der erste Stoß entscheidet – sondern der letzte.' },
+    { src: 'images/galerie/spieler14.jpg',     alt: 'Spielszene am Billardtisch',             label: 'Spielszene',  quote: 'Jede Runde erzählt eine eigene Geschichte aus Präzision und Willen.' },
   ];
 
   var dialog = document.getElementById('lightbox');
