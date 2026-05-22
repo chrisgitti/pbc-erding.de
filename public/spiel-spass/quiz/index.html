@@ -785,7 +785,7 @@
                 <option value="beides">Sprache + Ton</option>
                 <option value="sprache">Sprache</option>
                 <option value="ton">Ton</option>
-                <option value="ohne">Aus</option>
+                <option value="ohne" selected>Aus</option>
             </select>
         </label>
         <button class="apply_settings_button" onclick="uebernehme_einstellungen()">Übernehmen</button>
@@ -1237,11 +1237,17 @@
             if (wahl === 'ohne') { resolve(); return; }
             if (wahl === 'ton' || wahl === 'beides') {
                 const audio_obj = (typ === 'correct') ? sound_richtig : sound_falsch;
+                let aufgeloest = false;
+                function sicher_aufloesen() {
+                    if (aufgeloest) return;
+                    aufgeloest = true;
+                    if (wahl === 'beides') sprich(text, resolve); else resolve();
+                }
                 audio_obj.volume = 1;
                 audio_obj.currentTime = 0;
-                audio_obj.play();
-                audio_obj.onended = () => setTimeout(() => { if (wahl === 'beides') sprich(text, resolve); else resolve(); }, 200);
-                audio_obj.onerror = () => { if (wahl === 'beides') sprich(text, resolve); else resolve(); };
+                audio_obj.onended = () => setTimeout(sicher_aufloesen, 200);
+                audio_obj.onerror = sicher_aufloesen;
+                audio_obj.play().catch(sicher_aufloesen);
             } else if (wahl === 'sprache') sprich(text, resolve);
         });
     }
