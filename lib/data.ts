@@ -1084,6 +1084,7 @@ export const links: LinkGroup[] = [
     title: 'Spiel & Spaß',
     items: [
       { label: 'Pool Billard – 8-Ball & 9-Ball (Browser-Spiel)', href: '/spiel-spass/billardapp/index.html', newTab: true },
+      { label: 'Billard-Quiz – Teste dein Wissen rund ums Billard', href: '/spiel-spass/quiz/', newTab: true },
     ],
   },
 ]
