@@ -782,10 +782,10 @@
         <label class="field">
             <span class="label">Audio</span>
             <select id="sel_audio">
-                <option value="beides">Sprache + Ton</option>
+                <option value="beides" selected>Sprache + Ton</option>
                 <option value="sprache">Sprache</option>
                 <option value="ton">Ton</option>
-                <option value="ohne" selected>Aus</option>
+                <option value="ohne">Aus</option>
             </select>
         </label>
         <button class="apply_settings_button" onclick="uebernehme_einstellungen()">Übernehmen</button>
@@ -936,7 +936,7 @@
     let otdb_token = null;
 
     const sound_richtig = new Audio('media/freesound_community-correct-6033.mp3');
-    const sound_falsch = new Audio('wrong.mp3');
+    const sound_falsch = new Audio('media/falsch.mp3');
     sound_richtig.volume = 1;
     sound_falsch.volume = 1;
 
