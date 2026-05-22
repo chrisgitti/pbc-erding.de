@@ -737,7 +737,6 @@
             <span class="label">Quelle</span>
             <select id="sel_quelle" onchange="quelle_geaendert()">
                 <option value="lokal">Lokal</option>
-                <option value="otdb">Open Trivia DB</option>
                 <option value="online">Online</option>
             </select>
         </label>
@@ -941,20 +940,13 @@
     sound_richtig.volume = 1;
     sound_falsch.volume = 1;
 
-    const fallback_themen = {
+    const verein_themen = {
         duo: [
-            { datei: 'td_auswahlverfahren.htm', titel: 'Auswahlverfahren' },
-            { datei: 'td_bayern.htm', titel: 'Bayern' },
-            { datei: 'td_deutsch.htm', titel: 'Deutsch' },
-            { datei: 'td_geschichte.htm', titel: 'Geschichte' },
-            { datei: 'td_pflanzen.htm', titel: 'Pflanzen' },
-            { datei: 'td_poolbillardregeln.htm', titel: 'Poolbillardregeln' },
-            { datei: 'td_society.htm', titel: 'Society' },
-            { datei: 'td_tiere.htm', titel: 'Tiere' }
+            { datei: 'td_poolbillard.htm', titel: 'Poolbillard' }
         ],
         quattro: [
-            { datei: 'tq_auswahlverfahren.htm', titel: 'Auswahlverfahren' },
-            { datei: 'tq_poolbillardregeln.htm', titel: 'Poolbillardregeln' }
+            { datei: 'tq_poolbillard.htm',       titel: 'Poolbillard' },
+            { datei: 'tq_poolbillardregeln.htm',  titel: 'Poolbillardregeln' }
         ]
     };
 
@@ -995,24 +987,7 @@
     }
 
     async function ermittle_themen_dateien() {
-        const muster = aktueller_modus === 'quattro' ? /^tq_.+\.htm$/i : /^td_.+\.htm$/i;
-        try {
-            const antwort = await fetch('./', { cache: 'no-store' });
-            if (!antwort.ok) throw new Error('Verzeichnisliste nicht abrufbar');
-            const html_text = await antwort.text();
-            const parser = new DOMParser();
-            const dokument = parser.parseFromString(html_text, 'text/html');
-            const dateien = Array.from(dokument.querySelectorAll('a'))
-                .map(link => link.getAttribute('href') || '')
-                .map(href => {
-                    try { href = decodeURIComponent(href); } catch (e) {}
-                    return href.split('?')[0].split('#')[0].replace(/^.*\//, '');
-                })
-                .filter(name => muster.test(name));
-            const eindeutig = [...new Set(dateien)];
-            if (eindeutig.length > 0) return sortiere_themen(eindeutig.map(datei => ({ datei, titel: ermittle_themen_titel(datei) })));
-        } catch (e) {}
-        return sortiere_themen([...(fallback_themen[aktueller_modus] || [])]);
+        return [...(verein_themen[aktueller_modus] || [])];
     }
 
     async function initialisiere_themen_auswahl() {
