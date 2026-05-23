@@ -1629,6 +1629,7 @@ const game = {
   ],
   state: "aiming", shotInProgress: false,
   firstHit: null, ballsPottedThisShot: [], cuePotted: false, anyCushionAfterFirstHit: false,
+  wasKitchenShot: false, firstHitInKitchen: false,
   ballInHand: false, endMessage: "", open8ball: true, winner: null,
   isBreakShot: true, calledBall: null, kitchenOnly: false,
   aimAngle: 0, aimLocked: false, aimActive: false, powerPercent: 50,
@@ -2487,8 +2488,8 @@ function step() {
           c.vx += (newVc - vc) * nx;
           c.vy += (newVc - vc) * ny;
           const strength = Math.abs(va - vc);
-          if (a.isCue && game.firstHit === null) { game.firstHit = c.num; applySpinOnContact(a, nx, ny); }
-          else if (c.isCue && game.firstHit === null) { game.firstHit = a.num; applySpinOnContact(c, -nx, -ny); }
+          if (a.isCue && game.firstHit === null) { game.firstHit = c.num; if (game.wasKitchenShot) game.firstHitInKitchen = (c.x + c.r) <= PLAY_X1 + PLAY_W * 0.25; applySpinOnContact(a, nx, ny); }
+          else if (c.isCue && game.firstHit === null) { game.firstHit = a.num; if (game.wasKitchenShot) game.firstHitInKitchen = (a.x + a.r) <= PLAY_X1 + PLAY_W * 0.25; applySpinOnContact(c, -nx, -ny); }
           else if (a.isCue && !game.spinPending.used) { applySpinOnContact(a, nx, ny); }
           else if (c.isCue && !game.spinPending.used) { applySpinOnContact(c, -nx, -ny); }
           if (strength > 0.5) soundBallClick(strength);
@@ -2632,6 +2633,8 @@ function startShot() {
   if (game.powerPercent < 1) return;
   if (game.awaitingPushOutDecision) return;
   if (game.selecting8Pocket) return;
+  game.wasKitchenShot   = game.kitchenOnly;
+  game.firstHitInKitchen = false;
   game.kitchenOnly = false;
   if (typeof needsGroupCall === "function" && needsGroupCall()) {
     if (!game.aimActive) { game.foulMessage = "Bitte erst eine Kugel anzielen"; game.foulTimer = 90; return; }
@@ -2768,6 +2771,10 @@ function handle8BallShot() {
   if (!foul && game.firstHit !== null) {
     const anyObjPotted = potted.some(n => n !== 0);
     if (!anyObjPotted && !game.anyCushionAfterFirstHit) { foul = true; foulReason = "Keine Bande nach Kontakt"; }
+  }
+  // WPA: Beim Spielen aus dem Kopffeld darf keine Kugel angestoßen werden, die vollständig im Kopffeld liegt
+  if (!foul && game.wasKitchenShot && game.firstHitInKitchen) {
+    foul = true; foulReason = "Kugel vollständig im Kopffeld angestoßen";
   }
   const potted8 = potted.includes(8);
   // WPA 6: 8-Ball muss in angesagter Tasche versenkt werden
@@ -7305,6 +7312,8 @@ function applyOnlineSync(msg) {
   syncCueSelectorToShotState();
   syncSpinElevTab();
   // Alle blockierenden Flags bereinigen
+  game.wasKitchenShot    = false;
+  game.firstHitInKitchen = false;
   game.aimActive        = false;
   game.shotInProgress   = false;
   game.aiThinking       = false;
