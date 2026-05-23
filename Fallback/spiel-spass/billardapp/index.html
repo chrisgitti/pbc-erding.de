@@ -1400,6 +1400,7 @@
     <button id="btnBasisRepeat" style="display:none;">↺ Wiederholen</button>
     <button id="btnTimerExtend" style="display:none;">⏱ +30s</button>
     <button id="btnPhysics" style="display:none;">⚙ Physik</button>
+    <button id="btnOnlineSync" style="display:none" title="Spielzustand synchronisieren – bei eingefrorenem Spiel">⟳ Sync</button>
     <button id="btnFsToggleMode" title="Vollbild: Spieler/Zuschauer-Modus wechseln">▶ Spielen</button>
     <button id="btnFullscreen" title="Vollbild ein/aus">⛶</button>
   </div>
@@ -1658,6 +1659,17 @@ const online = {
 const _onlineShotQueue = [];
 const _pendingSyncs = [];
 let _syncWatchdog = null;
+let _shotSafetyTimer = null;
+
+function scheduleShotSafety() {
+  clearTimeout(_shotSafetyTimer);
+  _shotSafetyTimer = setTimeout(() => {
+    if (!game.shotInProgress) return;
+    game.balls.forEach(b => { if (typeof b.resetMotion === "function") b.resetMotion(); });
+    game.shotInProgress = false;
+    onShotComplete();
+  }, 7000);
+}
 
 function scheduleSyncWatchdog() {
   clearTimeout(_syncWatchdog);
@@ -2650,6 +2662,7 @@ function startShot() {
   const cue = game.cueBall;
   launchCueBall(cue, dirX, dirY, power, game.spinX, game.spinY, game.cueElevation, game.cueType);
   game.shotInProgress = true; game.state = "moving";
+  scheduleShotSafety();
   resetCanvasZoom();
   soundCueHit(power);
   if (game.mode === "online") sendOnlineShot();
@@ -2659,6 +2672,7 @@ function startShot() {
 }
 
 function onShotComplete() {
+  clearTimeout(_shotSafetyTimer);
   // Online: fremder Schuss → nur Animation, keine eigene Spiellogik → sync anwenden
   if (game.mode === "online" && online.waitingForSync) {
     online.waitingForSync = false;
@@ -6792,6 +6806,9 @@ function updateUI() {
     ((game.variant === "drill15" || game.variant === "basis") && !isAutoPortrait()) ? "" : "none";
   ui.btnBasisRepeat.style.display = (game.variant === "basis") ? "" : "none";
   document.getElementById("btnPhysics").style.display = (game.variant === "basis") ? "" : "none";
+  document.getElementById("btnOnlineSync").style.display =
+    (game.mode === "online" && online.connected && online.role !== "spectator"
+     && game.state !== "ended") ? "" : "none";
   _updateTimerDisplay();
   _updateExtendBtn();
   maybeShowCallModal();
@@ -7431,6 +7448,13 @@ function requestOnlineSync() {
 
 document.getElementById("btnReconnectOnline").addEventListener("click", tryReconnect);
 document.getElementById("btnRequestOnlineSync").addEventListener("click", requestOnlineSync);
+document.getElementById("btnOnlineSync").addEventListener("click", () => {
+  game.shotInProgress   = false;
+  online.waitingForSync = false;
+  cueDragging = false; lmbDragging = false; rmbDragging = false; rmbStart = null;
+  requestOnlineSync();
+  updateUI();
+});
 
 uiOnline.btnDisBack.addEventListener("click", () => {
   uiOnline.disconnect.style.display = "none";
