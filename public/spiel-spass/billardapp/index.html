@@ -6320,6 +6320,7 @@ function updateCueTypeHint() {
 document.getElementById("cueTypeSelect")?.addEventListener("change", e => {
   game.cueType = e.target.value || "playing";
   updateCueTypeHint();
+  _lastPreviewSent = 0;
   sendPreview();
 });
 
@@ -7118,7 +7119,7 @@ function handleRelayMessage(msg) {
         game.spinX        = msg.spinX;
         game.spinY        = msg.spinY;
         if (msg.cueElevation !== undefined) game.cueElevation = msg.cueElevation;
-        if (msg.cueType !== undefined) game.cueType = msg.cueType;
+        if (msg.cueType !== undefined) { game.cueType = msg.cueType; updateCueTypeHint(); }
         if (msg.cbX !== undefined) game.cueBall.x = msg.cbX;
         if (msg.cbY !== undefined) game.cueBall.y = msg.cbY;
         updatePowerUI();
