@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PBC Erding Pool – Spielanleitung</title>
+<style>
+  :root {
+    --green:      #2d6a4f;
+    --green-light:#52b788;
+    --green-bg:   #d8f3dc;
+    --accent:     #1b4332;
+    --text:       #1a1a2e;
+    --muted:      #555;
+    --border:     #c8e6d0;
+    --bg:         #f7fdf9;
+    --card:       #ffffff;
+    --warn-bg:    #fff8e1;
+    --warn-border:#f9a825;
+    --tip-bg:     #e3f2fd;
+    --tip-border: #1976d2;
+    --foul-bg:    #fdecea;
+    --foul-border:#c62828;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--green) 100%);
+    color: #fff;
+    padding: 2.5rem 2rem 2rem;
+    text-align: center;
+  }
+  header h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: .5px; }
+  header p  { margin-top: .5rem; font-size: 1rem; opacity: .85; }
+
+  /* ── Layout ── */
+  .wrapper {
+    max-width: 1140px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 270px 1fr;
+    gap: 2rem;
+    padding: 2rem 1.5rem;
+  }
+  @media (max-width: 860px) {
+    .wrapper { grid-template-columns: 1fr; }
+    nav.toc { display: none; }
+  }
+
+  /* ── Table of Contents ── */
+  nav.toc {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem;
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+    font-size: .88rem;
+  }
+  nav.toc h2 {
+    font-size: .95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--green);
+    margin-bottom: .75rem;
+    border-bottom: 2px solid var(--green-bg);
+    padding-bottom: .4rem;
+  }
+  nav.toc ol { list-style: none; counter-reset: toc-l1; }
+  nav.toc > ol > li { counter-increment: toc-l1; margin-bottom: .15rem; }
+  nav.toc > ol > li > a::before { content: counter(toc-l1) ". "; font-weight: 600; color: var(--green); }
+  nav.toc > ol > li > a {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    padding: .18rem .3rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  nav.toc > ol > li > a:hover { background: var(--green-bg); color: var(--accent); }
+  nav.toc ol ol { list-style: none; padding-left: .9rem; counter-reset: toc-l2; margin-top: .1rem; }
+  nav.toc ol ol li { counter-increment: toc-l2; }
+  nav.toc ol ol li > a::before { content: counter(toc-l1) "." counter(toc-l2) " "; color: var(--muted); font-size: .82rem; }
+  nav.toc ol ol li a {
+    display: block;
+    color: var(--muted);
+    text-decoration: none;
+    padding: .1rem .3rem;
+    border-radius: 3px;
+    font-size: .85rem;
+  }
+  nav.toc ol ol li a:hover { background: var(--green-bg); color: var(--accent); }
+  nav.toc ol ol ol { padding-left: .9rem; counter-reset: toc-l3; }
+  nav.toc ol ol ol li { counter-increment: toc-l3; }
+  nav.toc ol ol ol li a::before { content: counter(toc-l1) "." counter(toc-l2) "." counter(toc-l3) " "; color: #999; font-size: .8rem; }
+  nav.toc ol ol ol li a { font-size: .82rem; color: #777; }
+
+  /* ── Main content ── */
+  main { min-width: 0; }
+
+  /* Sections */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.8rem 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Headings */
+  h2 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--accent);
+    border-bottom: 3px solid var(--green-light);
+    padding-bottom: .5rem;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  h2 .num { background: var(--green); color: #fff; font-size: .85rem; padding: .15rem .5rem; border-radius: 20px; }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--green);
+    margin: 1.4rem 0 .6rem;
+    padding-left: .5rem;
+    border-left: 3px solid var(--green-light);
+  }
+  h4 {
+    font-size: .97rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 1rem 0 .4rem;
+  }
+  p { margin-bottom: .8rem; }
+  p:last-child { margin-bottom: 0; }
+
+  /* Lists */
+  ul, ol { padding-left: 1.6rem; margin-bottom: .8rem; }
+  li { margin-bottom: .2rem; }
+  li:last-child { margin-bottom: 0; }
+
+  /* Callouts */
+  .tip, .warn, .foul, .rule {
+    border-radius: 6px;
+    padding: .75rem 1rem;
+    margin: .8rem 0;
+    border-left: 4px solid;
+    font-size: .93rem;
+  }
+  .tip   { background: var(--tip-bg);   border-color: var(--tip-border); }
+  .warn  { background: var(--warn-bg);  border-color: var(--warn-border); }
+  .foul  { background: var(--foul-bg);  border-color: var(--foul-border); }
+  .rule  { background: var(--green-bg); border-color: var(--green); }
+  .tip strong, .warn strong, .foul strong, .rule strong { display: block; margin-bottom: .2rem; }
+
+  /* Table */
+  .tbl-wrap { overflow-x: auto; margin: .8rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th {
+    background: var(--green);
+    color: #fff;
+    padding: .5rem .8rem;
+    text-align: left;
+    font-weight: 600;
+  }
+  td { padding: .45rem .8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: var(--green-bg); }
+  tr:last-child td { border-bottom: none; }
+
+  /* Key badges */
+  kbd {
+    display: inline-block;
+    background: #e8e8e8;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    padding: .05rem .45rem;
+    font-family: monospace;
+    font-size: .85em;
+    color: var(--text);
+    box-shadow: 0 1px 0 #aaa;
+  }
+
+  /* Step list */
+  .steps { counter-reset: step; list-style: none; padding-left: 0; }
+  .steps li {
+    counter-increment: step;
+    padding: .5rem .6rem .5rem 2.6rem;
+    position: relative;
+    border-left: 2px solid var(--green-bg);
+    margin-bottom: .4rem;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: .5rem;
+    top: .5rem;
+    background: var(--green);
+    color: #fff;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    font-weight: 700;
+  }
+
+  /* Badge inline */
+  .badge {
+    display: inline-block;
+    padding: .1rem .55rem;
+    border-radius: 20px;
+    font-size: .78rem;
+    font-weight: 700;
+    vertical-align: middle;
+    margin: 0 .1rem;
+  }
+  .badge-green  { background: #2d6a4f; color: #fff; }
+  .badge-red    { background: #c62828; color: #fff; }
+  .badge-blue   { background: #1565c0; color: #fff; }
+  .badge-gold   { background: #f9a825; color: #000; }
+  .badge-gray   { background: #616161; color: #fff; }
+
+  /* Back-to-top */
+  .back { display: inline-block; margin-top: 1rem; font-size: .85rem; color: var(--green); text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--muted);
+    font-size: .82rem;
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+  }
+  footer .footer-link { color: var(--green); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎱 PBC Erding Pool – Spielanleitung</h1>
+  <p>Vollständige Anleitung für 8-Ball, 9-Ball, Übungsmodi und alle Spielfunktionen</p>
+</header>
+
+<div class="wrapper">
+
+<!-- ══════════ INHALTSVERZEICHNIS ══════════ -->
+<nav class="toc" aria-label="Inhaltsverzeichnis">
+  <h2>Inhalt</h2>
+  <ol>
+    <li><a href="#s1">Einführung</a>
+      <ol>
+        <li><a href="#s1-1">Was ist PBC Erding Pool?</a></li>
+        <li><a href="#s1-2">App starten</a></li>
+        <li><a href="#s1-3">Startmenü</a>
+          <ol>
+            <li><a href="#s1-3-1">8-Ball</a></li>
+            <li><a href="#s1-3-2">9-Ball</a></li>
+            <li><a href="#s1-3-3">15-Kugeln Drill</a></li>
+            <li><a href="#s1-3-4">Basisübung</a></li>
+            <li><a href="#s1-3-5">Gemeinsame Einstellungen</a></li>
+          </ol>
+        </li>
+        <li><a href="#s1-4">Oberfläche auf einen Blick</a></li>
+      </ol>
+    </li>
+    <li><a href="#s2">Spielvarianten</a>
+      <ol>
+        <li><a href="#s2-1">8-Ball</a>
+          <ol>
+            <li><a href="#s2-1-1">Kurzanleitung</a></li>
+            <li><a href="#s2-1-2">Ausführliche Spielregeln</a></li>
+            <li><a href="#s2-1-3">Fouls &amp; Strafen</a></li>
+          </ol>
+        </li>
+        <li><a href="#s2-2">9-Ball</a>
+          <ol>
+            <li><a href="#s2-2-1">Kurzanleitung</a></li>
+            <li><a href="#s2-2-2">Ausführliche Spielregeln</a></li>
+            <li><a href="#s2-2-3">Push-Out-Regel</a></li>
+            <li><a href="#s2-2-4">Fouls &amp; Strafen</a></li>
+          </ol>
+        </li>
+        <li><a href="#s2-3">Übungsmodi</a></li>
+      </ol>
+    </li>
+    <li><a href="#s3">Spielmodi</a>
+      <ol>
+        <li><a href="#s3-1">Hot-Seat</a></li>
+        <li><a href="#s3-2">Gegen die KI</a></li>
+        <li><a href="#s3-3">Solo / Übung</a></li>
+        <li><a href="#s3-4">Online-Spiel</a></li>
+      </ol>
+    </li>
+    <li><a href="#s4">Steuerung</a>
+      <ol>
+        <li><a href="#s4-1">Zielen</a></li>
+        <li><a href="#s4-2">Stoßstärke</a></li>
+        <li><a href="#s4-3">Effet (Spin)</a></li>
+        <li><a href="#s4-4">Queue-Winkel (Elevation)</a></li>
+        <li><a href="#s4-5">Queue-Typ wählen</a></li>
+        <li><a href="#s4-6">Stoß ausführen</a></li>
+        <li><a href="#s4-7">Ball-in-Hand</a></li>
+      </ol>
+    </li>
+    <li><a href="#s5">Spezialtechniken</a>
+      <ol>
+        <li><a href="#s5-1">Jump-Shot</a></li>
+        <li><a href="#s5-2">Massé-Shot</a></li>
+        <li><a href="#s5-3">Break</a></li>
+      </ol>
+    </li>
+    <li><a href="#s6">KI-Gegner</a></li>
+    <li><a href="#s7">Online-Modus</a>
+      <ol>
+        <li><a href="#s7-1">Raum erstellen</a></li>
+        <li><a href="#s7-2">Einem Raum beitreten</a></li>
+        <li><a href="#s7-3">Als Zuschauer beitreten</a></li>
+        <li><a href="#s7-4">Vollbild-Overlay</a></li>
+        <li><a href="#s7-5">Live-Vorschau für Zuschauer</a></li>
+        <li><a href="#s7-6">Verbindungsabbruch &amp; Rematch</a></li>
+      </ol>
+    </li>
+    <li><a href="#s8">Einstellungen</a>
+      <ol>
+        <li><a href="#s8-1">Spieloptionen</a></li>
+        <li><a href="#s8-2">Physik &amp; Tischprofile</a></li>
+        <li><a href="#s8-3">Shot-Timer</a></li>
+        <li><a href="#s8-4">Sound</a></li>
+      </ol>
+    </li>
+    <li><a href="#s9">Vollbild &amp; Mobile</a></li>
+    <li><a href="#s10">Tastenkürzel</a></li>
+  </ol>
+</nav>
+
+<!-- ══════════ HAUPTINHALT ══════════ -->
+<main>
+
+<!-- ─── 1. Einführung ─── -->
+<section class="section" id="s1">
+  <h2><span class="num">1</span> Einführung</h2>
+
+  <h3 id="s1-1">1.1 Was ist PBC Erding Pool?</h3>
+  <p>PBC Erding Pool ist die offizielle Billard-App des <strong>Pool Billard Club PBC Erding e.&nbsp;V.</strong> – des Pool-Billard-Vereins im <em>Bowling Castle Erding</em>, Robert-Bosch-Straße 3. Die App kann direkt im Browser gespielt werden, ohne Installation oder Download.</p>
+  <p>Sie bildet die offiziellen Regeln von <strong>8-Ball</strong> und <strong>9-Ball</strong> vollständig ab und richtet sich sowohl an Vereinsmitglieder, die ihr Spiel trainieren möchten, als auch an alle Billard-Interessierten. Unterstützt werden Partien zu zweit am selben Gerät (Hot-Seat), Einzelspiele gegen eine KI in drei Schwierigkeitsgraden sowie Echtzeit-Onlinespiele gegen andere Spieler.</p>
+  <p>Die Physik-Engine berechnet Kugelbewegung, Effet (Spin), Bandenreflexionen, Jump-Shots und Massé-Stöße mit realistischen Parametern, die über das Physik-Menü individuell angepasst werden können.</p>
+  <div class="tip">
+    <strong>💡 Über den PBC Erding e.&nbsp;V.</strong>
+    Training und Spielbetrieb finden dienstags und donnerstags ab 18:00 Uhr sowie sonntags 13:00–17:00 Uhr im Bowling Castle Erding statt. Probetraining ist jederzeit willkommen – weitere Infos unter <a href="https://pbc-erding.de" target="_blank">pbc-erding.de</a>.
+  </div>
+
+  <h3 id="s1-2">1.2 App starten</h3>
+
+  <h4>Online spielen (empfohlen)</h4>
+  <ol class="steps">
+    <li>Die App-Seite im Browser aufrufen: <a href="https://pbc-erding.de/spiel-spass/billardapp" target="_blank">pbc-erding.de/spiel-spass/billardapp</a></li>
+    <li>Im Startmenü <strong>Spielvariante</strong>, <strong>Spielmodus</strong> und alle weiteren Optionen wählen.</li>
+    <li><strong>Spiel starten</strong> klicken – das Spiel beginnt direkt mit dem Anstoß.</li>
+  </ol>
+  <div class="tip">
+    <strong>💡 Kein Internet nötig nach dem ersten Laden</strong>
+    Die App funktioniert als einzelne HTML-Datei vollständig ohne Server-Verbindung – mit Ausnahme des Online-Spielmodus, der eine aktive Verbindung benötigt.
+  </div>
+
+  <h4>Lokal betreiben (offline / eigener Rechner)</h4>
+  <p>Die App besteht aus genau zwei Dateien: <code>index.html</code> (das Spiel) und <code>hilfe.html</code> (diese Spielanleitung). Beide müssen im selben Ordner liegen, damit der Hilfe-Button funktioniert.</p>
+  <ol class="steps">
+    <li>Beide Dateien (<strong>index.html</strong> und <strong>hilfe.html</strong>) beim Vereins-Administrator anfordern oder vom Vereins-Webserver herunterladen.</li>
+    <li>Beide Dateien in denselben Ordner auf dem Rechner speichern.</li>
+    <li><code>index.html</code> direkt im Browser öffnen – unter Windows reicht ein Doppelklick auf die Datei. Das Spiel startet sofort, ohne Installation.</li>
+  </ol>
+  <div class="tip">
+    <strong>💡 Was funktioniert offline?</strong>
+    Alle Spielmodi außer Online-Spiel laufen vollständig ohne Internetverbindung. Die Schriftarten (Google Fonts) werden beim ersten Laden aus dem Internet geladen – ohne Verbindung greift der Browser automatisch auf Standard-Systemschriften zurück, was die Spielfunktion nicht beeinträchtigt.
+  </div>
+  <div class="warn">
+    <strong>⚠ Online-Spielmodus nur über die PBC-Erding-Website</strong>
+    Das Online-Spiel ist ausschließlich verfügbar, wenn die App über die Website des PBC Erding aufgerufen wird (<a href="https://pbc-erding.de/spiel-spass/billardapp" target="_blank">pbc-erding.de/spiel-spass/billardapp</a>). Beim lokalen Öffnen der HTML-Datei oder beim Aufruf von anderen Quellen steht der Online-Modus nicht zur Verfügung.
+  </div>
+
+  <h3 id="s1-3">1.3 Startmenü</h3>
+  <p>Beim Öffnen der App erscheint das Startmenü. Hier werden Spielvariante, Spielmodus und alle Optionen konfiguriert. Einige Felder werden erst sichtbar, wenn eine bestimmte Variante oder ein bestimmter Modus ausgewählt ist.</p>
+
+  <h4 id="s1-3-1">8-Ball</h4>
+  <p><strong>Zweck:</strong> Das klassische Pub-Pool-Spiel, gespielt mit 15 Objektkugeln (Vollkugeln 1–7, Streifen 9–15) und der schwarzen 8. Jeder Spieler bekommt nach dem ersten regulären Pot eine Gruppe zugeteilt und muss alle seine Kugeln versenken, bevor er die 8 in eine angesagte Tasche einlocht. Geeignet für alle Altersgruppen und Spielniveaus.</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Option</th><th>Werte</th><th>Bedeutung</th></tr>
+      <tr><td>Kugelanzahl</td><td>Alle (15), 13, 11, 9, 7, 5, 3</td><td>Reduziert die Anzahl der aufgestellten Objektkugeln für kürzere Partien oder als Übungsvariante. Bei &quot;Alle&quot; werden alle 15 Kugeln aufgestellt.</td></tr>
+      <tr><td>Spielmodus</td><td>Hot-Seat, Gegen KI, Solo, Online</td><td>Bestimmt, wer gegen wen spielt (→ Kapitel 3)</td></tr>
+      <tr><td>KI-Schwierigkeit</td><td>Anfänger, Fortgeschrittener, Profi</td><td>Nur bei „Gegen KI" sichtbar (→ Kapitel 6)</td></tr>
+      <tr><td>Sätze</td><td>1–9</td><td>Anzahl der Gewinnsätze für ein Match. Bei Satz-Stand 1:0 nach einem Spiel beginnt das nächste direkt.</td></tr>
+      <tr><td>Break-Regel</td><td>Wechselbreak, Winnerbreak</td><td>Legt fest, wer nach jedem Spiel den Anstoß macht – entweder abwechselnd oder immer der Sieger.</td></tr>
+    </table>
+  </div>
+
+  <h4 id="s1-3-2">9-Ball</h4>
+  <p><strong>Zweck:</strong> Das internationale Turnierformat. Gespielt wird nur mit den Kugeln 1–9. Es muss stets die niedrigste Kugel zuerst berührt werden; wer die 9 versenkt, gewinnt sofort – auch durch Kombinationsstöße. 9-Ball belohnt taktisches Denken und präzises Positionsspiel und kommt dem Wettkampfformat des PBC Erding am nächsten.</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Option</th><th>Werte</th><th>Bedeutung</th></tr>
+      <tr><td>Aufstellung</td><td>Raute, Vorgelagert</td><td><em>Raute:</em> Klassische rautenförmige 9-Ball-Aufstellung, 1 an der Spitze, 9 in der Mitte. <em>Vorgelagert:</em> Alternative Aufstellung für andere Dynamik.</td></tr>
+      <tr><td>Kugelanzahl</td><td>2–9</td><td>Reduziert die Anzahl der Kugeln. Mit 2 Kugeln stehen nur 1 und 9 auf dem Tisch – ideal für schnelle Trainingseinheiten auf den entscheidenden Endschnitt.</td></tr>
+      <tr><td>Spielmodus</td><td>Hot-Seat, Gegen KI, Solo, Online</td><td>Bestimmt, wer gegen wen spielt (→ Kapitel 3)</td></tr>
+      <tr><td>KI-Schwierigkeit</td><td>Anfänger, Fortgeschrittener, Profi</td><td>Nur bei „Gegen KI" sichtbar (→ Kapitel 6)</td></tr>
+      <tr><td>Sätze</td><td>1–9</td><td>Anzahl der Gewinnsätze für ein Match.</td></tr>
+      <tr><td>Break-Regel</td><td>Wechselbreak, Winnerbreak</td><td>Legt fest, wer nach jedem Spiel den Anstoß macht – entweder abwechselnd oder immer der Sieger.</td></tr>
+    </table>
+  </div>
+
+  <h4 id="s1-3-3">15-Kugeln Drill</h4>
+  <p><strong>Zweck:</strong> Die Kugeln 1–15 erscheinen einzeln nacheinander am Foot-Spot (rechte Tischhälfte). Ziel ist es, jede Kugel in einem Stoß zu versenken und dabei möglichst viele Punkte zu sammeln. Der Drill schult Einlochpräzision, Positionierung der Weißen und den Umgang mit Druck durch den optionalen Zeitgeber.</p>
+
+  <p><strong>Ablauf:</strong> Zu Beginn steht die Weiße im Kopffeld, Kugel&nbsp;1 erscheint am Foot-Spot. Nach jedem Stoß – egal ob getroffen oder verfehlt – erscheint die nächste Kugel. Nach Kugel&nbsp;15 endet der Drill mit einer Auswertung.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Situation</th><th>Punkte</th></tr>
+      <tr><td>Kugel versenkt (normaler Stoß)</td><td><strong>+1</strong></td></tr>
+      <tr><td>Kugel versenkt und Weiße stand im Kopffeld</td><td><strong>+2</strong></td></tr>
+      <tr><td>Weiße versenkt (Scratch)</td><td><strong>−1</strong></td></tr>
+      <tr><td>Kugel verfehlt oder Zeit abgelaufen</td><td><strong>0</strong> – Kugel entfernt, nächste erscheint</td></tr>
+    </table>
+  </div>
+
+  <div class="tip">
+    <strong>💡 Kitchen-Bonus</strong>
+    Steht die Weiße beim Stoß im Kopffeld (dem Viertel, von dem aus auch der Break gespielt wird), zählt ein versenkter Ball doppelt. Das belohnt das Zurückhalten der Weißen in der schwierigeren Tischhälfte.
+  </div>
+
+  <p><strong>Shot-Timer im Drill:</strong> Wird im Startmenü ein Shot-Timer aktiviert, läuft für jede Kugel ein fester Countdown von <strong>30 Sekunden</strong> – unabhängig von der gewählten Timer-Einstellung. Läuft die Zeit ab, wird die aktuelle Kugel als verfehlt gewertet und die nächste erscheint sofort.</p>
+
+  <p>Kein Gegner, kein Satzsystem. Am Ende erscheint: Anzahl versenkter Kugeln und Gesamtpunktzahl. Bei 15/15 versenkten Kugeln: „Perfekt!"</p>
+
+  <h4 id="s1-3-4">Basisübung</h4>
+  <p><strong>Zweck:</strong> Ein vollständig freier Übungsmodus ohne Regeln, Gegner oder Zeitdruck. Die Basisübung richtet sich vor allem an Einsteiger, die zunächst die Bedienung der App kennenlernen möchten – aber auch an erfahrene Spieler, die gezielt einzelne Techniken trainieren.</p>
+  <p>Besonders wertvoll ist die Basisübung zum Erfahren des Zusammenspiels von <strong>Stoßhärte</strong> und <strong>Treffpunkt auf der Weißen</strong> (Effet-Canvas): Ein Nachlaufstoß mit hohem Treffpunkt und mittlerer Stärke verhält sich fundamental anders als derselbe Stoß mit weniger Kraft oder einem anderen Treffpunkt. Durch freies Experimentieren ohne Regelzwang entsteht schnell ein intuitives Verständnis für den Kugellauf.</p>
+  <ul>
+    <li><strong>Beliebige Kugeln</strong> können beliebig oft geschossen werden.</li>
+    <li>Der Button <strong>↺ Wiederholen</strong> (untere Leiste) stellt die aktuelle Kugellage vollständig wieder her – ideal, um denselben Stoß mehrfach mit verschiedenen Effets oder Härten auszuprobieren.</li>
+    <li>Kein Satzsystem, keine Fouls, kein Gegner.</li>
+  </ul>
+  <div class="tip">
+    <strong>💡 Empfehlung für Einsteiger</strong>
+    Mit der Basisübung starten: Zuerst die Steuerung vertraut machen (Zielen, Power, Stoß), dann den Effetpunkt variieren und beobachten, wie sich die Weiße nach dem Kontakt verhält. Erst dann in den Spielmodus wechseln.
+  </div>
+
+  <h4 id="s1-3-5">Gemeinsame Einstellungen</h4>
+  <p>Diese Optionen sind unabhängig von der Spielvariante verfügbar:</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Option</th><th>Werte</th><th>Bedeutung</th></tr>
+      <tr><td>Sound</td><td>An / Aus</td><td>Stoß-, Banden- und Taschengeräusche ein- oder ausschalten.</td></tr>
+      <tr><td>Shot-Timer</td><td>Aus / 30 s / 60 s</td><td>Begrenzt die Bedenkzeit pro Zug. Bei Ablauf erscheint ein Hinweis; mit dem Button <strong>⏱ +30s</strong> kann die Zeit einmalig verlängert werden. Beim Solo- und KI-Modus nicht empfohlen.</td></tr>
+      <tr><td>Tischprofil</td><td>Schnell / Mittel / Langsam</td><td>Vorkonfigurierte Physik-Presets. <em>Schnell</em> entspricht einem frisch bespannten Wettkampftuch, <em>Langsam</em> einem älteren oder schwereren Tuch. Die feinen Parameter können im Physik-Menü (⚙) weiter angepasst werden.</td></tr>
+    </table>
+  </div>
+  <a href="#" class="back">↑ Nach oben</a>
+
+  <h4 id="s1-3-6">Alle Menü-Optionen im Detail</h4>
+  <p>Die folgenden Erläuterungen beschreiben jede Menü-Option einzeln – mit Angabe, bei welcher Spielvariante sie erscheint und welchen Zweck sie erfüllt.</p>
+
+  <p><strong>Spielvariante</strong> &nbsp;<span class="badge badge-green">immer sichtbar</span><br>
+  Die grundlegende Auswahl des Spieltyps: 8-Ball, 9-Ball, 15-Kugeln Drill oder Basisübung. Abhängig von dieser Wahl werden alle weiteren Optionen angepasst – manche erscheinen neu, andere werden ausgeblendet.</p>
+
+  <p><strong>Aufstellung</strong> &nbsp;<span class="badge badge-blue">nur 9-Ball</span><br>
+  Bestimmt die Form der 9-Ball-Aufstellung. <em>Raute</em> ist die klassische, international übliche Dreiecksform mit der 1 an der Spitze und der 9 in der Mitte. <em>Vorgelagert</em> ist eine alternative Aufstellung, die eine andere Brech-Dynamik erzeugt. Keine spielerische Auswirkung auf die Regeln.</p>
+
+  <p><strong>Kugelanzahl (8-Ball)</strong> &nbsp;<span class="badge badge-green">nur 8-Ball</span><br>
+  Reduziert die Anzahl der aufgestellten Objektkugeln von 15 auf 3, 5, 7, 9, 11 oder 13. Zweck: kürzere Spielzeit, da weniger Kugeln versenkt werden müssen. Sinnvoll für schnelle Partien, Anfänger-Trainings oder wenn wenig Zeit zur Verfügung steht. Die Gruppen (Vollkugeln / Streifen) werden proportional reduziert.</p>
+
+  <p><strong>Kugelanzahl (9-Ball)</strong> &nbsp;<span class="badge badge-blue">nur 9-Ball</span><br>
+  Gibt an, wie viele Kugeln (2–9) aufgestellt werden. Bei 2 Kugeln stehen nur Kugel 1 und die 9 auf dem Tisch – die Partie ist in wenigen Stößen entschieden. Mit steigender Kugelanzahl wächst die taktische Komplexität. Zweck: flexible Spieldauer und gezielte Übung von Endspielszenarien (z.&nbsp;B. nur 1 und 9 → direkter Kombinationsstoß).</p>
+
+  <p><strong>Spielmodus</strong> &nbsp;<span class="badge badge-green">bei 8-Ball und 9-Ball</span><br>
+  Bestimmt, wer gegen wen antritt. Nicht verfügbar bei Drill 15 und Basisübung (dort immer Solo). Die vier Modi: <em>Hot-Seat</em> (2 Spieler, ein Gerät), <em>Gegen KI</em> (1 Spieler vs. Computer), <em>Solo</em> (1 Spieler, kein Gegner), <em>Online</em> (2 Spieler, Netzwerk). Ausführliche Beschreibung → Kapitel 3.</p>
+
+  <p><strong>KI-Schwierigkeit</strong> &nbsp;<span class="badge badge-gold">nur bei „Gegen KI"</span><br>
+  Erscheint ausschließlich, wenn im Spielmodus „Gegen KI" gewählt wurde. Drei Stufen: Anfänger (aimError ±4,5°, leicht schlagbar), Fortgeschrittener (±1,4°, macht gelegentlich Fehler), Profi (±0,06°, trifft nahezu immer). Ausführliche KI-Beschreibung → Kapitel 6.</p>
+
+  <p><strong>Sätze</strong> &nbsp;<span class="badge badge-green">bei 8-Ball und 9-Ball</span><br>
+  Legt fest, wie viele Sätze (einzelne Spiele) zum Gesamtsieg benötigt werden (Best-of-Modus). Bei 3 Sätzen gewinnt, wer zuerst 3 Spiele für sich entscheidet. Empfehlung: 1 Satz für schnelle Partien, 5 oder mehr für ein vollwertiges Match-Erlebnis.</p>
+
+  <p><strong>Break-Regel</strong> &nbsp;<span class="badge badge-green">bei 8-Ball und 9-Ball</span><br>
+  Regelt, wer nach einem beendeten Spiel den nächsten Anstoß (Break) ausführt. <em>Wechselbreak</em>: Die Spieler wechseln sich ab – fair und turniernah. <em>Winnerbreak</em>: Der Gewinner des letzten Spiels bricht erneut auf – gibt dem stärkeren Spieler einen Vorteil, kann bei großem Niveauunterschied zu einer Abwärtsspirale führen.</p>
+
+  <p><strong>Sound</strong> &nbsp;<span class="badge badge-green">immer sichtbar</span><br>
+  Schaltet alle Spielgeräusche (Stoß-Klick, Kugel-Kugel-Kontakt, Banden-Rebound, Taschensound) global ein oder aus. Kann auch während des Spiels über den <strong>♪ Sound</strong>-Button in der unteren Leiste umgeschaltet werden.</p>
+
+  <p><strong>Shot-Timer</strong> &nbsp;<span class="badge badge-green">immer sichtbar</span><br>
+  Begrenzt die Bedenkzeit pro Zug auf 30 oder 60 Sekunden. Empfehlen sich für Hot-Seat-Partien, um das Spiel zügig zu halten. Im KI-Modus nicht sinnvoll, da die KI die Zeit ohnehin automatisch nutzt. Der Timer kann im laufenden Spiel einmalig pro Zug um 30 Sekunden verlängert werden (⏱ +30s-Button).</p>
+
+  <p><strong>Tischprofil</strong> &nbsp;<span class="badge badge-green">immer sichtbar</span><br>
+  Wählt ein vordefiniertes Physik-Preset aus: <em>Schnell</em> – frisch bespanntes Wettkampftuch, Kugeln laufen weit und rollen lange aus; <em>Mittel</em> – ausgeglichenes Allround-Profil; <em>Langsam</em> – schweres oder altes Tuch, Kugeln bremsen früh ab, mehr Kontrolle nötig. Alle Parameter können anschließend im Physik-Menü (⚙) fein nachjustiert werden.</p>
+
+  <a href="#" class="back">↑ Nach oben</a>
+
+  <h3 id="s1-4">1.4 Oberfläche auf einen Blick</h3>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Bereich</th><th>Position</th><th>Inhalt</th></tr>
+      <tr><td><strong>Scoreboard</strong></td><td>Oben</td><td>Spielernamen, Gruppen-Badges (Vollkugeln / Streifen), aktueller Status, Foul-Meldung</td></tr>
+      <tr><td><strong>Spielfeld</strong></td><td>Mitte</td><td>Billardtisch mit Kugeln, Ziellinien und Effetvorschau</td></tr>
+      <tr><td><strong>Steuerungspanel</strong></td><td>Rechts</td><td>Ziel-Buttons, Power-Anzeige, Queue-Typ-Auswahl, Spin/Winkel-Canvas, Stoß-Button</td></tr>
+      <tr><td><strong>Button-Leiste</strong></td><td>Unten</td><td>Menü, Neustart, Sound, Hilfe, Push-Out (9-Ball), Physik, Vollbild</td></tr>
+      <tr><td><strong>Schiedsrichter-Banner</strong></td><td>Unten Mitte</td><td>Foul-Ansagen, Regelhinweise</td></tr>
+    </table>
+  </div>
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+<!-- ─── 2. Spielvarianten ─── -->
+<section class="section" id="s2">
+  <h2><span class="num">2</span> Spielvarianten</h2>
+
+  <!-- 8-Ball -->
+  <h3 id="s2-1">2.1 8-Ball</h3>
+
+  <h4 id="s2-1-1">Kurzanleitung</h4>
+  <ol class="steps">
+    <li>Spieler 1 bricht auf. Wird eine Kugel versenkt, spielt er weiter und bekommt je nach versenkter Gruppe (Vollkugeln 1–7 oder Streifen 9–15) seine Kugeln zugewiesen.</li>
+    <li>Jeder Spieler versenkt nacheinander alle seine Kugeln.</li>
+    <li>Wer zuerst alle eigenen Kugeln versenkt hat, muss die <strong>8</strong> in eine angesagte Tasche einlochen – das Spiel ist gewonnen.</li>
+    <li>Die 8 vorzeitig zu versenken oder in die falsche Tasche gilt als Foul (Niederlage oder Neuaufsetzen).</li>
+  </ol>
+  <div class="tip">
+    <strong>💡 Tipp: Offene Tafel</strong>
+    Solange noch keine Kugel nach dem Anstoß versenkt wurde, ist die Tafel „offen": Beide Spieler dürfen beliebige Vollkugeln oder Streifen anspielen. Die erste regulär versenkende Kugel bestimmt die Gruppen.
+  </div>
+
+  <h4 id="s2-1-2">Ausführliche Spielregeln</h4>
+  <p><strong>Anstoß (Break):</strong> Die Weiße wird aus dem Kitchen-Bereich (oberes Viertel des Tisches) gespielt. Ein gültiger Anstoß versenkt mindestens eine Kugel oder bringt mindestens vier Objektkugeln an eine Bande. Gelingt dies nicht, ist der Break ungültig und der Gegner übernimmt.</p>
+
+  <p><strong>Gruppenverteilung:</strong> Die Gruppen werden nach dem Break vergeben – sobald die erste Kugel in einem regulären Spielzug (nicht dem Break) versenkt wird, erhält der schießende Spieler die entsprechende Gruppe. Solange die Gruppen nicht fest sind, gilt die Tafel als offen: Der aktive Spieler darf jede Kugel außer der 8 als erste berühren.</p>
+
+  <p><strong>Spielablauf:</strong></p>
+  <ul>
+    <li>Pro Zug muss zuerst eine eigene Kugel berührt werden (Tafel offen: beliebige Kugel außer der 8).</li>
+    <li>Wird die eigene Kugel versenkt, darf weitergeschossen werden.</li>
+    <li>Wird keine eigene Kugel versenkt oder ein Foul begangen, wechselt die Spielberechtigung.</li>
+    <li>Die 8 darf erst gespielt werden, wenn alle eigenen Kugeln versenkt sind.</li>
+    <li>Bei der 8 muss die Zieltasche <strong>vor dem Stoß</strong> angesagt werden (Dialog erscheint automatisch).</li>
+  </ul>
+
+  <p><strong>Spielgewinn:</strong> Ein Spieler gewinnt, wenn er die 8 regelkonform (nach allen eigenen Kugeln, in der angesagten Tasche) versenkt.</p>
+
+  <p><strong>Sofortniederlage:</strong></p>
+  <ul>
+    <li>Die 8 versenken, bevor alle eigenen Kugeln gespielt wurden (Ausnahme: beim Break).</li>
+    <li>Die 8 in einer anderen als der angesagten Tasche versenken.</li>
+    <li>Drei Fouls in Folge begehen.</li>
+  </ul>
+
+  <h4 id="s2-1-3">Fouls &amp; Strafen (8-Ball)</h4>
+  <div class="foul">
+    <strong>🚩 Konsequenz bei einem Foul: Ball-in-Hand für den Gegner</strong>
+    Der Gegner darf die Weiße beliebig auf dem gesamten Spielfeld platzieren.
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Foul</th><th>Ergebnis</th></tr>
+      <tr><td>Weiße versenkt (Scratch)</td><td>Ball-in-Hand</td></tr>
+      <tr><td>Keine Kugel getroffen</td><td>Ball-in-Hand</td></tr>
+      <tr><td>Falsche Kugel zuerst berührt</td><td>Ball-in-Hand</td></tr>
+      <tr><td>8 zuerst berührt (vor Abräumen eigener Kugeln)</td><td>Ball-in-Hand</td></tr>
+      <tr><td>Nach Kontakt keine Kugel an Bande</td><td>Ball-in-Hand</td></tr>
+      <tr><td>8 vorzeitig versenkt</td><td>8 wird neu aufgesetzt, Ball-in-Hand</td></tr>
+      <tr><td>8 in falscher Tasche versenkt</td><td><strong>Sofortniederlage</strong></td></tr>
+      <tr><td>Ungültiger Anstoß</td><td>Ball-in-Hand für Gegner oder Neuanstoß</td></tr>
+      <tr><td>3 Fouls in Folge</td><td><strong>Spielverlust</strong></td></tr>
+    </table>
+  </div>
+
+  <!-- 9-Ball -->
+  <h3 id="s2-2">2.2 9-Ball</h3>
+
+  <h4 id="s2-2-1">Kurzanleitung</h4>
+  <ol class="steps">
+    <li>Es wird immer die <strong>niedrigste noch im Spiel befindliche Kugel</strong> zuerst berührt.</li>
+    <li>Wer die <strong>9</strong> versenkt – egal wie und in welchem Zug – gewinnt sofort.</li>
+    <li>Die 9 kann auch über eine Kombi-Berührung versenkt werden, solange die niedrigste Kugel zuerst getroffen wird.</li>
+    <li>Nach dem Break darf der aktive Spieler einmalig einen <strong>Push-Out</strong> ansagen.</li>
+  </ol>
+
+  <h4 id="s2-2-2">Ausführliche Spielregeln</h4>
+  <p><strong>Anstoß (Break):</strong> Die 9 Kugeln (1–9) werden rautenförmig aufgestellt. Die 1 steht an der Spitze, die 9 in der Mitte. Ein gültiger Break berührt die 1 als erste Kugel. Mindestens vier Kugeln müssen eine Bande erreichen oder eine Kugel wird versenkt.</p>
+
+  <p><strong>Spielzwang – niedrigste Kugel:</strong> In jedem Zug muss die niedrigste noch im Spiel befindliche Kugel als erste berührt werden. Die Scoreboard-Anzeige zeigt die aktuelle Zielpflicht an.</p>
+
+  <p><strong>Gewinnen durch die 9:</strong> Wird die 9 auf legalem Weg versenkt – direkt oder über eine Kombination – ist das Spiel sofort beendet, unabhängig davon, wie viele andere Kugeln noch auf dem Tisch liegen. Auch bei einem Kombi-Stoß (z. B. 1 → 9) gilt der Gewinn, sofern die 1 zuerst getroffen wurde.</p>
+
+  <p><strong>Kugelanzahl anpassen:</strong> Im Startmenü kann die Anzahl der Kugeln (2–9) verringert werden – ideal für kürzere Partien oder Übungszwecke.</p>
+
+  <p><strong>Aufstellungsvariante:</strong> Im Menü wählbar: <em>Raute</em> (klassisch) oder <em>Vorgelagert</em> (alternative Aufstellung).</p>
+
+  <h4 id="s2-2-3">Push-Out-Regel</h4>
+  <div class="rule">
+    <strong>📋 Push-Out</strong>
+    Direkt nach einem gültigen Anstoß (Break) darf der aktive Spieler einmalig einen Push-Out ansagen. Dabei darf die Weiße beliebig weitergeschossen werden – Fouls gelten nicht, auch wenn die niedrigste Kugel nicht getroffen wird. Der Gegner entscheidet danach, ob er selbst spielt oder den Stoß zurückgibt.
+  </div>
+  <ul>
+    <li>Der <strong>Push-Out-Button</strong> erscheint nur nach einem gültigen Break, bevor der erste reguläre Zug gespielt wird.</li>
+    <li>Beim Push-Out darf kein Kugel gespielt werden, die direkt zum Gewinn führen würde (die 9 darf nicht eingelocht werden).</li>
+    <li>Nach dem Push-Out erscheint beim Gegner ein Dialog: <strong>Annehmen</strong> (er übernimmt die Lage) oder <strong>Zurückgeben</strong> (der ursprüngliche Spieler spielt weiter).</li>
+  </ul>
+
+  <h4 id="s2-2-4">Fouls &amp; Strafen (9-Ball)</h4>
+  <div class="foul">
+    <strong>🚩 Konsequenz bei einem Foul: Ball-in-Hand für den Gegner</strong>
+    Der Gegner darf die Weiße beliebig auf dem gesamten Spielfeld platzieren.
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Foul</th><th>Ergebnis</th></tr>
+      <tr><td>Weiße versenkt (Scratch)</td><td>Ball-in-Hand</td></tr>
+      <tr><td>Keine Kugel getroffen</td><td>Ball-in-Hand</td></tr>
+      <tr><td>Nicht die niedrigste Kugel zuerst berührt</td><td>Ball-in-Hand</td></tr>
+      <tr><td>Nach Kontakt keine Kugel an Bande</td><td>Ball-in-Hand</td></tr>
+      <tr><td>Ungültiger Anstoß (zu wenige Kugeln an Bande)</td><td>Ball-in-Hand</td></tr>
+      <tr><td>3 Fouls in Folge</td><td><strong>Spielverlust</strong></td></tr>
+    </table>
+  </div>
+
+  <!-- Übungsmodi -->
+  <h3 id="s2-3">2.3 Übungsmodi</h3>
+  <p><strong>15-Kugeln Drill:</strong> Die Kugeln 1–15 erscheinen einzeln nacheinander am Foot-Spot. Pro versenkter Kugel gibt es 1 Punkt, bei Stoß aus dem Kopffeld 2 Punkte. Fällt die Weiße, gibt es −1 Punkt. Wird eine Kugel verfehlt oder läuft der optionale 30-Sekunden-Timer ab, erscheint die nächste Kugel ohne Punktgewinn. Am Ende zeigt eine Auswertung Trefferquote und Gesamtpunktzahl. Ausführliche Beschreibung → <a href="#s1-3-3">Kapitel 1.3.3</a>.</p>
+  <p><strong>Basisübung:</strong> Ein freier Übungsmodus ohne Gegner und ohne Regelzwang. Ideal für das Einüben spezifischer Stöße, Bandentricks und Effets. Der Button <strong>↺ Wiederholen</strong> stellt die aktuelle Kugellage wieder her.</p>
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+<!-- ─── 3. Spielmodi ─── -->
+<section class="section" id="s3">
+  <h2><span class="num">3</span> Spielmodi</h2>
+
+  <h3 id="s3-1">3.1 Hot-Seat (2 Spieler lokal)</h3>
+  <p>Zwei Spieler spielen abwechselnd an einem Gerät. Nach jedem Zug gibt der aktive Spieler das Gerät an den nächsten weiter. Namen können im Startmenü eingetragen werden. Der Wechsel wird im Scoreboard und durch einen Status-Hinweis angezeigt.</p>
+
+  <h3 id="s3-2">3.2 Gegen die KI</h3>
+  <p>Spieler 1 spielt gegen einen KI-Gegner. Das <strong>KI-Level</strong> ist im Startmenü wählbar – siehe Kapitel 6 für eine ausführliche Beschreibung der Schwierigkeitsgrade.</p>
+  <p>Die KI plant ihren Zug asynchron im Hintergrund (kurze Denkpause) und führt ihn dann animiert aus. Während der KI-Denkphase ist das Interface gesperrt.</p>
+
+  <h3 id="s3-3">3.3 Solo / Übung</h3>
+  <p>Ein Spieler spielt alleine mit allen Regelzwängen der gewählten Variante. Kein Gegner, kein Spielerwechsel – nur die eigene Spielkontrolle wird trainiert.</p>
+
+  <h3 id="s3-4">3.4 Online-Spiel</h3>
+  <p>Zwei Spieler spielen per Netzwerk gegeneinander – weltweit oder im lokalen WLAN. Der Spieler, der den Raum erstellt (Gastgeber), legt alle Spieloptionen fest: Spielvariante, Kugelanzahl, Sätze und Break-Regel. Der beitretende Spieler (Gast) übernimmt diese Einstellungen automatisch.</p>
+  <p>Zusätzlich können beliebig viele Personen als Zuschauer demselben Raum beitreten und das Spiel live verfolgen, ohne selbst einzugreifen.</p>
+  <div class="tip">
+    <strong>💡 Gastgeber-Einstellungen gelten für beide</strong>
+    Alle Spieloptionen werden vom Gastgeber beim Spielstart festgelegt und automatisch an den Gast übertragen. Der Gast kann diese nicht eigenständig ändern.
+  </div>
+  <p>Ausführliche Schritt-für-Schritt-Anleitung, Zuschauer-Funktion und Vollbild-Overlay → <a href="#s7">Kapitel 7 Online-Modus</a>.</p>
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+<!-- ─── 4. Steuerung ─── -->
+<section class="section" id="s4">
+  <h2><span class="num">4</span> Steuerung</h2>
+
+  <h3 id="s4-1">4.1 Zielen</h3>
+  <p>Die Zielrichtung wird durch <strong>Klicken und Ziehen</strong> der Maus auf dem Spielfeld eingestellt – Links-/Rechts-Bewegung dreht die Ziehlinie. Dabei verschiebt sich gleichzeitig der <strong>Ghostball</strong>: die halbtransparente Kugel auf dem Spielfeld, die anzeigt, an welcher Stelle die Weiße die Zielpflicht-Kugel beim Kontakt berühren würde. Der Ghostball hilft, den genauen Treffpunkt an der Zielpflicht-Kugel zu beurteilen, bevor der Stoß ausgeführt wird.</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Aktion</th><th>Maus / Touch</th><th>Tastatur</th></tr>
+      <tr><td>Zielen</td><td>LMB halten + ziehen</td><td><kbd>←</kbd> / <kbd>→</kbd></td></tr>
+      <tr><td>Feine Maussteuerung</td><td><kbd>Shift</kbd> + LMB halten + ziehen (⅛ Empfindlichkeit)</td><td>–</td></tr>
+      <tr><td>Feinjustierung (Buttons)</td><td>◄ fein / fein ► (Buttons)</td><td><kbd>←</kbd> / <kbd>→</kbd></td></tr>
+      <tr><td>Sehr feine Justierung</td><td>◄◄ sehr fein / sehr fein ►► (Buttons)</td><td><kbd>Shift</kbd>+<kbd>←</kbd> / <kbd>Shift</kbd>+<kbd>→</kbd></td></tr>
+    </table>
+  </div>
+  <p>Die <strong>Ziellinien</strong> auf dem Spielfeld zeigen die voraussichtliche Flugbahn der Weißen sowie die Abgangsrichtung der angestoßenen Kugel nach dem Kontakt.</p>
+  <div class="tip">
+    <strong>💡 Feines Zielen mit Shift (nur Desktop)</strong>
+    Wird beim Ziehen mit der linken Maustaste gleichzeitig <kbd>Shift</kbd> gehalten, reagiert die Ziellinie nur noch mit ⅛ der normalen Empfindlichkeit. So lassen sich sehr präzise Winkel einstellen, ohne versehentlich zu weit zu drehen. Shift loslassen schaltet sofort wieder in die normale Empfindlichkeit zurück.
+  </div>
+  <div class="tip">
+    <strong>💡 Squirt-Korrektur</strong>
+    Bei seitlichem Effet weicht die Weiße von der Ziehlinie ab (Squirt-Effekt). Die Ziellinie berücksichtigt dies automatisch und zeigt die tatsächliche Flugrichtung.
+  </div>
+
+  <h3 id="s4-2">4.2 Stoßstärke (Power)</h3>
+  <p>Die Stoßstärke wird über den <strong>Power-Balken</strong> rechts eingestellt. Der aktuelle Wert in Prozent (0–100 %) wird darüber angezeigt.</p>
+  <ul>
+    <li><strong>Maus:</strong> RMB (rechte Maustaste) auf der Spielfläche halten und die Maus in beliebige Richtung ziehen. Die <strong>Entfernung</strong> vom Startpunkt bestimmt die Stoßstärke – je weiter gezogen, desto mehr Power. Loslassen löst den Stoß aus.</li>
+    <li><strong>Touch:</strong> Power-Slider im Panel verschieben.</li>
+    <li><strong>Vollbild (Mobile):</strong> Eigener Power-Slider in der Vollbild-Steuerungsleiste.</li>
+  </ul>
+  <div class="warn">
+    <strong>⚠ Maus innerhalb der Spielfläche halten!</strong>
+    Verlässt der Mauszeiger während des RMB-Ziehens die Spielfläche, wird die Power auf 0 zurückgesetzt und kein Schuss ausgelöst. Wird die rechte Maustaste <em>außerhalb</em> der Spielfläche losgelassen, erscheint stattdessen das Windows-Kontextmenü. Daher: RMB auf der Spielfläche drücken, innerhalb der Spielfläche ziehen und dort auch loslassen.
+  </div>
+
+  <h3 id="s4-3">4.3 Effet (Spin)</h3>
+  <p>Das <strong>Spin-Canvas</strong> (Kreis im Steuerungspanel, Tab <em>EFFET</em>) steuert den Auftreffpunkt des Queues auf der Weißen:</p>
+  <ul>
+    <li><strong>Horizontal:</strong> Links-Effet / Rechts-Effet (Seitenspin) → beeinflusst Bandenverhalten</li>
+    <li><strong>Vertikal oben:</strong> Nachlauf → Weiße läuft nach Kontakt weiter</li>
+    <li><strong>Vertikal unten:</strong> Rücklauf (Stopp/Zieher) → Weiße hält an oder zieht zurück</li>
+    <li><strong>Mitte:</strong> Kein Effet – neutrale Weiße</li>
+  </ul>
+  <p>Der aktuelle Zustand wird im Textfeld unter dem Canvas beschrieben (z. B. <em>„leichter Nachlauf rechts"</em>). Mit <strong>Zurücksetzen</strong> wird der Spin aufgehoben.</p>
+  <div class="tip">
+    <strong>💡 Kombination mit Elevation</strong>
+    Kombinierbarer Seitenspin + hoher Queue-Winkel erzeugt Kurveneffekte (Massé) – mehr dazu in Kapitel 5.2.
+  </div>
+
+  <h3 id="s4-4">4.4 Queue-Winkel (Elevation)</h3>
+  <p>Der <strong>Tab WINKEL</strong> im Steuerungspanel öffnet die Elevation-Steuerung. Drag nach oben erhöht den Winkel, nach unten verringert ihn.</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Winkelbereich</th><th>Bezeichnung</th><th>Wirkung</th></tr>
+      <tr><td>0°</td><td>Flach (normal)</td><td>Kein Höheneffekt, maximale Horizontalkraft</td></tr>
+      <tr><td>15–45°</td><td>Erhöhter Queue</td><td>Leichter Kurveneffekt bei Seitenspin; bei Jump-Queue möglicherweise leichter Absprung</td></tr>
+      <tr><td>45–75°</td><td>Steiler Queue</td><td>Deutlicher Massé-Effekt (Kurvenstoß) bei Seitenspin</td></tr>
+      <tr><td>&gt; 75°</td><td>Massé</td><td>Starker Kurvenbogen, Weiße dreht stark zurück oder seitlich ab</td></tr>
+      <tr><td>45–60° + Jump-Queue</td><td>Jump-Shot (normal)</td><td>45°: flachere, weitere Flugbahn – für Hindernisse in mittlerer bis größerer Distanz. 60°: steilere, kürzere Flugbahn – für nähere Hindernisse.</td></tr>
+      <tr><td>65–80° + Jump-Queue kurz</td><td>Jump-Shot (kurz/steil)</td><td>Sehr steiler, kurzer Sprung; ideal wenn das Hindernis direkt vor der Weißen liegt</td></tr>
+    </table>
+  </div>
+
+  <h3 id="s4-5">4.5 Queue-Typ wählen</h3>
+  <p>Im Dropdown <strong>Queue-Typ</strong> (über dem Spin-Canvas) stehen vier Queues zur Verfügung:</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Typ</th><th>Charakteristik</th><th>Einsatz</th></tr>
+      <tr><td><span class="badge badge-green">Spielqueue</span></td><td>Ausgewogene Kraft- und Spin-Übertragung</td><td>Standardstoß, Effet, Positionsspiel</td></tr>
+      <tr><td><span class="badge badge-red">Break-Queue</span></td><td>Härtere Spitze, 14 % mehr Kraft, weniger Spin-Grip</td><td>Nur für den Anstoß (Break)</td></tr>
+      <tr><td><span class="badge badge-blue">Jump-Queue</span></td><td>Leichteres Queue, höherer Absprung, geringere Horizontalkraft</td><td>Jump-Shot über entfernte Kugeln</td></tr>
+      <tr><td><span class="badge badge-blue">Jump-Queue kurz</span></td><td>Verkürztes Queue, stärkster Absprung, kürzeste Horizontalkraft</td><td>Jump-Shot über nahe Hindernisse, sehr steiler Bogen</td></tr>
+    </table>
+  </div>
+  <div class="warn">
+    <strong>⚠ Queue-Typ vor dem Stoß wählen!</strong>
+    Der Typ kann nur vor Spielbeginn eines Zuges gewechselt werden. Nach dem Break sollte wieder auf den Spielqueue zurückgewechselt werden.
+  </div>
+
+  <h3 id="s4-6">4.6 Stoß ausführen</h3>
+  <ul>
+    <li><strong>Maus:</strong> RMB loslassen (nach Power-Einstellung) oder <strong>STOSS!</strong>-Button klicken.</li>
+    <li><strong>Tastatur:</strong> <kbd>Space</kbd></li>
+    <li><strong>Touch/Mobile:</strong> STOSS!-Button im Panel oder Vollbild-Button</li>
+  </ul>
+
+  <h3 id="s4-7">4.7 Ball-in-Hand</h3>
+  <p>Nach einem Foul erhält der Gegner <strong>Ball-in-Hand</strong>: Die Weiße darf frei auf dem Tisch platziert werden. Die App startet dabei automatisch im <strong>Verschiebe-Modus</strong> – die Weiße kann sofort gezogen werden.</p>
+
+  <h4>Verschiebe-Modus ↔ Zielmodus wechseln</h4>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Aktion</th><th>Maus</th><th>Touch</th></tr>
+      <tr><td>Weiße verschieben</td><td>LMB auf Weiße halten + ziehen</td><td>Finger auf Weiße halten + ziehen</td></tr>
+      <tr><td>In Zielmodus wechseln</td><td>Doppelklick (LMB) auf Weiße</td><td>Doppeltippen auf Weiße</td></tr>
+      <tr><td>Zurück in Verschiebe-Modus</td><td>Doppelklick (LMB) auf Weiße</td><td>Doppeltippen auf Weiße</td></tr>
+    </table>
+  </div>
+  <p>Im Zielmodus funktioniert die gesamte Ziel- und Stoßsteuerung normal. Die Modi können beliebig oft gewechselt werden, solange der Stoß noch nicht ausgeführt wurde.</p>
+
+  <ol class="steps">
+    <li>Weiße per LMB halten + ziehen auf die gewünschte Position schieben. Eine <strong>rote Einfärbung</strong> zeigt an, dass die Position ungültig ist (Überlappung mit anderer Kugel).</li>
+    <li>Per <strong>Doppelklick</strong> (Maus) bzw. <strong>Doppeltippen</strong> (Touch) auf die Weiße in den Zielmodus wechseln – jetzt kann gezielt und gestoßen werden. Im Zielmodus lässt sich die Weiße nicht mehr verschieben.</li>
+    <li>Position nochmals ändern? Erneuter <strong>Doppelklick / Doppeltippen</strong> auf die Weiße wechselt zurück in den Verschiebe-Modus.</li>
+    <li>In bestimmten Situationen (Scratch beim Anstoß) ist die Weiße auf das <strong>Kopffeld</strong> beschränkt.</li>
+  </ol>
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+<!-- ─── 5. Spezialtechniken ─── -->
+<section class="section" id="s5">
+  <h2><span class="num">5</span> Spezialtechniken</h2>
+
+  <h3 id="s5-1">5.1 Jump-Shot</h3>
+  <p>Ein Jump-Shot lässt die Weiße über eine blockierende Kugel springen. Die Weiße erhebt sich sichtbar vom Tuch, wirft einen Schatten und landet nach dem Hindernis wieder auf dem Spielfeld. Welche Queue-Variante eingesetzt wird, hängt vom Abstand zur Hinderniskugel ab.</p>
+
+  <h4>Jump-Queue (normal) – Hindernis in mittlerer bis größerer Distanz</h4>
+  <p>Der Jump-Queue erzeugt eine flache, weit reichende Flugbahn. Der Winkel bestimmt dabei die Länge des Sprungs: Bei 45° fliegt die Weiße weiter, bei 60° kürzer und steiler.</p>
+  <ol class="steps">
+    <li>Queue-Typ auf <strong>Jump-Queue</strong> wechseln.</li>
+    <li>Tab <strong>WINKEL</strong> öffnen und auf <strong>45–60°</strong> einstellen – näher an 45° für weit entfernte Hindernisse, näher an 60° für kürzere Abstände.</li>
+    <li>Power auf <strong>50–70 %</strong> einstellen.</li>
+    <li>Zielen und stoßen.</li>
+  </ol>
+
+  <h4>Jump-Queue kurz – Hindernis direkt vor der Weißen</h4>
+  <p>Der verkürzte Jump-Queue erzeugt einen sehr steilen, kurzen Sprung. Die Weiße springt hoch, landet aber früh – ideal, wenn das Hindernis unmittelbar vor der Weißen liegt und kaum Platz für eine flache Flugbahn ist.</p>
+  <ol class="steps">
+    <li>Queue-Typ auf <strong>Jump-Queue kurz</strong> wechseln.</li>
+    <li>Tab <strong>WINKEL</strong> öffnen und auf <strong>65–80°</strong> einstellen.</li>
+    <li>Power auf <strong>45–65 %</strong> einstellen – der kurze Queue überträgt weniger Horizontalkraft, daher reicht weniger Power.</li>
+    <li>Zielen und stoßen.</li>
+  </ol>
+
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Merkmal</th><th>Jump-Queue (normal)</th><th>Jump-Queue kurz</th></tr>
+      <tr><td>Typischer Winkel</td><td>45–60°</td><td>65–80°</td></tr>
+      <tr><td>Flugbahn</td><td>Flach und weit bei 45°, kürzer und steiler bei 60°</td><td>Sehr steil, kurze Landedistanz</td></tr>
+      <tr><td>Abstand zum Hindernis</td><td>Mittel bis weit</td><td>Nah – direkt vor der Weißen</td></tr>
+      <tr><td>Horizontalgeschwindigkeit</td><td>Hoch – Weiße läuft nach der Landung weiter</td><td>Gering – Weiße stoppt kurz nach der Landung</td></tr>
+    </table>
+  </div>
+
+  <div class="tip">
+    <strong>💡 Wann springt die Weiße?</strong>
+    Die Weiße springt nur, wenn Winkel und Power zusammen einen Mindestwert überschreiten. Bei zu flachem Winkel oder zu wenig Power bleibt sie auf dem Tuch – auch mit einem Jump-Queue. Faustregel: ab ca. 40° und 40 % Power mit dem Jump-Queue.
+  </div>
+
+  <h3 id="s5-2">5.2 Massé-Shot</h3>
+  <p>Ein Massé-Shot lässt die Weiße eine Kurve fahren. Er wird durch die Kombination von <strong>hohem Queue-Winkel</strong> und <strong>Seitenspin</strong> erzeugt.</p>
+  <ol class="steps">
+    <li>Tab <strong>WINKEL</strong> öffnen und Queue auf <strong>50–80°</strong> stellen.</li>
+    <li>Im Tab <strong>EFFET</strong> einen deutlichen <strong>Links- oder Rechts-Spin</strong> einstellen.</li>
+    <li>Geringe bis mittlere Power wählen (30–55 %).</li>
+    <li>Stoßen – die Weiße dreht sich seitlich in einem Bogen.</li>
+  </ol>
+  <div class="tip">
+    <strong>💡 Praxis-Tipp</strong>
+    Je höher der Queue-Winkel und je mehr Seitenspin, desto enger der Kurvenradius. Bei 75°+ und vollem Seitenspin beschreibt die Weiße einen sehr engen Bogen. Mit Übung können so Hindernisse umfahren werden.
+  </div>
+
+  <h3 id="s5-3">5.3 Break</h3>
+  <p>Der Anstoß (Break) ist der erste Stoß einer Partie. Es gibt zwei Regeln im Menü wählbar:</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Break-Regel</th><th>Beschreibung</th></tr>
+      <tr><td><strong>Wechselbreak</strong></td><td>Nach jedem Spiel wechselt der Break zum anderen Spieler.</td></tr>
+      <tr><td><strong>Winnerbreak</strong></td><td>Der Gewinner des letzten Spiels macht wieder den Break.</td></tr>
+    </table>
+  </div>
+  <p><strong>Gültigkeitsbedingungen:</strong> Beim Break müssen entweder eine Kugel versenkt oder mindestens vier Objektkugeln eine Bande berühren. Andernfalls ist der Break ungültig und der Gegner übernimmt mit Ball-in-Hand.</p>
+  <div class="tip">
+    <strong>💡 Break-Tipp</strong>
+    Den Break-Queue mit 88–100 % Power und mittiger Weißenposition verwenden. Die 1 (9-Ball) bzw. den Apex (8-Ball) direkt ansteuern.
+  </div>
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+<!-- ─── 6. KI-Gegner ─── -->
+<section class="section" id="s6">
+  <h2><span class="num">6</span> KI-Gegner</h2>
+  <p>Die KI verfügt über drei Schwierigkeitsgrade mit grundlegend unterschiedlichen Planungsstrategien:</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Level</th><th>Name</th><th>Strategie</th><th>Richtungsgenauigkeit</th><th>Power-Fehler</th></tr>
+      <tr>
+        <td><span class="badge badge-green">Leicht</span></td>
+        <td>Anfänger</td>
+        <td>Reine Geometrie – schießt auf die wahrscheinlichste Tasche, kein Positionsspiel, kaum Safety-Spiele</td>
+        <td>± 4,5°</td>
+        <td>± 28 %</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-gold">Mittel</span></td>
+        <td>Fortgeschrittener</td>
+        <td>Geometrie + Simulations-Validierung für Ball-in-Hand-Situationen. Gelegentlich Safety-Spiele, seltener Bankstoß</td>
+        <td>± 1,4°</td>
+        <td>± 12 %</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-red">Schwer</span></td>
+        <td>Profi</td>
+        <td>Vollständige Mehr-Stoß-Simulation, Positionsspiel, Ablageplanung, Safety-Spiele, Kombis (9-Ball). Trifft fast immer.</td>
+        <td>± 0,06°</td>
+        <td>± 0,6 %</td>
+      </tr>
+    </table>
+  </div>
+  <div class="tip">
+    <strong>💡 Hinweis zum Profi-Level</strong>
+    Die Profi-KI berechnet Folgepositionen, wertet Safety-Spiele und Kombinationsstöße aus und nutzt bei 9-Ball aktiv Kombi-Stöße auf die 9. Die Denkpause kann kurz sichtbar sein – das ist normal.
+  </div>
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+<!-- ─── 7. Online-Modus ─── -->
+<section class="section" id="s7">
+  <h2><span class="num">7</span> Online-Modus</h2>
+
+  <p>Das Online-Spiel verbindet zwei Spieler per WebSocket-Relay-Server in Echtzeit. Alle Spielzustände (Kugelpositionen, Fouls, Spielerwechsel) werden automatisch synchronisiert. Zusätzlich können beliebig viele Zuschauer einem laufenden Spiel beitreten.</p>
+  <div class="warn">
+    <strong>⚠ Nur über die PBC-Erding-Website verfügbar</strong>
+    Der Online-Modus steht ausschließlich zur Verfügung, wenn die App über die Website des PBC Erding aufgerufen wird (<a href="https://pbc-erding.de/spiel-spass/billardapp" target="_blank">pbc-erding.de/spiel-spass/billardapp</a>). Beim lokalen Öffnen der HTML-Datei oder beim Aufruf von anderen Quellen ist der Online-Modus nicht nutzbar.
+  </div>
+
+  <h3 id="s7-1">7.1 Raum erstellen</h3>
+  <p>Der Spieler, der den Raum erstellt, wird zum <strong>Gastgeber</strong>. Alle Spieleinstellungen (Variante, Kugelanzahl, Sätze, Break-Regel) werden vom Gastgeber festgelegt und beim Spielstart automatisch an den Gast übertragen.</p>
+  <ol class="steps">
+    <li>Im Startmenü <strong>Spielmodus → Online</strong> wählen.</li>
+    <li>Einen <strong>Spielernamen</strong> in das Textfeld eingeben.</li>
+    <li><strong>Raum erstellen</strong> klicken. Im Wartebildschirm erscheint ein <strong>6-stelliger Raumcode</strong> in goldener Schrift.</li>
+    <li>Den Code dem Mitspieler mitteilen – z.&nbsp;B. per Chat, Telefon oder persönlich.</li>
+    <li>Sobald der Gast mit dem Code beitritt, startet das Spiel automatisch ohne weiteren Klick.</li>
+  </ol>
+  <div class="tip">
+    <strong>💡 Einstellungen vor dem Erstellen wählen</strong>
+    Alle Startmenü-Optionen (Variante, Sätze, Break-Regel usw.) müssen <em>vor</em> dem Klick auf „Raum erstellen" festgelegt werden. Nachträglich kann der Gastgeber sie nicht mehr ändern, solange ein Gast verbunden ist.
+  </div>
+
+  <h3 id="s7-2">7.2 Einem Raum beitreten</h3>
+  <p>Der beitretende Spieler wird zum <strong>Gast</strong> (Spieler&nbsp;2). Er übernimmt automatisch alle Einstellungen des Gastgebers.</p>
+  <ol class="steps">
+    <li>Im Startmenü <strong>Spielmodus → Online</strong> wählen und einen Namen eingeben.</li>
+    <li><strong>Beitreten</strong> klicken – ein Textfeld für den Raumcode erscheint.</li>
+    <li>Den 6-stelligen Raumcode des Gastgebers eingeben (Groß-/Kleinschreibung egal).</li>
+    <li><strong>OK → Verbinden</strong> klicken. Das Spiel startet, sobald der Relay-Server die Verbindung bestätigt.</li>
+  </ol>
+
+  <h3 id="s7-3">7.3 Als Zuschauer beitreten</h3>
+  <p>Zuschauer können jederzeit einem laufenden Spiel beitreten – auch mitten in einer Partie. Sie sehen den aktuellen Tischzustand und verfolgen alle Züge live.</p>
+  <ol class="steps">
+    <li>Im Startmenü <strong>Spielmodus → Online</strong> wählen.</li>
+    <li><strong>👁 Zuschauen</strong> klicken – das Codefeld erscheint.</li>
+    <li>Den Raumcode des laufenden Spiels eingeben und bestätigen.</li>
+    <li>Das Spielfeld wird sofort mit dem aktuellen Tischzustand geladen.</li>
+  </ol>
+  <div class="tip">
+    <strong>💡 Zuschauer-Badge</strong>
+    Im Zuschauer-Modus erscheint oben mittig ein goldumrandetes Badge <em>„👁 Zuschauer-Modus"</em> mit einem <strong>← Verlassen</strong>-Button. Ein Klick darauf beendet die Verbindung und kehrt zum Startmenü zurück. Die Steuerungselemente (Queue, Power, Stoß) sind für Zuschauer gesperrt.
+  </div>
+  <div class="rule">
+    <strong>📋 Snapshot bei Beitritt</strong>
+    Tritt ein Zuschauer einem laufenden Spiel bei, schickt der Gastgeber automatisch einen Snapshot: Kugelpositionen, versenkte Kugeln, aktueller Spieler, Foul-Status, Gruppen (8-Ball) und Push-Out-Status (9-Ball) werden sofort synchronisiert.
+  </div>
+
+  <h3 id="s7-4">7.4 Vollbild-Overlay: Zuschauer- und Spieler-Layout</h3>
+  <p>Im Vollbildmodus (⛶-Button unten rechts) gibt es <strong>zwei Layout-Varianten</strong>, die über den <strong>▶ Spielen</strong>-Button umgeschaltet werden. Der Button ist nur im Vollbild sichtbar und erscheint unten rechts neben dem ⛶-Button.</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Layout</th><th>Aussehen</th><th>Einsatz</th></tr>
+      <tr>
+        <td><strong>Zuschauer-Layout</strong><br><span class="badge badge-gray">fs-spectator</span></td>
+        <td>Kein Steuerungspanel; unten nur ⛶ und <em>▶ Spielen</em></td>
+        <td>Maximale Sicht aufs Spielfeld – ideal zum Zuschauen auf dem Handy</td>
+      </tr>
+      <tr>
+        <td><strong>Spieler-Layout</strong><br><span class="badge badge-blue">fs-playable</span></td>
+        <td>Steuerungspanel erscheint als transparente Leiste am unteren Rand; Stoß-, Aim- und Power-Buttons sichtbar</td>
+        <td>Spielen auf Touchscreen (Mobile); Aim-, Power- und Stoß-Bedienung ohne Maus</td>
+      </tr>
+    </table>
+  </div>
+  <p>Der Toggle-Button wechselt Beschriftung und Layout:</p>
+  <ul>
+    <li><strong>▶ Spielen</strong> – aktuell Zuschauer-Layout; klicken wechselt ins Spieler-Layout</li>
+    <li><strong>👁 Zuschauer</strong> – aktuell Spieler-Layout; klicken wechselt ins Zuschauer-Layout</li>
+  </ul>
+  <div class="tip">
+    <strong>💡 Vollbild für Zuschauer</strong>
+    Auch Zuschauer können den Vollbildmodus nutzen. Im Zuschauer-Layout ist das Steuerungspanel ausgeblendet – das Spielfeld füllt den gesamten Bildschirm. Mit <em>▶ Spielen</em> kann ins Spieler-Layout gewechselt werden: Das Steuerungspanel erscheint dann am unteren Rand und zeigt die Live-Einstellungen des aktiven Spielers – Zielrichtung, Power, Effet und Queue-Neigung – in Echtzeit an. Eingreifen ins Spiel ist für Zuschauer trotzdem nicht möglich.
+  </div>
+
+  <h3 id="s7-5">7.5 Live-Vorschau für Zuschauer</h3>
+  <p>Während ein Spieler seinen Zug vorbereitet, werden folgende Informationen live an alle <strong>Zuschauer</strong> übertragen:</p>
+  <ul>
+    <li>Zielwinkel (Richtungslinie auf dem Tisch)</li>
+    <li>Power-Wert (aktuell eingestellte Stoßstärke)</li>
+    <li>Effetpunkt (Spin-Canvas: Nachlauf, Rücklauf, Seitenspin)</li>
+    <li>Queue-Winkel / Elevation (Neigung des Queues)</li>
+    <li>Queue-Typ (Spielqueue, Break-Queue, Jump-Queue)</li>
+    <li>Position der Weißen bei Ball-in-Hand</li>
+  </ul>
+  <p>Die Vorschau wird mit einer minimalen Drosselung (maximal alle 80&nbsp;ms) übertragen, sodass die Anzeige beim Zuschauer nahezu in Echtzeit mitläuft. Zuschauer sehen also exakt, wohin der aktive Spieler zielt – bevor der Stoß ausgeführt wird.</p>
+  <div class="rule">
+    <strong>📋 Vorschau nur für Zuschauer</strong>
+    Der Gegner sieht die Live-Vorschau <em>nicht</em>. Nur Zuschauer erhalten und zeigen die Vorschau-Daten an. Dies ist beabsichtigt: Die Ziel-Richtung des Gegners soll kein taktischer Vorteil sein.
+  </div>
+
+  <h3 id="s7-6">7.6 Verbindungsabbruch &amp; Rematch</h3>
+
+  <h4>Verbindungsabbruch</h4>
+  <p>Trennt sich während einer Partie die Verbindung eines Spielers (Browser-Tab geschlossen, Netzwerkausfall, Zurück-zum-Menü), erscheint beim verbliebenen Spieler ein <strong>Verbindungs-getrennt-Dialog</strong>:</p>
+  <ul>
+    <li>Überschrift: <em>„Verbindung getrennt"</em></li>
+    <li>Meldung: <em>„Dein Gegner hat das Spiel verlassen."</em></li>
+    <li>Button: <strong>← Zurück zum Menü</strong> – kehrt ins Startmenü zurück</li>
+  </ul>
+  <p>Beim Zuschauer wird bei Verbindungsabbruch das Zuschauer-Badge automatisch ausgeblendet und der normale Spielzustand wiederhergestellt.</p>
+  <div class="warn">
+    <strong>⚠ Kein automatischer Reconnect</strong>
+    Es gibt keine automatische Wiederverbindung. Nach einem Abbruch muss ein neues Spiel gestartet werden, indem beide Spieler einen neuen Raum erstellen und beitreten.
+  </div>
+
+  <h4>Rematch (Nochmal spielen)</h4>
+  <p>Am Ende eines Spiels erscheint der End-Bildschirm mit Gewinner und Match-Stand. Beide Spieler können ein <strong>Rematch</strong> anfordern:</p>
+  <ol class="steps">
+    <li>Der aktive Spieler klickt auf <strong>Nochmal</strong> (gleiches Match, nächster Satz) oder <strong>Neues Match</strong> (Match-Stand zurücksetzen).</li>
+    <li>Die Anfrage wird dem Gegner übermittelt; dieser sieht ebenfalls den End-Bildschirm und bestätigt mit <strong>Nochmal</strong>.</li>
+    <li>Der Gastgeber überträgt die Spieleinstellungen erneut – das nächste Spiel beginnt automatisch.</li>
+  </ol>
+  <div class="tip">
+    <strong>💡 Break-Regel beim Rematch</strong>
+    Die eingestellte Break-Regel (Wechselbreak oder Winnerbreak) gilt auch für das Rematch. Der nächste Break-Spieler wird automatisch korrekt zugewiesen.
+  </div>
+
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+<!-- ─── 8. Einstellungen ─── -->
+<section class="section" id="s8">
+  <h2><span class="num">8</span> Einstellungen</h2>
+
+  <h3 id="s8-1">8.1 Spieloptionen (Startmenü)</h3>
+  <p>Eine vollständige Beschreibung aller Startmenü-Optionen mit Zweck und Verfügbarkeit je Spielvariante befindet sich in <a href="#s1-3">Kapitel 1.3 Startmenü</a>. Die nachfolgenden Abschnitte behandeln Einstellungen, die <em>während des Spiels</em> zugänglich sind.</p>
+
+  <h3 id="s8-2">8.2 Physik &amp; Tischprofile</h3>
+  <p>Über den Button <strong>⚙ Physik</strong> in der unteren Leiste (während des Spiels) lassen sich alle Physik-Parameter fein abstimmen:</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Parameter</th><th>Wirkung</th></tr>
+      <tr><td>Tuchreibung</td><td>Wie schnell Kugeln abbremsen</td></tr>
+      <tr><td>Rollwiderstand</td><td>Widerstand beim reinen Rollen</td></tr>
+      <tr><td>Bandenelastizität</td><td>Wie viel Energie bei Bandencontact erhalten bleibt</td></tr>
+      <tr><td>Bandenreibung</td><td>Grip der Banden (beeinflusst Spin-Übertragung)</td></tr>
+      <tr><td>Tuchgleit-Beschleunigung</td><td>Wie schnell Spin auf Roll übergeht</td></tr>
+      <tr><td>Spin-Grip (Banden)</td><td>Wie stark die Banden den Kugelspin weiterleiten</td></tr>
+      <tr><td>Kugel-Elastizität</td><td>Energie-Erhalt bei Kugel-Kugel-Kontakt</td></tr>
+    </table>
+  </div>
+  <p>Individuelle Einstellungen können als <strong>Preset</strong> gespeichert und später wieder geladen werden. Presets werden lokal im Browser gespeichert.</p>
+
+  <h3 id="s8-3">8.3 Shot-Timer</h3>
+  <p>Bei aktiviertem Shot-Timer erscheint während des Zuges eine Zeitanzeige im Scoreboard. Läuft die Zeit ab, kann der Zug des aktiven Spielers erzwungen werden. Der Timer kann mit dem Button <strong>⏱ +30s</strong> in der unteren Leiste einmalig verlängert werden.</p>
+
+  <h3 id="s8-4">8.4 Sound</h3>
+  <p>Der Sound-Button (<strong>♪</strong>) in der unteren Leiste schaltet alle Spielgeräusche ein oder aus. Einstellbar auch vor dem Spiel im Startmenü.</p>
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+<!-- ─── 9. Vollbild & Mobile ─── -->
+<section class="section" id="s9">
+  <h2><span class="num">9</span> Vollbild &amp; Mobile</h2>
+  <p>Auf Bildschirmen ≤ 820 px Breite erscheint der <strong>⛶-Button</strong> (Vollbild) in der unteren Leiste. Er schaltet in den mobilen Vollbildmodus:</p>
+  <ul>
+    <li>Das Spielfeld nimmt den gesamten Bildschirm ein.</li>
+    <li>Ein <strong>▶ Spielen</strong>-Button erscheint unten rechts neben dem ⛶-Button und wechselt zwischen <em>Zuschauer-Layout</em> (nur Spielfeld) und <em>Spieler-Layout</em> (Steuerungsleiste am unteren Rand sichtbar).</li>
+    <li>Im Spieler-Layout sind Aim-Buttons, Power-Slider und Stoß-Button als transparente Overlay-Leiste eingeblendet.</li>
+  </ul>
+  <div class="tip">
+    <strong>💡 Tipp für Zuschauer</strong>
+    Auch im Zuschauer-Modus (Online) steht der Vollbildmodus zur Verfügung. Das Steuerungspanel ist dabei standardmäßig ausgeblendet – maximale Sicht aufs Spielfeld. Details zum Vollbild-Overlay und dem ▶/👁-Toggle → <a href="#s7-4">Kapitel 7.4</a>.
+  </div>
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+<!-- ─── 10. Tastenkürzel ─── -->
+<section class="section" id="s10">
+  <h2><span class="num">10</span> Tastenkürzel</h2>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Taste</th><th>Funktion</th></tr>
+      <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>Ziel fein nach links / rechts drehen</td></tr>
+      <tr><td><kbd>Shift</kbd>+<kbd>←</kbd> / <kbd>Shift</kbd>+<kbd>→</kbd></td><td>Ziel sehr fein justieren (Mikro)</td></tr>
+      <tr><td><kbd>Space</kbd></td><td>Stoß ausführen</td></tr>
+      <tr><td><kbd>M</kbd></td><td>Zurück zum Hauptmenü</td></tr>
+      <tr><td>RMB halten + ziehen</td><td>Power einstellen (Loslassen = Schießen)</td></tr>
+      <tr><td>LMB halten + ziehen (Spielfeld)</td><td>Zielrichtung einstellen</td></tr>
+      <tr><td>LMB halten + ziehen (Ball-in-Hand)</td><td>Weiße positionieren</td></tr>
+    </table>
+  </div>
+  <a href="#" class="back">↑ Nach oben</a>
+</section>
+
+</main>
+</div>
+
+<footer>
+  PBC Erding Pool – Spielanleitung &nbsp;|&nbsp; Stand: 2025 &nbsp;|&nbsp;
+  <a href="index.html" class="footer-link">→ Zur App</a>
+</footer>
+
+</body>
+</html>
