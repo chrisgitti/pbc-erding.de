@@ -702,7 +702,15 @@
             font-size: 0.84rem; font-weight: 600; color: var(--ink);
         }
         .online_verlassen_bar {
-            display: none; justify-content: flex-end; padding-top: 4px;
+            display: none; justify-content: space-between; align-items: center; padding-top: 4px;
+        }
+        .online_bar_score {
+            display: flex; align-items: baseline; gap: 5px;
+            font-family: "Oswald", sans-serif; font-weight: 600; color: var(--gold-light);
+            font-size: 1.2rem; letter-spacing: 0.04em;
+        }
+        .online_bar_score_lbl {
+            font-size: 0.60rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.10em; font-weight: 400;
         }
         .btn_online_verlassen {
             background: none; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px;
@@ -715,8 +723,10 @@
         .online_overlay {
             position: fixed; inset: 0; z-index: 100;
             background: rgba(5,5,5,0.90); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-            display: flex; align-items: center; justify-content: center; padding: 20px;
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 20px; overflow-y: auto;
         }
+        .online_panel { max-height: calc(100dvh - 40px); overflow-y: auto; margin: auto; }
         .op_fehler {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
             width: calc(100% - 40px); max-width: 460px; z-index: 101;
@@ -955,6 +965,10 @@
         <div class="live_score_items" id="live_score_inhalt"></div>
     </div>
     <div class="online_verlassen_bar" id="online_verlassen_bar">
+        <div class="online_bar_score">
+            <span id="online_bar_score_val">0</span>
+            <span class="online_bar_score_lbl">Pkt.</span>
+        </div>
         <button class="btn_online_verlassen" onclick="online_beenden()">✕ Verlassen</button>
     </div>
     </div>
@@ -1023,7 +1037,7 @@
         <div class="op_rangliste" id="op_rangliste_inhalt"></div>
         <p style="color:var(--muted);font-size:0.75rem;text-align:center;margin-top:4px">Punkte: 1.000 Basis + bis zu 500 Schnelligkeitsbonus pro richtiger Antwort</p>
         <div class="op_btn_group">
-            <button class="op_btn op_btn_secondary" onclick="op_neustart()">Nochmal</button>
+            <button class="op_btn op_btn_primary" onclick="op_neustart()">Nochmal</button>
             <button class="op_btn op_btn_primary" onclick="online_beenden()">Beenden</button>
         </div>
     </div>
@@ -1648,6 +1662,7 @@
             if (index === 0) {
                 online_eigene_punkte = 0;
                 document.getElementById('score_wert').textContent = '0';
+                document.getElementById('online_bar_score_val').textContent = '0';
                 document.getElementById('score_label').textContent = 'Punkte';
             }
             aktueller_modus = modus;
@@ -1685,6 +1700,7 @@
             if (korrekt) {
                 online_eigene_punkte += punkte;
                 document.getElementById('score_wert').textContent = online_eigene_punkte.toLocaleString('de-DE');
+                document.getElementById('online_bar_score_val').textContent = online_eigene_punkte.toLocaleString('de-DE');
             }
             const status_text = korrekt
                 ? `Richtig! +${punkte.toLocaleString('de-DE')} Pkt.`
@@ -1859,6 +1875,7 @@
     function op_neustart() {
         online_eigene_punkte = 0;
         document.getElementById('score_wert').textContent = '0';
+        document.getElementById('online_bar_score_val').textContent = '0';
         document.getElementById('online_overlay').style.display = 'flex';
         op_zeige(online_ist_host ? 'op_host_warten' : 'op_gast_warten');
     }
@@ -1898,6 +1915,7 @@
         document.getElementById('sel_quelle').value = 'lokal';
         online_eigene_punkte = 0;
         document.getElementById('score_wert').textContent = '0';
+        document.getElementById('online_bar_score_val').textContent = '0';
         document.getElementById('score_label').textContent = 'Richtig';
     }
 
