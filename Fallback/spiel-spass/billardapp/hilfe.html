@@ -987,24 +987,28 @@
   <h3 id="s7-6">7.6 Verbindungsabbruch &amp; Rematch</h3>
 
   <h4>Verbindungsabbruch</h4>
-  <p>Trennt sich während einer Partie die Verbindung eines Spielers (Browser-Tab geschlossen, Netzwerkausfall, Zurück-zum-Menü), erscheint beim verbliebenen Spieler ein <strong>Verbindungs-getrennt-Dialog</strong>:</p>
+  <p>Trennt sich während einer Partie die Verbindung eines Spielers (Browser-Tab geschlossen, Netzwerkausfall), erscheint beim verbliebenen Spieler ein <strong>Verbindungs-getrennt-Dialog</strong> mit drei Optionen:</p>
   <ul>
-    <li>Überschrift: <em>„Verbindung getrennt"</em></li>
-    <li>Meldung: <em>„Dein Gegner hat das Spiel verlassen."</em></li>
-    <li>Button: <strong>← Zurück zum Menü</strong> – kehrt ins Startmenü zurück</li>
+    <li><strong>↻ Verbindung wiederherstellen</strong> – verbindet automatisch mit dem bestehenden Raum wieder. Der Raum bleibt für bis zu 2 Minuten offen. Nach dem Wiederverbinden überträgt der verbliebene Spieler automatisch den aktuellen Spielzustand; die Partie wird nahtlos fortgesetzt.</li>
+    <li><strong>⟳ Spiel synchronisieren</strong> – fordert beim Gegner einen Snapshot des aktuellen Spielzustands an, ohne die Verbindung zu trennen. Nützlich bei eingefrorener Oberfläche oder ausbleibendem Zug.</li>
+    <li><strong>← Zurück zum Menü</strong> – beendet das Online-Spiel und kehrt ins Startmenü zurück.</li>
   </ul>
+  <div class="tip">
+    <strong>💡 Wiederverbinden innerhalb von 2 Minuten</strong>
+    Der Raum wird nach einem Verbindungsabbruch 2 Minuten lang offen gehalten. Kehren beide Spieler innerhalb dieser Zeit zurück, wird der Spielzustand vollständig wiederhergestellt. Wer zuerst wiederverbindet, sendet dem anderen beim Beitreten automatisch einen aktuellen Snapshot.
+  </div>
   <p>Beim Zuschauer wird bei Verbindungsabbruch das Zuschauer-Badge automatisch ausgeblendet und der normale Spielzustand wiederhergestellt.</p>
   <div class="warn">
-    <strong>⚠ Kein automatischer Reconnect</strong>
-    Es gibt keine automatische Wiederverbindung. Nach einem Abbruch muss ein neues Spiel gestartet werden, indem beide Spieler einen neuen Raum erstellen und beitreten.
+    <strong>⚠ Nach mehr als 2 Minuten</strong>
+    Kehrt ein Spieler erst nach Ablauf der 2-Minuten-Frist zurück, ist der Raum gelöscht. Es muss ein neues Spiel mit neuem Raumcode gestartet werden.
   </div>
 
   <h4>Rematch (Nochmal spielen)</h4>
-  <p>Am Ende eines Spiels erscheint der End-Bildschirm mit Gewinner und Match-Stand. Beide Spieler können ein <strong>Rematch</strong> anfordern:</p>
+  <p>Am Ende eines Spiels erscheint der End-Bildschirm mit Gewinner und Match-Stand. Der <strong>Gastgeber</strong> startet das nächste Spiel:</p>
   <ol class="steps">
-    <li>Der aktive Spieler klickt auf <strong>Nochmal</strong> (gleiches Match, nächster Satz) oder <strong>Neues Match</strong> (Match-Stand zurücksetzen).</li>
-    <li>Die Anfrage wird dem Gegner übermittelt; dieser sieht ebenfalls den End-Bildschirm und bestätigt mit <strong>Nochmal</strong>.</li>
-    <li>Der Gastgeber überträgt die Spieleinstellungen erneut – das nächste Spiel beginnt automatisch.</li>
+    <li>Der Gastgeber klickt auf <strong>Revanche</strong> (gleiches Match, nächster Satz) oder <strong>Nächstes Spiel</strong> (neues Match, Stand zurücksetzen).</li>
+    <li>Der vollständige neue Spielzustand – Ballpositionen, Match-Stand, Break-Spieler und alle Einstellungen – wird automatisch an den Gast übertragen.</li>
+    <li>Beide Spieler landen ohne weitere Bestätigung direkt im neuen Spiel.</li>
   </ol>
   <div class="tip">
     <strong>💡 Break-Regel beim Rematch</strong>
