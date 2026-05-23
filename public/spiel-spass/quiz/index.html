@@ -793,6 +793,25 @@
 
             .control_dock { grid-template-columns: 1fr; }
         }
+
+        .op_reconnect_overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+        }
+        .op_reconnect_box {
+            background: var(--card); border: 1px solid var(--gold-mid);
+            border-radius: 1rem; padding: 2rem 2.5rem; text-align: center;
+            display: flex; flex-direction: column; gap: 0.75rem; max-width: 320px;
+        }
+        .op_reconnect_spinner {
+            width: 36px; height: 36px; border: 3px solid var(--muted);
+            border-top-color: var(--gold); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto;
+            will-change: transform;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .op_reconnect_text { color: var(--ink); font-weight: 600; font-size: 1rem; }
+        .op_reconnect_hint { color: var(--ink-dim); font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -1004,6 +1023,14 @@
             <button class="op_btn op_btn_secondary" onclick="op_neustart()">Nochmal</button>
             <button class="op_btn op_btn_primary" onclick="online_beenden()">Beenden</button>
         </div>
+    </div>
+</div>
+
+<div class="op_reconnect_overlay" id="op_reconnect_overlay" style="display:none">
+    <div class="op_reconnect_box">
+        <div class="op_reconnect_spinner"></div>
+        <div class="op_reconnect_text" id="op_reconnect_text">Verbindung unterbrochen…</div>
+        <div class="op_reconnect_hint" id="op_reconnect_hint"></div>
     </div>
 </div>
 
@@ -1529,6 +1556,8 @@
     let socket_online = null;
     let online_ist_host = false;
     let online_eigene_punkte = 0;
+    let quiz_session_name = '';
+    let quiz_session_code = '';
 
     function op_zeige(panel_id) {
         ['op_start','op_host_erstellen','op_host_warten','op_gast_beitreten','op_gast_warten','op_rangliste']
@@ -1569,7 +1598,7 @@
             });
         }
         await new Promise((resolve, reject) => {
-            socket_online = window.io(ONLINE_SERVER_URL, { transports: ['websocket'], reconnectionAttempts: 3, timeout: 8000 });
+            socket_online = window.io(ONLINE_SERVER_URL, { transports: ['websocket'], reconnectionAttempts: 10, reconnectionDelay: 1000, reconnectionDelayMax: 5000, timeout: 10000 });
             registriere_socket_events();
             socket_online.once('connect', resolve);
             socket_online.once('connect_error', (err) => {
@@ -1581,10 +1610,16 @@
 
     function registriere_socket_events() {
         socket_online.on('raum_erstellt', ({ code }) => {
+            quiz_session_code = code;
+            localStorage.setItem('quiz_session_code', code);
+            localStorage.setItem('quiz_session_name', quiz_session_name);
             document.getElementById('op_raum_code').textContent = code;
             op_zeige('op_host_warten');
         });
         socket_online.on('raum_beigetreten', ({ code, modus }) => {
+            quiz_session_code = code;
+            localStorage.setItem('quiz_session_code', code);
+            localStorage.setItem('quiz_session_name', quiz_session_name);
             aktueller_modus = modus;
             document.getElementById('sel_modus').value = modus;
             konfiguriere_antwort_buttons();
@@ -1708,10 +1743,34 @@
                 btn.disabled = false; btn.textContent = 'Spiel starten';
             }
         });
+        socket_online.on('disconnect', (reason) => {
+            if (reason === 'io client disconnect') return;
+            document.getElementById('op_reconnect_overlay').style.display = 'flex';
+            document.getElementById('op_reconnect_text').textContent = 'Verbindung unterbrochen…';
+            document.getElementById('op_reconnect_hint').textContent = 'Versuche neu zu verbinden…';
+        });
+        socket_online.on('reconnect_attempt', (attempt) => {
+            document.getElementById('op_reconnect_hint').textContent = `Versuch ${attempt} von 10…`;
+        });
+        socket_online.on('reconnect', () => {
+            document.getElementById('op_reconnect_overlay').style.display = 'none';
+        });
+        socket_online.on('reconnect_failed', () => {
+            document.getElementById('op_reconnect_overlay').style.display = 'none';
+            const savedCode = localStorage.getItem('quiz_session_code');
+            const savedName = localStorage.getItem('quiz_session_name');
+            if (savedCode && savedName) {
+                online_zeige_fehler(`Verbindung fehlgeschlagen. Raum-Code: ${savedCode} – Seite neu laden und Raum beitreten.`);
+            } else {
+                online_zeige_fehler('Verbindung fehlgeschlagen. Bitte Seite neu laden.');
+            }
+            online_beenden_still();
+        });
     }
 
     async function op_host_erstellen() {
         const name = document.getElementById('op_host_name').value.trim() || 'Host';
+        quiz_session_name = name;
         online_ist_host = true;
         try {
             await online_verbinden();
@@ -1723,6 +1782,7 @@
         const code = document.getElementById('op_gast_code').value.trim().toUpperCase();
         const name = document.getElementById('op_gast_name').value.trim() || 'Gast';
         if (code.length !== 6) { online_zeige_fehler('Bitte einen 6-stelligen Code eingeben.'); return; }
+        quiz_session_name = name;
         online_ist_host = false;
         try {
             await online_verbinden();
@@ -1801,6 +1861,11 @@
 
     function online_beenden_still() {
         if (socket_online) { socket_online.disconnect(); socket_online = null; }
+        localStorage.removeItem('quiz_session_code');
+        localStorage.removeItem('quiz_session_name');
+        quiz_session_code = '';
+        quiz_session_name = '';
+        document.getElementById('op_reconnect_overlay').style.display = 'none';
         document.getElementById('online_overlay').style.display = 'none';
         document.getElementById('live_score_panel').style.display = 'none';
         document.getElementById('timer_row').style.display = 'none';
