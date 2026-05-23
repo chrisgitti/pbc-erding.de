@@ -1456,7 +1456,9 @@
 <div id="onlineDisconnect">
   <div class="card">
     <h2>Verbindung getrennt</h2>
-    <p>Dein Gegner hat das Spiel verlassen.</p>
+    <p id="disconnectMsg">Dein Gegner hat das Spiel verlassen.</p>
+    <button class="primary" id="btnReconnectOnline">↻ Verbindung wiederherstellen</button>
+    <button id="btnRequestOnlineSync">⟳ Spiel synchronisieren</button>
     <button id="btnDisconnectBack">← Zurück zum Menü</button>
   </div>
 </div>
@@ -1648,9 +1650,25 @@ const game = {
   nextBreakPlayer: 0,
 };
 
-const online = { ws: null, role: null, myPlayer: 0, connected: false, waitingForSync: false };
+const online = {
+  ws: null, role: null, myPlayer: 0, connected: false,
+  waitingForSync: false,
+  code: null, name: null, reconnecting: false,
+};
 const _onlineShotQueue = [];
 const _pendingSyncs = [];
+let _syncWatchdog = null;
+
+function scheduleSyncWatchdog() {
+  clearTimeout(_syncWatchdog);
+  _syncWatchdog = setTimeout(() => {
+    if (online.waitingForSync && _pendingSyncs.length > 0) {
+      online.waitingForSync = false;
+      game.shotInProgress   = false;
+      applyOnlineSync(_pendingSyncs.shift());
+    }
+  }, 2500);
+}
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
@@ -6492,8 +6510,11 @@ ui.endRestart.addEventListener("click", () => {
   if (isNewMatch) { game.matchScore = [0, 0]; game.nextBreakPlayer = 0; }
   if (game.mode === "online" && online.ws?.readyState === WebSocket.OPEN) {
     online.ws.send(JSON.stringify({ type: "rematch", newMatch: isNewMatch }));
+    newGame();
+    online.ws.send(JSON.stringify(buildOnlineStateMessage("settings")));
+  } else {
+    newGame();
   }
-  newGame();
 });
 ui.endMenu.addEventListener("click", () => { ui.endScreen.classList.remove("show"); showMenu(); });
 
@@ -6981,6 +7002,12 @@ function connectRelay(onOpen, _retries) {
     if (game.mode === "online" && online.connected) {
       online.connected = false;
       ui.endScreen.classList.remove("show");
+      const canRejoin = !!(online.code && online.role);
+      document.getElementById("btnReconnectOnline").style.display = canRejoin ? "" : "none";
+      document.getElementById("btnRequestOnlineSync").style.display = "none";
+      document.getElementById("disconnectMsg").textContent = canRejoin
+        ? "Verbindung verloren. Du kannst innerhalb von 2 Minuten wieder beitreten."
+        : "Dein Gegner hat das Spiel verlassen.";
       uiOnline.disconnect.style.display = "flex";
     }
   };
@@ -6991,28 +7018,26 @@ function handleRelayMessage(msg) {
     case "created":
       online.role = "host";
       online.myPlayer = 0;
+      online.code = msg.code;
+      online.name = (uiOnline.name.value.trim()) || "Spieler 1";
       uiOnline.codeDisplay.textContent = msg.code;
+      saveOnlineSession();
       break;
     case "start": {
       online.connected = true;
       if (!online.role) { online.role = "guest"; online.myPlayer = 1; }
+      if (msg.code) online.code = msg.code;
       const myName = (uiOnline.name.value.trim()) || (online.role === "host" ? "Spieler 1" : "Spieler 2");
+      online.name = myName;
       const oppName = msg.opponentName || (online.role === "host" ? "Spieler 2" : "Spieler 1");
       game.players[online.myPlayer].name = myName;
       game.players[1 - online.myPlayer].name = oppName;
       uiOnline.lobby.style.display = "none";
       hideMenu();
+      saveOnlineSession();
       if (online.role === "host") {
         newGame();
-        online.ws.send(JSON.stringify({
-          type: "settings",
-          variant:    game.variant,
-          rack9:      game.rack9,
-          miniCount8: game.miniCount8,
-          miniCount9: game.miniCount9,
-          setsTarget: game.setsTarget,
-          breakRule:  game.breakRule,
-        }));
+        online.ws.send(JSON.stringify(buildOnlineStateMessage("settings")));
         updateUI();
       }
       // Gast wartet auf "settings"-Nachricht bevor newGame() aufgerufen wird
@@ -7040,8 +7065,15 @@ function handleRelayMessage(msg) {
       break;
     case "sync":
       if (game.mode === "online") {
-        if (online.waitingForSync || _pendingSyncs.length > 0) {
+        if (msg.state === "ended" || msg.currentPlayer === online.myPlayer) {
+          clearTimeout(_syncWatchdog);
+          _pendingSyncs.length = 0;
+          online.waitingForSync = false;
+          game.shotInProgress   = false;
+          applyOnlineSync(msg);
+        } else if (online.waitingForSync || _pendingSyncs.length > 0) {
           _pendingSyncs.push(msg);
+          scheduleSyncWatchdog();
         } else {
           applyOnlineSync(msg);
         }
@@ -7049,23 +7081,9 @@ function handleRelayMessage(msg) {
       break;
     case "rematch":
       if (game.mode === "online" && online.connected) {
+        // Gast: Endscreen ausblenden, dann auf "settings" warten – kein lokales newGame()
         ui.endScreen.classList.remove("show");
         _scoreUpdated = false;
-        if (msg.newMatch) { game.matchScore = [0, 0]; game.nextBreakPlayer = 0; }
-        if (online.role === "host") {
-          newGame();
-          online.ws.send(JSON.stringify({
-            type: "settings",
-            variant:    game.variant,
-            rack9:      game.rack9,
-            miniCount8: game.miniCount8,
-            miniCount9: game.miniCount9,
-            setsTarget: game.setsTarget,
-            breakRule:  game.breakRule,
-          }));
-          updateUI();
-        }
-        // Gast startet das Spiel erst nach "settings"-Nachricht
       }
       break;
     case "spectating":
@@ -7079,24 +7097,7 @@ function handleRelayMessage(msg) {
       break;
     case "spectator_joined":
       if (online.role !== "host") break;
-      online.ws.send(JSON.stringify({
-        type: "snapshot",
-        variant:    game.variant,
-        rack9:      game.rack9,
-        miniCount8: game.miniCount8,
-        miniCount9: game.miniCount9,
-        balls:      game.balls.map(b => ({ num: b.num, inPlay: b.inPlay, x: b.x, y: b.y })),
-        currentPlayer: game.currentPlayer,
-        p0group: game.players[0].group,  p1group: game.players[1].group,
-        p0potted: [...game.players[0].potted],  p1potted: [...game.players[1].potted],
-        open8ball: game.open8ball,  ballInHand: game.ballInHand,
-        placingCue: false,  kitchenOnly: game.kitchenOnly,
-        isBreakShot: game.isBreakShot,  foulMessage: game.foulMessage || "",
-        called8Pocket: game.called8Pocket,  pushOutAvailable: game.pushOutAvailable,
-        inPushOut: game.inPushOut,  awaitingPushOutDecision: game.awaitingPushOutDecision,
-        state: game.state,  endMessage: game.endMessage || "",
-        p0name: game.players[0].name,  p1name: game.players[1].name,
-      }));
+      online.ws.send(JSON.stringify(buildOnlineStateMessage("snapshot")));
       break;
     case "snapshot":
       game.variant    = msg.variant;
@@ -7143,7 +7144,26 @@ function handleRelayMessage(msg) {
         game.mode = "hotseat";
         showMenu();
       } else {
+        document.getElementById("btnReconnectOnline").style.display = "none";
+        document.getElementById("btnRequestOnlineSync").style.display = "none";
+        document.getElementById("disconnectMsg").textContent = "Dein Gegner hat das Spiel verlassen.";
         uiOnline.disconnect.style.display = "flex";
+      }
+      break;
+    case "rejoined":
+      online.role = msg.role;
+      online.myPlayer = msg.role === "host" ? 0 : 1;
+      online.code = msg.code;
+      online.connected = true;
+      online.reconnecting = false;
+      uiOnline.disconnect.style.display = "none";
+      saveOnlineSession();
+      // Der Gegenspieler sendet gleich einen Snapshot via opponent_reconnected
+      break;
+    case "opponent_reconnected":
+    case "snapshot_request":
+      if (game.mode === "online" && online.connected && online.role !== "spectator") {
+        online.ws.send(JSON.stringify(buildOnlineStateMessage("snapshot")));
       }
       break;
     case "error":
@@ -7218,21 +7238,35 @@ function applyOnlineSync(msg) {
   game.awaitingPushOutDecision = msg.awaitingPushOutDecision;
   game.state            = msg.state;
   game.endMessage       = msg.endMessage;
-  if (msg.winner !== undefined && msg.winner !== null) game.winner = msg.winner;
+  game.winner = msg.winner ?? null;
   if (msg.matchScore) game.matchScore = [...msg.matchScore];
   if (msg.nextBreakPlayer !== undefined) game.nextBreakPlayer = msg.nextBreakPlayer;
   if (msg.cueType !== undefined) game.cueType = msg.cueType;
   syncCueSelectorToShotState();
+  // Alle blockierenden Flags bereinigen
   game.aimActive        = false;
+  game.shotInProgress   = false;
+  game.aiThinking       = false;
+  game.aiPlanning       = false;
+  game.aiPlanToken++;
+  online.waitingForSync = false;
+  cueDragging = false; lmbDragging = false; rmbDragging = false; rmbStart = null;
+  if (typeof stopShotTimer === "function") stopShotTimer();
   if (msg.state === "ended") { updateUI(); showEndScreen(); return; }
   tryDequeueOnlineShot();
   updateUI();
 }
 
-function sendOnlineSync() {
-  if (!online.ws || online.ws.readyState !== WebSocket.OPEN) return;
-  online.ws.send(JSON.stringify({
-    type: "sync",
+function buildOnlineStateMessage(type = "sync") {
+  return {
+    type,
+    variant: game.variant,
+    rack9: game.rack9,
+    miniCount8: game.miniCount8,
+    miniCount9: game.miniCount9,
+    setsTarget: game.setsTarget,
+    breakRule: game.breakRule,
+    shotTimerEnabled: game.shotTimerEnabled,
     balls: game.balls.map(b => ({ num: b.num, inPlay: b.inPlay, x: b.x, y: b.y })),
     currentPlayer: game.currentPlayer,
     p0group: game.players[0].group,
@@ -7255,7 +7289,30 @@ function sendOnlineSync() {
     matchScore: [...game.matchScore],
     nextBreakPlayer: game.nextBreakPlayer,
     cueType: game.cueType,
-  }));
+    p0name: game.players[0].name,
+    p1name: game.players[1].name,
+  };
+}
+
+function saveOnlineSession() {
+  try {
+    localStorage.setItem("pbcOnlineSession", JSON.stringify({
+      code: online.code, role: online.role, name: online.name, ts: Date.now(),
+    }));
+  } catch (_) {}
+}
+
+function loadOnlineSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem("pbcOnlineSession") || "null");
+    if (s && Date.now() - s.ts < 10 * 60_000) return s;
+  } catch (_) {}
+  return null;
+}
+
+function sendOnlineSync() {
+  if (!online.ws || online.ws.readyState !== WebSocket.OPEN) return;
+  online.ws.send(JSON.stringify(buildOnlineStateMessage("sync")));
 }
 
 function sendPreview() {
@@ -7347,6 +7404,25 @@ document.getElementById("btnSpectatorLeave").addEventListener("click", () => {
 });
 
 uiOnline.btnBack.addEventListener("click", closeLobby);
+
+function tryReconnect() {
+  if (!online.code || !online.role) { openLobby(); return; }
+  uiOnline.disconnect.style.display = "none";
+  online.reconnecting = true;
+  const name = online.name || "Spieler";
+  connectRelay(() => {
+    online.ws.send(JSON.stringify({ type: "rejoin", code: online.code, role: online.role, name }));
+  });
+}
+
+function requestOnlineSync() {
+  if (!online.ws || online.ws.readyState !== WebSocket.OPEN) { tryReconnect(); return; }
+  online.ws.send(JSON.stringify({ type: "snapshot_request" }));
+  uiOnline.disconnect.style.display = "none";
+}
+
+document.getElementById("btnReconnectOnline").addEventListener("click", tryReconnect);
+document.getElementById("btnRequestOnlineSync").addEventListener("click", requestOnlineSync);
 
 uiOnline.btnDisBack.addEventListener("click", () => {
   uiOnline.disconnect.style.display = "none";
