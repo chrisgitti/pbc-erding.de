@@ -675,7 +675,10 @@
   #roomCodeDisplay {
     font-family: "Bebas Neue", monospace; font-size: 52px;
     color: var(--gold-500); text-align: center; letter-spacing: 0.2em;
+    cursor: pointer; user-select: none; transition: color 0.15s;
   }
+  #roomCodeDisplay:hover { color: var(--gold-400); }
+  #copyHint { font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 2px; }
   #lobbyWaiting p { color: rgba(255,255,255,0.7); text-align: center; font-size: 13px; margin: 2px 0; }
   #lobbyError { color: #e74c3c; font-size: 13px; text-align: center; }
   #onlineDisconnect {
@@ -1446,6 +1449,7 @@
     <div id="lobbyWaiting" style="display:none;">
       <p>Dein Raum-Code:</p>
       <div id="roomCodeDisplay">------</div>
+      <div id="copyHint">antippen zum Kopieren</div>
       <p>Teile diesen Code mit deinem Gegner.</p>
       <p style="font-size:11px;color:rgba(255,255,255,0.4);">Warte auf Verbindung…</p>
     </div>
@@ -6731,9 +6735,11 @@ function updateUI() {
   let modeText = "";
   if (game.mode === "hotseat") modeText = "Hot-Seat";
   else if (game.mode === "ai") { const diffLabel = { easy: "Anfänger", medium: "Fortgeschrittener", hard: "Profi" }[game.difficulty] ?? game.difficulty; modeText = "vs KI (" + diffLabel + ")"; }
-  else if (game.mode === "online") modeText = online.code ? `Online · ${online.code}` : "Online";
+  else if (game.mode === "online") { modeText = online.code ? `Online · ${online.code}` : "Online"; }
   else modeText = "Solo / Übung";
   ui.modeTag.textContent = game.variant === "drill15" ? "15-Kugeln Drill" : game.variant === "basis" ? "Basisübung" : `${variant} · ${modeText}`;
+  ui.modeTag.style.cursor = (game.mode === "online" && online.code) ? "pointer" : "";
+  ui.modeTag.title = (game.mode === "online" && online.code) ? "Antippen zum Kopieren" : "";
   if (game.mode === "ai") { game.players[0].name = "Du"; game.players[1].name = "KI"; }
   else if (game.mode === "solo") { game.players[0].name = "Übung"; game.players[1].name = "—"; }
   else if (game.mode === "online") { /* names set by lobby */ }
@@ -7463,6 +7469,34 @@ function requestOnlineSync() {
   online.ws.send(JSON.stringify({ type: "snapshot_request" }));
   uiOnline.disconnect.style.display = "none";
 }
+
+function copyRoomCode(feedbackEl) {
+  const code = online.code;
+  if (!code) return;
+  const showFeedback = (el, msg) => {
+    const orig = el.textContent;
+    el.textContent = msg;
+    setTimeout(() => { el.textContent = orig; }, 1500);
+  };
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(code).then(() => showFeedback(feedbackEl, "✓ Kopiert!")).catch(() => {});
+  } else {
+    // Fallback für ältere Browser / HTTP
+    const inp = document.createElement("input");
+    inp.value = code; inp.style.position = "fixed"; inp.style.opacity = "0";
+    document.body.appendChild(inp); inp.select();
+    try { document.execCommand("copy"); showFeedback(feedbackEl, "✓ Kopiert!"); } catch(_) {}
+    document.body.removeChild(inp);
+  }
+}
+
+document.getElementById("roomCodeDisplay").addEventListener("click", function() {
+  copyRoomCode(this);
+});
+
+ui.modeTag.addEventListener("click", () => {
+  if (game.mode === "online" && online.code) copyRoomCode(ui.modeTag);
+});
 
 document.getElementById("btnReconnectOnline").addEventListener("click", tryReconnect);
 document.getElementById("btnRequestOnlineSync").addEventListener("click", requestOnlineSync);
