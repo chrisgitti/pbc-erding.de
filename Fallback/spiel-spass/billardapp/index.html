@@ -2798,9 +2798,9 @@ function handle8BallShot() {
     if (foul) {
       game.foulMessage = "Foul beim Anstoß: " + foulReason;
       game.foulTimer = 240; game.ballInHand = true;
-      showRefAnnounce(foulReason, `Foul beim Anstoß: ${foulReason} – ${game.cuePotted ? "Weiße ins Kopffeld" : "Ball-in-Hand für den Gegner"}.`);
-      // WPA: Scratch beim Anstoß → Weiße nur im Kopffeld platzieren
-      if (game.cuePotted) game.kitchenOnly = true;
+      showRefAnnounce(foulReason, `Foul beim Anstoß: ${foulReason} – Weiße ins Kopffeld.`);
+      // WPA 8-Ball: Jedes Anstoß-Foul → Weiße nur im Kopffeld platzieren
+      game.kitchenOnly = true;
       game.currentPlayer = 1 - game.currentPlayer;
       if (!game.cuePotted) game.placingCue = true;
       return;
@@ -2809,9 +2809,10 @@ function handle8BallShot() {
     // WPA 6.3: mind. 4 Kugeln an Bande oder versenkt; bei Mini-Modus reduziert
     const minBC8 = game.miniCount8 > 0 ? Math.max(1, Math.floor(game.miniCount8 / 4)) : 4;
     if (!pottedAny && game.breakCushionBalls.size < minBC8) {
-      game.foulMessage = `Illegaler Anstoß: Nur ${game.breakCushionBalls.size} Kugel(n) an der Bande (mind. ${minBC8} nötig) – Ball-in-Hand`;
+      game.foulMessage = `Illegaler Anstoß: Nur ${game.breakCushionBalls.size} Kugel(n) an der Bande (mind. ${minBC8} nötig) – Weiße ins Kopffeld`;
       game.foulTimer = 300; game.ballInHand = true;
-      showRefAnnounce("Illegaler Anstoß", `Nur ${game.breakCushionBalls.size} Kugel(n) an der Bande – mind. ${minBC8} erforderlich.`);
+      showRefAnnounce("Illegaler Anstoß", `Nur ${game.breakCushionBalls.size} Kugel(n) an der Bande – mind. ${minBC8} erforderlich. Weiße ins Kopffeld.`);
+      game.kitchenOnly = true;
       game.currentPlayer = 1 - game.currentPlayer;
       game.placingCue = true;
       return;
@@ -6774,7 +6775,7 @@ function updateUI() {
     const pNames = ["oben-links","oben-mitte","oben-rechts","unten-links","unten-mitte","unten-rechts"];
     ui.statusLine.textContent = `${game.players[game.currentPlayer].name}: 8 → Tasche ${pNames[game.called8Pocket] || game.called8Pocket + 1}`;
   } else if (game.placingCue && game.kitchenOnly) {
-    ui.statusLine.textContent = "Anstoß: Weiße im Kopffeld platzieren (LMB-Klick)";
+    ui.statusLine.textContent = "Ball-in-Hand im Kopffeld: Weiße platzieren (LMB-Klick)";
   } else if (game.placingCue) {
     ui.statusLine.textContent = "Ball-in-Hand: Weiße per LMB-Klick platzieren";
   } else if (game.mode === "ai" && game.currentPlayer === 1) {
