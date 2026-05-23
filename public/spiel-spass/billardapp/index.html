@@ -7162,6 +7162,12 @@ function handleRelayMessage(msg) {
       // Der Gegenspieler sendet gleich einen Snapshot via opponent_reconnected
       break;
     case "opponent_reconnected":
+      if (game.mode === "online" && online.role !== "spectator") {
+        online.connected = true;
+        uiOnline.disconnect.style.display = "none";
+        online.ws.send(JSON.stringify(buildOnlineStateMessage("snapshot")));
+      }
+      break;
     case "snapshot_request":
       if (game.mode === "online" && online.connected && online.role !== "spectator") {
         online.ws.send(JSON.stringify(buildOnlineStateMessage("snapshot")));
