@@ -6534,11 +6534,25 @@ ui.endRestart.addEventListener("click", () => {
 ui.endMenu.addEventListener("click", () => { ui.endScreen.classList.remove("show"); showMenu(); });
 
 function showMenu() {
-  if (game.mode === "online" && online.ws) {
+  if (game.mode === "online") {
+    clearTimeout(_shotSafetyTimer);
+    _onlineShotQueue.length = 0;
+    _pendingSyncs.length = 0;
     online.connected = false;
-    online.ws.onclose = null;
-    online.ws.close();
-    online.ws = null;
+    online.role = null;
+    online.code = null;
+    online.reconnecting = false;
+    if (online.ws) {
+      online.ws.onclose   = null;
+      online.ws.onmessage = null;
+      online.ws.onerror   = null;
+      online.ws.close();
+      online.ws = null;
+    }
+    try { localStorage.removeItem("pbcOnlineSession"); } catch(_) {}
+    game.mode           = "hotseat";
+    game.shotInProgress = false;
+    game.state          = "aiming";
   }
   if (_fullscreen) {
     _fullscreen = false;
@@ -7159,8 +7173,7 @@ function handleRelayMessage(msg) {
         cp.style.pointerEvents = "";
         cp.querySelector(".aim-section").style.visibility = "";
         document.getElementById("btnShoot").style.visibility = "";
-        online.role = null; online.myPlayer = 0; online.ws = null;
-        game.mode = "hotseat";
+        online.myPlayer = 0;
         showMenu();
       } else {
         document.getElementById("btnReconnectOnline").style.display = "none";
@@ -7187,7 +7200,7 @@ function handleRelayMessage(msg) {
       }
       break;
     case "snapshot_request":
-      if (game.mode === "online" && online.connected && online.role !== "spectator") {
+      if (game.mode === "online" && online.role !== "spectator") {
         online.ws.send(JSON.stringify(buildOnlineStateMessage("snapshot")));
       }
       break;
@@ -7242,9 +7255,16 @@ function applyOnlineShot() {
 }
 
 function applyOnlineSync(msg) {
+  clearTimeout(_shotSafetyTimer);
+  _onlineShotQueue.length = 0;
+  _pendingSyncs.length = 0;
   for (const bd of msg.balls) {
     const b = game.balls.find(x => x.num === bd.num);
-    if (b) { b.x = bd.x; b.y = bd.y; b.inPlay = bd.inPlay; b.vx = 0; b.vy = 0; }
+    if (b) {
+      b.x = bd.x; b.y = bd.y; b.inPlay = bd.inPlay;
+      if (typeof b.resetMotion === "function") b.resetMotion();
+      else { b.vx = 0; b.vy = 0; b.vz = 0; b.z = 0; }
+    }
   }
   game.currentPlayer    = msg.currentPlayer;
   game.players[0].group = msg.p0group;
@@ -7261,7 +7281,7 @@ function applyOnlineSync(msg) {
   game.pushOutAvailable = msg.pushOutAvailable;
   game.inPushOut        = msg.inPushOut;
   game.awaitingPushOutDecision = msg.awaitingPushOutDecision;
-  game.state            = msg.state;
+  game.state            = msg.state === "ended" ? "ended" : "aiming";
   game.endMessage       = msg.endMessage;
   game.winner = msg.winner ?? null;
   if (msg.matchScore) game.matchScore = [...msg.matchScore];
@@ -7413,7 +7433,6 @@ uiOnline.btnJoinOk.addEventListener("click", () => {
 });
 
 document.getElementById("btnSpectatorLeave").addEventListener("click", () => {
-  if (online.ws) { online.ws.close(); online.ws = null; }
   canvas.style.pointerEvents = "";
   document.getElementById("spectatorBadge").style.display = "none";
   document.getElementById("bottomControls").style.visibility = "";
@@ -7423,8 +7442,7 @@ document.getElementById("btnSpectatorLeave").addEventListener("click", () => {
   cp.style.pointerEvents = "";
   cp.querySelector(".aim-section").style.visibility = "";
   document.getElementById("btnShoot").style.visibility = "";
-  online.role = null; online.myPlayer = 0; online.ws = null;
-  game.mode = "hotseat";
+  online.myPlayer = 0;
   showMenu();
 });
 
@@ -7449,6 +7467,9 @@ function requestOnlineSync() {
 document.getElementById("btnReconnectOnline").addEventListener("click", tryReconnect);
 document.getElementById("btnRequestOnlineSync").addEventListener("click", requestOnlineSync);
 document.getElementById("btnOnlineSync").addEventListener("click", () => {
+  clearTimeout(_shotSafetyTimer);
+  _onlineShotQueue.length = 0;
+  _pendingSyncs.length = 0;
   game.shotInProgress   = false;
   online.waitingForSync = false;
   cueDragging = false; lmbDragging = false; rmbDragging = false; rmbStart = null;
@@ -7458,8 +7479,6 @@ document.getElementById("btnOnlineSync").addEventListener("click", () => {
 
 uiOnline.btnDisBack.addEventListener("click", () => {
   uiOnline.disconnect.style.display = "none";
-  online.connected = false;
-  game.mode = "hotseat";
   showMenu();
 });
 
