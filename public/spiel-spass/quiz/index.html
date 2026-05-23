@@ -735,8 +735,11 @@
         .op_code_box {
             text-align: center; padding: 20px 12px;
             border: 1px solid rgba(212,160,23,0.22); border-radius: 12px; background: rgba(212,160,23,0.04);
+            cursor: pointer; transition: background 0.15s, border-color 0.15s; -webkit-user-select: none; user-select: none;
         }
-        .op_code_label { color: rgba(212,160,23,0.55); font-family:"Oswald",sans-serif; font-size: 0.60rem; font-weight:400; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 8px; }
+        .op_code_box:hover { background: rgba(212,160,23,0.09); border-color: rgba(212,160,23,0.45); }
+        .op_code_box:active { background: rgba(212,160,23,0.14); }
+        .op_code_label { color: rgba(212,160,23,0.55); font-family:"Oswald",sans-serif; font-size: 0.60rem; font-weight:400; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 8px; transition: color 0.2s; }
         .op_code { font-family:"Oswald",sans-serif; font-size: 2.8rem; font-weight: 600; letter-spacing: 0.20em; color: var(--gold-light); }
         .op_label { display: block; color: rgba(212,160,23,0.55); font-family:"Oswald",sans-serif; font-size: 0.60rem; font-weight:400; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; }
         .op_input {
@@ -984,8 +987,8 @@
 
     <div class="online_panel" id="op_host_warten" style="display:none">
         <h2 class="op_title">Warteraum</h2>
-        <div class="op_code_box">
-            <div class="op_code_label">Raumcode – weitergeben!</div>
+        <div class="op_code_box" onclick="raum_code_kopieren()">
+            <div class="op_code_label" id="op_code_label">Raumcode – Tippen zum Kopieren</div>
             <div class="op_code" id="op_raum_code">------</div>
         </div>
         <div class="op_spieler_liste" id="op_spieler_liste_host"></div>
@@ -1857,6 +1860,25 @@
         document.getElementById('score_wert').textContent = '0';
         document.getElementById('online_overlay').style.display = 'flex';
         op_zeige(online_ist_host ? 'op_host_warten' : 'op_gast_warten');
+    }
+
+    function raum_code_kopieren() {
+        const code = document.getElementById('op_raum_code').textContent.trim();
+        if (!code || code === '------') return;
+        const label = document.getElementById('op_code_label');
+        navigator.clipboard.writeText(code).then(() => {
+            label.textContent = '✓ Kopiert!';
+            label.style.color = 'var(--green)';
+            clearTimeout(label._t);
+            label._t = setTimeout(() => {
+                label.textContent = 'Raumcode – Tippen zum Kopieren';
+                label.style.color = '';
+            }, 2000);
+        }).catch(() => {
+            label.textContent = 'Kopieren fehlgeschlagen';
+            clearTimeout(label._t);
+            label._t = setTimeout(() => { label.textContent = 'Raumcode – Tippen zum Kopieren'; label.style.color = ''; }, 2000);
+        });
     }
 
     function online_beenden_still() {
