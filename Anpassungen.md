@@ -13,7 +13,7 @@ Dokumentiert alle wesentlichen Änderungen an der Next.js-Website des Pool Billa
 ---
 
 <details>
-<summary><strong>Website – Phasen 1–17</strong></summary>
+<summary><strong>Website – Phasen 1–20</strong></summary>
 
 ## Phase 1 – Vorstand-Feedback (Robert) zur Startseite
 
@@ -1075,6 +1075,118 @@ Ein seit Commit `56693a4` bestehender UTF-8-BOM- und Doppelkodierungsfehler füh
 
 ---
 
+## Phase 18 – Galerie, Sponsoren & Mittwochsturnier-Fixes (21. Mai 2026)
+
+Galerie, Unterstützer-Seite und Mittwochsturnier-Artikel wurden inhaltlich aktualisiert und mehrere Fehler behoben.
+
+### 18.1  Galerie – Spielerfotos und Zitate für spieler11–14
+
+**Dateien:** `public/images/galerie/`, `lib/data.ts`
+
+Vier neue Spieler wurden mit Fotos und Zitaten ergänzt. Vorhandene Fotos wurden durch qualitativ hochwertigere Versionen ersetzt.
+
+### 18.2  Mittwochsturnier-Datum – UTC-Offset-Fehler behoben
+
+**Datei:** `lib/turnier-utils.ts`
+
+`toISOString()` liefert UTC-Zeit; bei lokalen Uhrzeiten nach Mitternacht verschob sich das Datum um einen Tag. Umgestellt auf `getFullYear/getMonth/getDate` (lokale Zeit).
+
+### 18.3  Mittwochsturnier-Artikel – Publikationsdatum auf Build-Datum korrigiert
+
+**Datei:** `lib/data.ts`
+
+Das Publikationsdatum war fest kodiert; es wird nun zur Build-Zeit dynamisch gesetzt.
+
+### 18.4  Fallback-Galerie – spieler11–14 ergänzt
+
+**Datei:** `Fallback/galerie.html`
+
+Die Fallback-Seite wurde um die vier neuen Spieler synchron zur Next.js-Galerie erweitert.
+
+### 18.5  SponsorsSection – echte Logos statt Monogramme
+
+**Dateien:** `components/sections/SponsorsSection.tsx`, `public/images/logos/`
+
+Alle Sponsor-Logos wurden durch echte Bild-Assets ersetzt (zuvor Monogramm-Platzhalter).
+
+### 18.6  Unterstützer – Sponsor-Karten verlinkt, Bendl Investment ergänzt
+
+**Datei:** `lib/data.ts`
+
+Sponsor-Karten auf der Unterstützer-Seite erhalten jetzt direkte Website-Links. Bendl Investment wurde mit URL ergänzt.
+
+### 18.7  Auto Baumschlager – Website verlinkt
+
+**Datei:** `lib/data.ts`
+
+Auto Baumschlager als Förderer mit Website-URL ergänzt.
+
+---
+
+## Phase 19 – Billard-Aktuell-Logo, Quiz Vereinsvariante & Audio-Fixes (22.–23. Mai 2026)
+
+Der Quiz-Bereich wurde zur Vereinsvariante umgebaut (nur Billard-Themen) und mehrere Audio-Fehler behoben; zudem kleinere Inhalts-Updates.
+
+### 19.1  Billard-Aktuell – Logo hinzugefügt
+
+**Datei:** `lib/data.ts`
+
+Förderer Billard-Aktuell erhielt ein Sponsor-Logo.
+
+### 19.2  Links – Billard-Quiz unter Spiel & Spaß
+
+**Datei:** `lib/data.ts`
+
+Der Link zum Billard-Quiz wurde in der Links-Übersichtsseite unter der Gruppe „Spiel & Spaß" ergänzt.
+
+### 19.3  Galerie – Bildqualität verbessert
+
+**Datei:** `public/images/galerie/`
+
+Weitere Spielerfotos wurden durch qualitativ hochwertigere Versionen ersetzt.
+
+### 19.4  Quiz Vereinsvariante – nur Billard-Themen
+
+**Datei:** `public/spiel-spass/quiz/index.html`
+
+Open Trivia DB und nicht-Billard-Themen wurden entfernt. Der Quiz richtet sich jetzt ausschließlich an den Vereinskontext (Pool-Billard-Regelwerk, Vereinsgeschichte).
+
+### 19.5  Quiz – Audio-Fixes
+
+**Datei:** `public/spiel-spass/quiz/index.html`
+
+Zwei Fehler behoben: falscher relativer Audiopfad nach Deployment und Audio-Promise-Hang beim gleichzeitigen Abspielen. Standard-Einstellung auf „Ton aus" geändert.
+
+### 19.6  Quiz-Tool – Fragenverwaltung
+
+**Datei:** `public/spiel-spass/quiz/quiz-tool.html`
+
+Ein lokales Entwicklungstool zur Validierung und Erstellung von Quiz-Fragendateien wurde ergänzt.
+
+---
+
+## Phase 20 – Quiz Redesign & Online-Reconnect-Robustheit (23. Mai 2026)
+
+Das Billard-Quiz erhielt ein vollständiges Redesign im PBC-Erding-Farbschema und der Online-Modus wurde deutlich stabiler gemacht.
+
+### 20.1  Billard-Quiz – Redesign im PBC-Erding-Design
+
+**Dateien:** `public/spiel-spass/quiz/index.html`, `public/spiel-spass/quiz/logo_pbced.png`
+
+Das Quiz wurde im Gold/Dunkel-Farbschema der Website neu gestaltet (Design-Tokens: `--gold`, `--card`, `--ink`). Schriften gewechselt zu Oswald (Headlines) und Open Sans (Body). Das PBC-Erding-Logo wurde im Header ergänzt.
+
+### 20.2  Quiz Online-Modus – Reconnect-Robustheit
+
+**Datei:** `public/spiel-spass/quiz/index.html`
+
+Drei Stabilitätsverbesserungen analog zur Billard-App:
+
+- `reconnectionAttempts` von 3 auf 10 erhöht; Delay-Backoff 1–5 s, Timeout 10 s
+- Reconnect-UI: Overlay mit Spinner und Versuchszähler bei unerwarteten Disconnects
+- Session-Persistenz: Raum-Code und Spielername in `localStorage` gespeichert; bei Verbindungsabbruch wird der Code in der Fehlermeldung angezeigt
+
+---
+
 ## Architektur & Seitenstruktur (Stand: Mai 2026)
 
 ### Technologie-Stack
@@ -1261,7 +1373,7 @@ ohne Build-Prozess, für Pflege ohne Next.js-Kenntnisse.
 ---
 
 <details>
-<summary><strong>Billard App – Phasen 1–11</strong></summary>
+<summary><strong>Billard App – Phasen 1–13</strong></summary>
 
 ## Phase 1 – Proof of Concept einer PBC Erding Billard-App integriert (1. Mai 2026)
 
@@ -2423,6 +2535,102 @@ Foul mit Spielerwechsel und Ball-in-Hand. Vereinfachte Hausregel:
 - Hat der Spieler gleichzeitig eine eigene Kugel versenkt, darf er weiterspielen.
 - Hat der Spieler keine eigene Kugel versenkt, wechselt der Zug normal (ohne Ball-in-Hand).
 - Sonstige Fouls (Weiße eingelocht, keine Kugel getroffen usw.) gelten weiterhin.
+
+---
+
+## Phase 12 – Online-Stabilitätsverbesserungen & Fixes (23. Mai 2026)
+
+Der Online-Modus wurde in mehreren Punkten robuster gemacht: Reconnect-Logik, State-Synchronisation und diverse Anzeigefehler behoben.
+
+### 12.1  Safety-Timer + Sync-Button
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Wenn eine Bestätigung vom Server zu lange ausbleibt, verhindert ein Safety-Timer ein Einfrieren des Spiels. Ein manueller Sync-Button im Online-Modus ermöglicht das Abrufen des aktuellen Spielzustands.
+
+### 12.2  Online State-Reset + applyOnlineSync-Härtung
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Alle blockierenden State-Flags (`wasKitchenShot`, `firstHitInKitchen`) werden in `applyOnlineSync()` bei jedem Sync zurückgesetzt, um Desyncs zwischen den Clients zu verhindern.
+
+### 12.3  Queue-Wahl sofort an Zuschauer übertragen
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Die Auswahl eines Queue-Typs (Standard, Jump etc.) wird jetzt sofort per Online-Sync an Zuschauer gesendet, nicht erst beim nächsten Shot.
+
+### 12.4  Reconnect-Overlay bei Gast schließen
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Wenn der Gegner nach einem Verbindungsabbruch zurückkommt, schließt das Reconnect-Overlay beim Gast automatisch.
+
+### 12.5  Raumcode: kopierbar + im Scoreboard
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Der Raumcode im Wartebildschirm ist jetzt per Klick/Tap in die Zwischenablage kopierbar. Zusätzlich wird er dauerhaft im Scoreboard angezeigt.
+
+### 12.6  Online-Modus Bugfixes & Reconnect-Button
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Weitere Einzelfehler im Online-Modus behoben. Ein expliziter Reconnect-Button erlaubt das manuelle Wiederverbinden nach Verbindungsverlust.
+
+### 12.7  Hilfe – Online-Modus 7.6 aktualisiert
+
+**Datei:** `public/spiel-spass/billardapp/hilfe.html`
+
+Abschnitt 7.6 der Hilfe-Seite wurde mit den aktuellen Online-Modus-Funktionen ergänzt.
+
+### 12.8  Nach Menü Lobby anzeigen
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Nach dem Schließen des In-Game-Menüs wird jetzt korrekt zur Lobby zurückgekehrt (zuvor blieb das Spiel direkt aktiv).
+
+### 12.9  Break-Queue nach Aufnahme zurücksetzen
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Nach dem Anstoß wird die Queue-Auswahl auf die Standard-Spielqueue zurückgesetzt (zuvor blieb die Break-Queue aktiv).
+
+### 12.10  Effet/Winkel-Tab im Zuschauer-Modus synchronisiert
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Im Zuschauer-Modus werden Effet- und Winkel-Einstellungen korrekt angezeigt (zuvor nicht synchronisiert).
+
+---
+
+## Phase 13 – WPA-Regelkorrekturen Kopffeld (23. Mai 2026)
+
+Das Kopffeld-Regelwerk (WPA 8-Ball) wurde vollständig korrigiert und in der Hilfe-Seite dokumentiert.
+
+### 13.1  8-Ball Anstoß-Foul – immer Kopffeld
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Jedes Anstoß-Foul (Scratch, zu wenige Bandenkontakte, illegaler Anstoß) führt jetzt einheitlich zur Pflicht-Platzierung im Kopffeld. Zuvor war die Kopffeld-Pflicht nur beim Scratch aktiv.
+
+### 13.2  Kopffeld-Kugel-Foul beim 8-Ball
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Beim Spielen aus dem Kopffeld darf keine Kugel angestoßen werden, die vollständig im Kopffeld liegt. Dieser Regelfall war bisher nicht implementiert.
+
+### 13.3  Kopffeld-Foul via Kontaktpunkt
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Die Erkennung erfolgt jetzt über den exakten Ball-Kontaktpunkt statt der Kugelkante, sodass Kugeln, die nur leicht in den Kopfbereich hineinragen, korrekt behandelt werden.
+
+### 13.4  Kopffeld-Sonderregel in Hilfe dokumentiert
+
+**Datei:** `public/spiel-spass/billardapp/hilfe.html`
+
+Die „Kopffeld"-Sektion der Hilfe-Seite wurde um eine Erläuterung der WPA-Kontaktpunkt-Regel ergänzt.
 
 ---
 
