@@ -2488,8 +2488,8 @@ function step() {
           c.vx += (newVc - vc) * nx;
           c.vy += (newVc - vc) * ny;
           const strength = Math.abs(va - vc);
-          if (a.isCue && game.firstHit === null) { game.firstHit = c.num; if (game.wasKitchenShot) game.firstHitInKitchen = (c.x + c.r) <= PLAY_X1 + PLAY_W * 0.25; applySpinOnContact(a, nx, ny); }
-          else if (c.isCue && game.firstHit === null) { game.firstHit = a.num; if (game.wasKitchenShot) game.firstHitInKitchen = (a.x + a.r) <= PLAY_X1 + PLAY_W * 0.25; applySpinOnContact(c, -nx, -ny); }
+          if (a.isCue && game.firstHit === null) { game.firstHit = c.num; if (game.wasKitchenShot) game.firstHitInKitchen = (c.x - nx * c.r) < PLAY_X1 + PLAY_W * 0.25; applySpinOnContact(a, nx, ny); }
+          else if (c.isCue && game.firstHit === null) { game.firstHit = a.num; if (game.wasKitchenShot) game.firstHitInKitchen = (a.x + nx * a.r) < PLAY_X1 + PLAY_W * 0.25; applySpinOnContact(c, -nx, -ny); }
           else if (a.isCue && !game.spinPending.used) { applySpinOnContact(a, nx, ny); }
           else if (c.isCue && !game.spinPending.used) { applySpinOnContact(c, -nx, -ny); }
           if (strength > 0.5) soundBallClick(strength);
