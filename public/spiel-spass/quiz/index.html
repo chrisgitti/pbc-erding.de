@@ -1644,6 +1644,7 @@
             document.getElementById('live_score_panel').style.display = 'none';
             document.getElementById('online_verlassen_bar').style.display = 'flex';
             document.getElementById('timer_scale').style.display = '';
+            document.getElementById('btn_start').style.display = 'none';
             if (index === 0) {
                 online_eigene_punkte = 0;
                 document.getElementById('score_wert').textContent = '0';
@@ -1888,6 +1889,7 @@
         quiz_session_code = '';
         quiz_session_name = '';
         document.getElementById('op_reconnect_overlay').style.display = 'none';
+        document.getElementById('btn_start').style.display = '';
         document.getElementById('online_overlay').style.display = 'none';
         document.getElementById('live_score_panel').style.display = 'none';
         document.getElementById('timer_row').style.display = 'none';
