@@ -2613,6 +2613,14 @@ function syncCueSelectorToShotState() {
   updateCueTypeHint();
 }
 
+function syncSpinElevTab() {
+  const showWinkel = (game.cueElevation ?? 0) > 0;
+  document.getElementById("spinPad").style.display  = showWinkel ? "none" : "";
+  document.getElementById("elevPad").style.display  = showWinkel ? "" : "none";
+  document.getElementById("tabEffet").classList.toggle("active", !showWinkel);
+  document.getElementById("tabWinkel").classList.toggle("active",  showWinkel);
+}
+
 
 function startShot() {
   if (game.state !== "aiming" || game.shotInProgress) return;
@@ -7156,6 +7164,7 @@ function handleRelayMessage(msg) {
         game.spinY        = msg.spinY;
         if (msg.cueElevation !== undefined) game.cueElevation = msg.cueElevation;
         if (msg.cueType !== undefined) { game.cueType = msg.cueType; updateCueTypeHint(); }
+        syncSpinElevTab();
         if (msg.cbX !== undefined) game.cueBall.x = msg.cbX;
         if (msg.cbY !== undefined) game.cueBall.y = msg.cbY;
         updatePowerUI();
@@ -7293,6 +7302,7 @@ function applyOnlineSync(msg) {
   if (msg.nextBreakPlayer !== undefined) game.nextBreakPlayer = msg.nextBreakPlayer;
   if (msg.cueType !== undefined) game.cueType = msg.cueType;
   syncCueSelectorToShotState();
+  syncSpinElevTab();
   // Alle blockierenden Flags bereinigen
   game.aimActive        = false;
   game.shotInProgress   = false;
