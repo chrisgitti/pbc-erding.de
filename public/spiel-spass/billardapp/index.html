@@ -2662,7 +2662,9 @@ function onShotComplete() {
   if (game.cuePotted) respawnCueBall();
   if (game.mode === "solo") game.currentPlayer = 0;
   game.aimActive = false;
+  game.cueType = "playing";
   game.state = "aiming";
+  if (typeof updateCueTypeHint === "function") updateCueTypeHint();
   if (game.mode === "online") sendOnlineSync();
   updateUI();
   tryStartShotTimer();
