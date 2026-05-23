@@ -676,6 +676,11 @@
     font-family: "Bebas Neue", monospace; font-size: 52px;
     color: var(--gold-500); text-align: center; letter-spacing: 0.2em;
   }
+  .online-room-code {
+    font-family: "Bebas Neue", monospace; font-size: 11px; letter-spacing: 0.15em;
+    color: var(--gold); opacity: 0.7;
+    margin-top: 1px;
+  }
   #lobbyWaiting p { color: rgba(255,255,255,0.7); text-align: center; font-size: 13px; margin: 2px 0; }
   #lobbyError { color: #e74c3c; font-size: 13px; text-align: center; }
   #onlineDisconnect {
@@ -1264,6 +1269,7 @@
       <div>
         <div class="name" id="p1Name">Spieler 1</div>
         <div class="info" id="p1Info">–</div>
+        <div class="online-room-code" id="onlineCodeChip" style="display:none;" title="Raumcode – zum Beitreten teilen"></div>
       </div>
     </div>
     <div class="center-info">
@@ -6703,6 +6709,13 @@ function updateUI() {
   if (game.mode === "hotseat") modeText = "Hot-Seat";
   else if (game.mode === "ai") { const diffLabel = { easy: "Anfänger", medium: "Fortgeschrittener", hard: "Profi" }[game.difficulty] ?? game.difficulty; modeText = "vs KI (" + diffLabel + ")"; }
   else if (game.mode === "online") modeText = "Online";
+  const codeChip = document.getElementById("onlineCodeChip");
+  if (game.mode === "online" && online.code) {
+    codeChip.textContent = "Raum: " + online.code;
+    codeChip.style.display = "";
+  } else {
+    codeChip.style.display = "none";
+  }
   else modeText = "Solo / Übung";
   ui.modeTag.textContent = game.variant === "drill15" ? "15-Kugeln Drill" : game.variant === "basis" ? "Basisübung" : `${variant} · ${modeText}`;
   if (game.mode === "ai") { game.players[0].name = "Du"; game.players[1].name = "KI"; }
@@ -7089,6 +7102,7 @@ function handleRelayMessage(msg) {
     case "spectating":
       online.role = "spectator";
       online.myPlayer = -1;
+      if (msg.code) online.code = msg.code;
       game.mode = "online";
       uiOnline.lobby.style.display = "none";
       canvas.style.pointerEvents = "none";
