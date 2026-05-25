@@ -496,7 +496,7 @@
   Bestimmt, wer gegen wen antritt. Nicht verfügbar bei Drill 15 und Basisübung (dort immer Solo). Die vier Modi: <em>Hot-Seat</em> (2 Spieler, ein Gerät), <em>Gegen KI</em> (1 Spieler vs. Computer), <em>Solo</em> (1 Spieler, kein Gegner), <em>Online</em> (2 Spieler, Netzwerk). Ausführliche Beschreibung → Kapitel 3.</p>
 
   <p><strong>KI-Schwierigkeit</strong> &nbsp;<span class="badge badge-gold">nur bei „Gegen KI"</span><br>
-  Erscheint ausschließlich, wenn im Spielmodus „Gegen KI" gewählt wurde. Drei Stufen: Anfänger (aimError ±4,5°, leicht schlagbar), Fortgeschrittener (±1,4°, macht gelegentlich Fehler), Profi (±0,06°, trifft nahezu immer). Ausführliche KI-Beschreibung → Kapitel 6.</p>
+  Erscheint ausschließlich, wenn im Spielmodus „Gegen KI" gewählt wurde. Drei Stufen: Anfänger (leicht schlagbar), Fortgeschrittener (±0,06°, macht gelegentlich Fehler), Profi (kein Zielfehler, trifft praktisch immer). Ausführliche KI-Beschreibung → Kapitel 6.</p>
 
   <p><strong>Sätze</strong> &nbsp;<span class="badge badge-green">bei 8-Ball und 9-Ball</span><br>
   Legt fest, wie viele Sätze (einzelne Spiele) zum Gesamtsieg benötigt werden (Best-of-Modus). Bei 3 Sätzen gewinnt, wer zuerst 3 Spiele für sich entscheidet. Empfehlung: 1 Satz für schnelle Partien, 5 oder mehr für ein vollwertiges Match-Erlebnis.</p>
@@ -888,22 +888,22 @@
       <tr>
         <td><span class="badge badge-gold">Mittel</span></td>
         <td>Fortgeschrittener</td>
-        <td>Geometrie + Simulations-Validierung für Ball-in-Hand-Situationen. Gelegentlich Safety-Spiele, seltener Bankstoß</td>
-        <td>± 1,4°</td>
-        <td>± 12 %</td>
+        <td>Vollständige Mehr-Stoß-Simulation, Positionsspiel, Safety-Spiele, Bankstoß-Einsatz. Gelegentliche Fehler bleiben möglich.</td>
+        <td>± 0,06°</td>
+        <td>± 0,6 %</td>
       </tr>
       <tr>
         <td><span class="badge badge-red">Schwer</span></td>
         <td>Profi</td>
-        <td>Vollständige Mehr-Stoß-Simulation, Positionsspiel, Ablageplanung, Safety-Spiele, Kombis (9-Ball). Trifft fast immer.</td>
-        <td>± 0,06°</td>
-        <td>± 0,6 %</td>
+        <td>Gehärteter Modus: Pot-Priorität, Scratch-Veto, finale Validierung vor jedem Stoß. Einfache Pots werden praktisch nie verschossen. Nutzt Jump-Shots bei blockierten Lagen.</td>
+        <td>± 0°</td>
+        <td>± 0 %</td>
       </tr>
     </table>
   </div>
   <div class="tip">
     <strong>💡 Hinweis zum Profi-Level</strong>
-    Die Profi-KI berechnet Folgepositionen, wertet Safety-Spiele und Kombinationsstöße aus und nutzt bei 9-Ball aktiv Kombi-Stöße auf die 9. Die Denkpause kann kurz sichtbar sein – das ist normal.
+    Der Profi-Modus arbeitet deterministisch: Er simuliert jeden Stoß mehrfach, filtert Kandidaten mit Scratch-Risiko hart aus und prüft den tatsächlich auszuführenden Stoß noch einmal kurz vor dem Auslösen. Bei blockierten Bällen prüft er Jump-Shots (je nach Abstand kurze oder normale Sprunglänge) und gestufte Bandenstöße. Die kurze Denkpause ist normal.
   </div>
   <a href="#" class="back">↑ Nach oben</a>
 </section>
@@ -959,13 +959,13 @@
   </div>
 
   <h3 id="s7-4">7.4 Vollbild-Overlay: Zuschauer- und Spieler-Layout</h3>
-  <p>Im Vollbildmodus (⛶-Button unten rechts) gibt es <strong>zwei Layout-Varianten</strong>, die über den <strong>▶ Spielen</strong>-Button umgeschaltet werden. Der Button ist nur im Vollbild sichtbar und erscheint unten rechts neben dem ⛶-Button.</p>
+  <p>Im Vollbildmodus (⛶-Button unten rechts) gibt es <strong>zwei Layout-Varianten</strong>, die über den <strong>⚙-Button</strong> umgeschaltet werden. Der Button ist nur im Vollbild sichtbar und erscheint unten rechts neben dem ⛶-Button.</p>
   <div class="tbl-wrap">
     <table>
       <tr><th>Layout</th><th>Aussehen</th><th>Einsatz</th></tr>
       <tr>
         <td><strong>Zuschauer-Layout</strong><br><span class="badge badge-gray">fs-spectator</span></td>
-        <td>Kein Steuerungspanel; unten: <strong>◄◄ ◄ STOSS! ► ►►</strong> Schnell-Buttons + <em>▶ Spielen</em> + ⛶</td>
+        <td>Kein Steuerungspanel; unten: <strong>◄◄ ◄</strong> &nbsp;🎱&nbsp; <strong>► ►►</strong> Schnell-Buttons + ⚙ + ⛶</td>
         <td>Maximale Sicht aufs Spielfeld; Stoßen und Feinzielen direkt ohne Overlay-Öffnen</td>
       </tr>
       <tr>
@@ -975,18 +975,14 @@
       </tr>
     </table>
   </div>
-  <p>Der Toggle-Button wechselt Beschriftung und Layout:</p>
-  <ul>
-    <li><strong>▶ Spielen</strong> – aktuell Zuschauer-Layout; klicken wechselt ins Spieler-Layout</li>
-    <li><strong>▼ Vollbild</strong> – aktuell Spieler-Layout; klicken blendet das Overlay aus (zurück zur reinen Spielfeldansicht)</li>
-  </ul>
+  <p>Der <strong>⚙-Button</strong> wechselt mit jedem Klick zwischen Zuschauer-Layout (reines Spielfeld) und Spieler-Layout (Overlay mit allen Steuerelementen).</p>
   <div class="tip">
     <strong>💡 Vollbild für Zuschauer</strong>
-    Auch Zuschauer können den Vollbildmodus nutzen. Im Zuschauer-Layout ist das Steuerungspanel ausgeblendet – das Spielfeld füllt den gesamten Bildschirm. Mit <em>▶ Spielen</em> kann ins Spieler-Layout gewechselt werden: Das Steuerungspanel erscheint dann am unteren Rand und zeigt die Live-Einstellungen des aktiven Spielers – Zielrichtung, Power, Effet und Queue-Neigung – in Echtzeit an. Mit <em>▼ Vollbild</em> wird das Panel wieder ausgeblendet. Eingreifen ins Spiel ist für Zuschauer trotzdem nicht möglich.
+    Auch Zuschauer können den Vollbildmodus nutzen. Im Zuschauer-Layout ist das Steuerungspanel ausgeblendet – das Spielfeld füllt den gesamten Bildschirm. Mit dem <em>⚙-Button</em> kann ins Spieler-Layout gewechselt werden: Das Steuerungspanel erscheint dann am unteren Rand und zeigt die Live-Einstellungen des aktiven Spielers – Zielrichtung, Power, Effet und Queue-Neigung – in Echtzeit an. Nochmaliges Klicken auf ⚙ blendet das Panel wieder aus. Eingreifen ins Spiel ist für Zuschauer trotzdem nicht möglich.
   </div>
   <div class="tip">
     <strong>💡 Schnell-Buttons im Zuschauer-Layout (Mobile)</strong>
-    Im Zuschauer-Layout erscheinen links neben dem <em>▶ Spielen</em>-Button fünf kompakte Buttons: <strong>◄◄</strong> und <strong>◄</strong> drehen die Zielrichtung nach links (sehr fein bzw. fein), <strong>►</strong> und <strong>►►</strong> nach rechts – identisch mit den Aim-Buttons im vollen Overlay. <strong>STOSS!</strong> (grün) löst den Stoß sofort aus, ohne das Overlay öffnen zu müssen. Der Tisch bleibt dabei vollständig sichtbar. Für Einstellungen wie Effet, Queue-Winkel oder Stoßstärke weiterhin <em>▶ Spielen</em> nutzen. Im Online-Modus werden Zieländerungen in Echtzeit an alle Zuschauer übertragen.
+    Im Zuschauer-Layout erscheinen links neben dem <em>⚙-Button</em> fünf kompakte Buttons: <strong>◄◄</strong> und <strong>◄</strong> drehen die Zielrichtung nach links (sehr fein bzw. fein), <strong>►</strong> und <strong>►►</strong> nach rechts. <strong>🎱</strong> (grün, mit etwas Abstand zu den Pfeilen) löst den Stoß sofort aus, ohne das Overlay öffnen zu müssen. Der Tisch bleibt dabei vollständig sichtbar. Für Einstellungen wie Effet, Queue-Winkel oder Stoßstärke den <em>⚙-Button</em> nutzen. Im Online-Modus werden Zieländerungen in Echtzeit an alle Zuschauer übertragen.
   </div>
 
   <h3 id="s7-5">7.5 Live-Vorschau für Zuschauer</h3>
@@ -1076,13 +1072,13 @@
   <p>Auf Bildschirmen ≤ 820 px Breite erscheint der <strong>⛶-Button</strong> (Vollbild) in der unteren Leiste. Er schaltet in den mobilen Vollbildmodus:</p>
   <ul>
     <li>Das Spielfeld nimmt den gesamten Bildschirm ein.</li>
-    <li>Ein <strong>▶ Spielen</strong>-Button erscheint unten rechts neben dem ⛶-Button und wechselt zwischen <em>Zuschauer-Layout</em> und <em>Spieler-Layout</em>.</li>
-    <li>Im <strong>Zuschauer-Layout</strong> sind links neben <em>▶ Spielen</em> fünf Schnell-Buttons sichtbar: <strong>◄◄</strong> (sehr fein links), <strong>◄</strong> (fein links), <strong>STOSS!</strong>, <strong>►</strong> (fein rechts), <strong>►►</strong> (sehr fein rechts) – der Tisch bleibt vollständig frei.</li>
+    <li>Ein <strong>⚙-Button</strong> erscheint unten rechts neben dem ⛶-Button und wechselt zwischen <em>Zuschauer-Layout</em> und <em>Spieler-Layout</em>.</li>
+    <li>Im <strong>Zuschauer-Layout</strong> sind links neben <em>⚙</em> fünf Schnell-Buttons sichtbar: <strong>◄◄</strong> (sehr fein links), <strong>◄</strong> (fein links), <strong>🎱</strong> (Stoß auslösen), <strong>►</strong> (fein rechts), <strong>►►</strong> (sehr fein rechts) – der Tisch bleibt vollständig frei. Zwischen dem 🎱-Button und den Zielpfeilen ist bewusst etwas Abstand, um unbeabsichtigtes Auslösen zu verhindern.</li>
     <li>Im <strong>Spieler-Layout</strong> sind Aim-Buttons, Power-Slider und Stoß-Button als transparente Overlay-Leiste eingeblendet; die Schnell-Buttons sind dann ausgeblendet.</li>
   </ul>
   <div class="tip">
     <strong>💡 Tipp für Zuschauer</strong>
-    Auch im Zuschauer-Modus (Online) steht der Vollbildmodus zur Verfügung. Das Steuerungspanel ist dabei standardmäßig ausgeblendet – maximale Sicht aufs Spielfeld. Details zum Vollbild-Overlay und dem ▶ Spielen / ▼ Vollbild-Toggle → <a href="#s7-4">Kapitel 7.4</a>.
+    Auch im Zuschauer-Modus (Online) steht der Vollbildmodus zur Verfügung. Das Steuerungspanel ist dabei standardmäßig ausgeblendet – maximale Sicht aufs Spielfeld. Details zum Vollbild-Overlay und dem ⚙-Toggle → <a href="#s7-4">Kapitel 7.4</a>.
   </div>
   <a href="#" class="back">↑ Nach oben</a>
 </section>
