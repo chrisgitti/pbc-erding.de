@@ -789,8 +789,35 @@
 
   /* Vollbild Zuschauer (Standard) */
   body.fullscreen-mode.fs-spectator #controlPanel { display: none; }
-  body.fullscreen-mode.fs-spectator #bottomControls > *:not(#btnFullscreen):not(#btnFsToggleMode) { display: none; }
+  body.fullscreen-mode.fs-spectator #bottomControls > *:not(#btnFullscreen):not(#btnFsToggleMode):not(#fsQuickControls) { display: none; }
   body.fullscreen-mode.fs-spectator #bottomControls { justify-content: center; padding: 2px 0; }
+
+  /* Schnellsteuerung im Spektator-Vollbild */
+  #fsQuickControls { display: none; }
+  body.fullscreen-mode.fs-spectator #fsQuickControls {
+    display: flex;
+    position: fixed;
+    bottom: 16px;
+    right: 185px;
+    gap: 6px;
+    align-items: center;
+    z-index: 9999;
+  }
+  #fsQuickControls button {
+    padding: 9px 13px;
+    font-size: 0.88rem;
+    background: var(--charcoal-700);
+    border: 1px solid var(--border-gold);
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  #fsQuickControls #fsQuickShoot {
+    background: var(--green-600);
+    border-color: var(--green-500);
+    font-weight: 700;
+  }
 
   /* Vollbild Spielbar */
   body.fullscreen-mode.fs-playable #controlPanel {
@@ -1404,6 +1431,11 @@
     <button id="btnTimerExtend" style="display:none;">⏱ +30s</button>
     <button id="btnPhysics" style="display:none;">⚙ Physik</button>
     <button id="btnOnlineSync" style="display:none" title="Spielzustand synchronisieren – bei eingefrorenem Spiel">⟳ Sync</button>
+    <div id="fsQuickControls">
+      <button id="fsQuickAimLeft"  title="Fein links (←)">◄</button>
+      <button id="fsQuickShoot"    title="Stoß auslösen (Leertaste)">STOSS!</button>
+      <button id="fsQuickAimRight" title="Fein rechts (→)">►</button>
+    </div>
     <button id="btnFsToggleMode" title="Vollbild: Spieler/Zuschauer-Modus wechseln">▶ Spielen</button>
     <button id="btnFullscreen" title="Vollbild ein/aus">⛶</button>
   </div>
@@ -6537,6 +6569,21 @@ document.getElementById("fsPower").addEventListener("input", function() {
 document.getElementById("fsShoot").addEventListener("click", () => {
   if (game.mode === "online" && game.currentPlayer !== online.myPlayer) return;
   startShot();
+});
+// Schnellsteuerung im Spektator-Vollbild
+document.getElementById("fsQuickShoot").addEventListener("click", () => {
+  ensureAudio();
+  if (game.mode === "online" && game.currentPlayer !== online.myPlayer) return;
+  if (game.powerPercent < 1) { game.powerPercent = 50; updatePowerUI(); }
+  startShot();
+});
+document.getElementById("fsQuickAimLeft").addEventListener("click", () => {
+  game.aimAngle -= 0.010;
+  sendPreview && sendPreview();
+});
+document.getElementById("fsQuickAimRight").addEventListener("click", () => {
+  game.aimAngle += 0.010;
+  sendPreview && sendPreview();
 });
 ui.endRestart.addEventListener("click", () => {
   ui.endScreen.classList.remove("show");
