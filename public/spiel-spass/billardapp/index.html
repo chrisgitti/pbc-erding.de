@@ -3595,7 +3595,7 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
             const lockedShot = {
               ...validated,
               type: "ballInHandStraightLock",
-              powerPercent: clamp(validated.powerPercent + 2, 50, 84),
+              powerPercent: clamp(validated.powerPercent, 48, 84),
               ballInHandPerfect: true,
               noRandomError: true,
               spinHint: "none",
@@ -5721,6 +5721,21 @@ async function aiPlanShot() {
     }
   }
 
+  // ── BIH Emergency Pot: Plan lieferte kein shot-Objekt, aber wir haben platziert ──
+  if (wasPlacingBIH && !forcedBIHShot && aiIsHardenedProfi(prof) && targets.length > 0) {
+    const emergencyPot = aiFindHardDirectPotLockUniversal(cue, targets, prof);
+    if (emergencyPot) {
+      game.aimAngle     = emergencyPot.angle;
+      game.powerPercent = clamp(emergencyPot.powerPercent, 38, 84);
+      game.spinX        = 0;
+      game.spinY        = 0;
+      game.cueType      = "playing";
+      game.cueElevation = 0;
+      const eCheck = aiFinalValidateHardShot(aiBuildFinalShotFromGame(emergencyPot));
+      if (eCheck.ok) { startShot(); return; }
+    }
+  }
+
   // ── Profi + Ball-in-Hand: berechneten Pflichtschuss sofort ausführen ──────
   if (prof.searchDepth >= 3 && forcedBIHShot) {
     if (token !== game.aiPlanToken) return;
@@ -5756,6 +5771,13 @@ async function aiPlanShot() {
 
     if (aiIsHardenedProfi(prof) && !game.isBreakShot) {
       let finalCheck = aiFinalValidateHardShot(aiBuildFinalShotFromGame(forcedBIHShot));
+      if (!finalCheck.ok && !forcedBIHShot.isSafety) {
+        for (const retryPow of [52, 60, 68, 76, 44, 84]) {
+          game.powerPercent = retryPow;
+          const reCheck = aiFinalValidateHardShot(aiBuildFinalShotFromGame(forcedBIHShot));
+          if (reCheck.ok) { finalCheck = reCheck; break; }
+        }
+      }
       if (!finalCheck.ok) {
         const fallback = aiFindHardFinalFallback(cue, targets, prof, forcedBIHShot);
         if (fallback) {
