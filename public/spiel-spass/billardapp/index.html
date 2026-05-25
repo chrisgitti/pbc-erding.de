@@ -6551,7 +6551,7 @@ document.getElementById("btnFullscreen").addEventListener("click", () => {
 });
 document.getElementById("btnFsToggleMode").addEventListener("click", () => {
   _fullscreenMode = _fullscreenMode === "spectator" ? "playable" : "spectator";
-  document.getElementById("btnFsToggleMode").textContent = _fullscreenMode === "playable" ? "⛶ Vollbild" : "▶ Spielen";
+  document.getElementById("btnFsToggleMode").textContent = _fullscreenMode === "playable" ? "▼ Vollbild" : "▶ Spielen";
   if (_fullscreen) {
     document.body.classList.remove("fs-spectator", "fs-playable");
     document.body.classList.add("fs-" + _fullscreenMode);
