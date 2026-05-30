@@ -1806,6 +1806,9 @@ const HARD_RAIL_BALL_DISTANCE = BALL_R * 2.0;
 const HARD_RAIL_POT_MIN_DOT = 0.48;
 const HARD_CONTACT_WINDOW_MARGIN = BALL_R * 1.05;
 const HARD_KICK_SPIN_VARIANTS = [0, -0.16, 0.16, -0.26, 0.26];
+const HARD_JUMP_MAX_VALIDATIONS    = 80;
+const HARD_KICK_MAX_VALIDATIONS    = 120;
+const HARD_FALLBACK_TIME_BUDGET_MS = 450;
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 let _score = [0, 0];
@@ -5190,7 +5193,7 @@ function aiBuildComboCandidates9Ball(cue, lowestBall) {
   return candidates;
 }
 
-const AI_ENABLE_JUMP_SHOTS = false;
+const AI_ENABLE_JUMP_SHOTS = true;
 
 function aiBuildJumpCandidates(cue, targets) {
   if (!AI_ENABLE_JUMP_SHOTS) return [];
@@ -5433,8 +5436,13 @@ function aiFindHardValidatedJumpFallback(cue, targets, prof) {
   if (!aiIsHardenedProfi(prof)) return null;
   const candidates = aiBuildHardJumpCandidates(cue, targets, prof);
   let best = null;
+  let _jumpValidCount = 0;
+  const _jumpTStart = performance.now();
 
   for (const cand of candidates) {
+    if (_jumpValidCount >= HARD_JUMP_MAX_VALIDATIONS) break;
+    if (performance.now() - _jumpTStart > HARD_FALLBACK_TIME_BUDGET_MS) break;
+    _jumpValidCount++;
     const valid = aiValidateHardJumpShot(cand);
     if (!valid) continue;
     const cueAfter = aiSimCueBall(valid.sim);
@@ -5694,7 +5702,10 @@ function generateShotCandidates(cue, targets, prof) {
     }
   }
 
-  candidates.push(...aiBuildJumpCandidates(cue, targets));
+  // Jump-Kandidaten nur für Profi und nur bei echter Snooker-Situation
+  if (prof.searchDepth >= 3 && targets.some(t => aiDetectHardSnooker(cue, t).blocked)) {
+    candidates.push(...aiBuildJumpCandidates(cue, targets).slice(0, 6));
+  }
 
   if (prof.safetyWeight > 0.2) {
     const safeties = aiBuildSafetyCandidates(cue, targets)
@@ -6076,7 +6087,11 @@ function aiFindHardValidatedKickFallback(cue, targets, prof) {
 
   // Gehärteter Profi: Kicks werden gestuft validiert.
   // Kein Drei-Banden-Zufallsschuss, solange ein validierter Ein- oder Zwei-Banden-Kick existiert.
+  let _kickValidCount = 0;
+  const _kickTStart = performance.now();
+
   for (const tier of [1, 2, 3]) {
+    if (performance.now() - _kickTStart > HARD_FALLBACK_TIME_BUDGET_MS) break;
     const kicks = rawKicks
       .filter(k => Math.min(3, k.kickRails || 1) === tier)
       .sort((a, b) => {
@@ -6087,8 +6102,12 @@ function aiFindHardValidatedKickFallback(cue, targets, prof) {
 
     let best = null;
     for (const cand of kicks) {
+      if (performance.now() - _kickTStart > HARD_FALLBACK_TIME_BUDGET_MS) break;
       const spinVariants = tier === 1 ? [0] : HARD_KICK_SPIN_VARIANTS;
       for (const spinX of spinVariants) {
+        if (_kickValidCount >= HARD_KICK_MAX_VALIDATIONS) break;
+        if (performance.now() - _kickTStart > HARD_FALLBACK_TIME_BUDGET_MS) break;
+        _kickValidCount++;
         const testShot = {
           ...cand,
           type: "hardValidatedKickFallback",
@@ -6251,6 +6270,30 @@ async function aiPlanShot() {
       cue.x = PLAY_X1 + PLAY_W * 0.21;
       cue.y = Math.random() < 0.5 ? PLAY_Y1 + PLAY_H * 0.25 : PLAY_Y2 - PLAY_H * 0.25;
       game.placingCue = false; game.ballInHand = false; game.kitchenOnly = false;
+    } else if (game.isBreakShot && game.variant === "8ball" && game.kitchenOnly) {
+      // 8-Ball-Anstoß: Weiße ins Kopffeld, direkt auf Apex-Ball (Ball 1) zielen.
+      // Die normale BIH-Planung würde scheitern, weil aiValidateShotBySimulation
+      // ein versenktes Ziel erwartet – beim Anstoß ist das nicht garantiert.
+      const apexBall = game.balls.find(b => b.num === 1 && b.inPlay);
+      const apexX = apexBall ? apexBall.x : PLAY_X1 + PLAY_W * 0.75;
+      const apexY = apexBall ? apexBall.y : PLAY_Y1 + PLAY_H * 0.5;
+      const sideY = (Math.random() < 0.5 ? -1 : 1) * PLAY_H * (0.10 + Math.random() * 0.08);
+      cue.x = PLAY_X1 + PLAY_W * (0.18 + Math.random() * 0.05);
+      cue.y = clamp(apexY + sideY, PLAY_Y1 + PLAY_H * 0.12, PLAY_Y2 - PLAY_H * 0.12);
+      game.placingCue = false; game.ballInHand = false; game.kitchenOnly = false;
+      game.aimAngle = Math.atan2(apexY - cue.y, apexX - cue.x) + (Math.random() - 0.5) * 0.018;
+      game.powerPercent = 88 + Math.random() * 12;
+      game.cueType = "break";
+      game.spinX = 0; game.spinY = 0; game.cueElevation = 0;
+      if (typeof updateCueTypeHint === "function") updateCueTypeHint();
+      updatePowerUI();
+      drawSpinCanvas(); updateSpinLabel();
+      drawElevCanvas(); updateElevLabel();
+      syncSpinElevTab();
+      if (token !== game.aiPlanToken) return;
+      if (game.paused) return;
+      startShot();
+      return;
     } else {
       let bestPos = null, bestScore = -Infinity;
       if (prof.searchDepth >= 3) {
@@ -9356,6 +9399,100 @@ async function initPresets() {
     // silently ignore – server may not support API
   }
 }
+
+// ── KI-Selbsttest-Harness (Entwickler-Tool) ───────────────────────────────────
+// Aufruf in der Browser-Konsole: await window.runPoolAiSelfTests()
+window.runPoolAiSelfTests = async function() {
+  const _savedBalls  = game.balls;
+  const _savedVar    = game.variant;
+  const _savedDiff   = game.difficulty;
+  const _savedOpen   = game.open8ball;
+  const report = [];
+
+  function run(name, fn) {
+    try {
+      const ok = !!fn();
+      report.push({ name, ok, error: "" });
+      console.log(`[${ok ? "✓" : "✗"}] ${name}`);
+    } catch (e) {
+      report.push({ name, ok: false, error: e.message });
+      console.error(`[✗] ${name}: ${e.message}`);
+    }
+  }
+
+  // T1: Direkt-Pot-Kandidaten für klare Linie
+  run("T1 Direkt-Pot klare Linie", () => {
+    game.variant = "9ball"; game.difficulty = "hard";
+    const cue = new Ball(0, PLAY_X1 + 60,              PLAY_Y1 + PLAY_H * 0.5);
+    const t   = new Ball(1, PLAY_X1 + PLAY_W * 0.55,  PLAY_Y1 + PLAY_H * 0.5);
+    game.balls = [cue, t];
+    const pots = aiBuildDirectPotCandidates(cue, [t]);
+    return pots.length > 0 && pots.every(c => c.type === "directPot");
+  });
+
+  // T2: Kein Jump-Kandidat bei klarer Linie
+  run("T2 Kein Jump bei klarer Linie", () => {
+    game.variant = "9ball"; game.difficulty = "hard";
+    const cue = new Ball(0, PLAY_X1 + 60,              PLAY_Y1 + PLAY_H * 0.5);
+    const t   = new Ball(1, PLAY_X1 + PLAY_W * 0.55,  PLAY_Y1 + PLAY_H * 0.5);
+    game.balls = [cue, t];
+    const cands = aiBuildJumpCandidates(cue, [t]);
+    return cands.length === 0;
+  });
+
+  // T3: Jump-Kandidaten bei blockierter Linie
+  run("T3 Jump bei Blocker", () => {
+    game.variant = "9ball"; game.difficulty = "hard";
+    const cue     = new Ball(0, PLAY_X1 + 60,              PLAY_Y1 + PLAY_H * 0.5);
+    const blocker = new Ball(2, PLAY_X1 + PLAY_W * 0.30,  PLAY_Y1 + PLAY_H * 0.5);
+    const t       = new Ball(1, PLAY_X1 + PLAY_W * 0.55,  PLAY_Y1 + PLAY_H * 0.5);
+    game.balls = [cue, blocker, t];
+    const cands = aiBuildJumpCandidates(cue, [t]);
+    return cands.length > 0;
+  });
+
+  // T4: Snooker-Detektion – offene Linie
+  run("T4 Snooker-Detektion: offen", () => {
+    game.variant = "9ball"; game.difficulty = "hard";
+    const cue = new Ball(0, PLAY_X1 + 60,              PLAY_Y1 + PLAY_H * 0.5);
+    const t   = new Ball(1, PLAY_X1 + PLAY_W * 0.55,  PLAY_Y1 + PLAY_H * 0.5);
+    game.balls = [cue, t];
+    const info = aiDetectHardSnooker(cue, t);
+    return info.blocked === false;
+  });
+
+  // T5: Snooker-Detektion – blockierte Linie
+  run("T5 Snooker-Detektion: blockiert", () => {
+    game.variant = "9ball"; game.difficulty = "hard";
+    const cue     = new Ball(0, PLAY_X1 + 60,              PLAY_Y1 + PLAY_H * 0.5);
+    const blocker = new Ball(2, PLAY_X1 + PLAY_W * 0.30,  PLAY_Y1 + PLAY_H * 0.5);
+    const t       = new Ball(1, PLAY_X1 + PLAY_W * 0.55,  PLAY_Y1 + PLAY_H * 0.5);
+    game.balls = [cue, blocker, t];
+    const info = aiDetectHardSnooker(cue, t);
+    return info.blocked === true;
+  });
+
+  // T6: 8-Ball offener Tisch → alle 15 Nicht-8-Bälle als Ziele
+  run("T6 8-Ball offener Tisch – 15 Ziele", () => {
+    game.variant = "8ball"; game.difficulty = "hard"; game.open8ball = true;
+    game.balls = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(
+      (n, i) => new Ball(n, PLAY_X1 + 60 + i * 25, PLAY_Y1 + PLAY_H * 0.5)
+    );
+    const targets = ai8BallGetTargets({ group: null });
+    return targets.length === 15;
+  });
+
+  // Spielzustand wiederherstellen
+  game.balls     = _savedBalls;
+  game.variant   = _savedVar;
+  game.difficulty = _savedDiff;
+  game.open8ball = _savedOpen;
+
+  const passed = report.filter(r => r.ok).length;
+  console.log(`\n=== Pool-KI Selbsttest: ${passed}/${report.length} bestanden ===`);
+  console.table(report.map(r => ({ Test: r.name, OK: r.ok ? "✓" : "✗", Fehler: r.error })));
+  return report;
+};
 </script>
 </body>
 </html>
