@@ -3842,7 +3842,8 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
   pairs.sort((a, b) => a.dTP - b.dTP);
 
   const offsets = [64, 88, 118, 156, 210, 280];
-  const laterals = [0, -5, 5];
+  // Größere Lateralvarianten: natürlicherer Winkel → bessere Position nach dem Stoß
+  const laterals = [0, -12, 12, -25, 25, -42, 42, -60, 60];
   let best = null;
 
   try {
@@ -3862,7 +3863,8 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
 
           cue.x = cx; cue.y = cy;
           const shot = aiEvaluatePotShot(cue, t, p);
-          if (!shot || shot.dotN < 0.965) continue;
+          // Mit BIH ist jeder Cut bis ~30° (dotN≥0.85) sicher spielbar
+          if (!shot || shot.dotN < 0.85) continue;
 
           const basePower = clamp(Math.max(shot.powerPercent || 0, 46 + dTP * 0.018), 48, 80);
           const powers = aiUniqueSortedPowers([basePower, basePower + 8, basePower + 16, 58, 68, 78]);
@@ -3881,11 +3883,12 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
             if (!validated) continue;
             const posValue = aiScoreCuePositionForNextShot(aiSimCueBall(validated.sim), validated.sim.finalBalls, validated.targetNum);
             const score = 500000
-              + shot.dotN * 25000
-              - Math.abs(lat) * 850
+              + shot.dotN * 4000          // Geradlinigkeit: weniger dominant als früher
+              - Math.max(0, 0.85 - shot.dotN) * 3000 // Strafterm für sehr dünne Cuts
+              - Math.abs(lat) * 60        // Winkeloffset kaum bestrafen
               - off * 4.0
               - dTP * 0.18
-              + clamp(posValue, -100, 135) * 1.4
+              + clamp(posValue, -200, 400) * 12  // Position nach Stoß: Hauptentscheider
               - Math.abs(validated.powerPercent - 62) * 8;
             const lockedShot = {
               ...validated,
