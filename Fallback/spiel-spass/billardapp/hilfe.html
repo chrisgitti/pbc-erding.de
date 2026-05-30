@@ -320,6 +320,7 @@
         <li><a href="#s4-5">Queue-Typ wählen</a></li>
         <li><a href="#s4-6">Stoß ausführen</a></li>
         <li><a href="#s4-7">Ball-in-Hand</a></li>
+        <li><a href="#s4-8">Pause &amp; Undo</a></li>
       </ol>
     </li>
     <li><a href="#s5">Spezialtechniken</a>
@@ -329,7 +330,12 @@
         <li><a href="#s5-3">Break</a></li>
       </ol>
     </li>
-    <li><a href="#s6">KI-Gegner</a></li>
+    <li><a href="#s6">KI-Gegner</a>
+      <ol>
+        <li><a href="#s6-1">Schwierigkeitsgrade</a></li>
+        <li><a href="#s6-2">KI-Debug-Modus</a></li>
+      </ol>
+    </li>
     <li><a href="#s7">Online-Modus</a>
       <ol>
         <li><a href="#s7-1">Raum erstellen</a></li>
@@ -798,6 +804,31 @@
     </ul>
     Diese Regel gilt nur beim 8-Ball. Beim 9-Ball ist Ball-in-Hand immer auf dem gesamten Tisch.
   </div>
+  <h3 id="s4-8">4.8 Pause &amp; Undo</h3>
+  <p>Zwei Buttons in der unteren Toolbar ermöglichen es, das Spiel jederzeit einzufrieren oder die letzte Tischsituation wiederherzustellen:</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Button</th><th>Funktion</th></tr>
+      <tr>
+        <td><strong>⏸ Pause</strong></td>
+        <td>Friert das Spiel sofort ein – Bälle bleiben stehen, der KI-Zug wird unterbrochen. Erneutes Drücken (<strong>▶ Weiter</strong>) setzt das Spiel fort; die KI plant ihren Stoß danach neu.</td>
+      </tr>
+      <tr>
+        <td><strong>↩ Zurück</strong></td>
+        <td>Stellt die Tischsituation von <em>vor dem letzten Stoß</em> wieder her – ideal zum Wiederholen und Trainieren. Nur aktiv, wenn kein Stoß in Bewegung ist; danach ausgegraut (kein doppeltes Undo möglich).</td>
+      </tr>
+    </table>
+  </div>
+  <ul>
+    <li><strong>Pause</strong> wirkt sofort, auch mitten in einer Rollphase oder während die KI plant.</li>
+    <li><strong>Undo</strong> setzt Kugelpositionen, Spielstand, Gruppen (8-Ball) und Foul-Status vollständig zurück auf den Zustand unmittelbar vor dem letzten Stoß.</li>
+    <li>Im <strong>Online-Modus</strong> sind beide Buttons ausgeblendet – dort gibt es kein Zurück.</li>
+  </ul>
+  <div class="tip">
+    <strong>💡 Tipp für Trainings-Situationen</strong>
+    Mit <strong>↩ Zurück</strong> lässt sich jede schwierige Lage beliebig oft wiederholen: Stoß ausführen → Ergebnis begutachten → Zurück → gleiche Situation neu probieren. Kein Neustart nötig.
+  </div>
+
   <a href="#" class="back">↑ Nach oben</a>
 </section>
 
@@ -874,6 +905,8 @@
 <!-- ─── 6. KI-Gegner ─── -->
 <section class="section" id="s6">
   <h2><span class="num">6</span> KI-Gegner</h2>
+
+  <h3 id="s6-1">6.1 Schwierigkeitsgrade</h3>
   <p>Die KI verfügt über drei Schwierigkeitsgrade mit grundlegend unterschiedlichen Planungsstrategien:</p>
   <div class="tbl-wrap">
     <table>
@@ -905,6 +938,66 @@
     <strong>💡 Hinweis zum Profi-Level</strong>
     Der Profi-Modus arbeitet deterministisch: Er simuliert jeden Stoß mehrfach, filtert Kandidaten mit Scratch-Risiko hart aus und prüft den tatsächlich auszuführenden Stoß noch einmal kurz vor dem Auslösen. Bei <strong>Ball-in-Hand</strong> platziert er die Weiße an der für Pot und Folgeposition optimalen Stelle – ein Verfehlen der Pflichtkugel ist in diesem Fall ausgeschlossen. Bei blockierten Bällen prüft er Jump-Shots (je nach Abstand kurze oder normale Sprunglänge) und gestufte Bandenstöße. Die kurze Denkpause ist normal.
   </div>
+
+  <h3 id="s6-2">6.2 KI-Debug-Modus <span class="badge badge-gray">Entwickler</span></h3>
+  <p>Der Debug-Modus zeigt nach jedem KI-Stoß ein Analyse-Panel oben links auf dem Spielfeld – direkt auf dem Canvas. Er ist für Neugierige und Entwickler gedacht, die nachvollziehen wollen, warum die KI einen bestimmten Stoß gewählt hat.</p>
+
+  <h4>Aktivierung</h4>
+  <ol class="steps">
+    <li><kbd>Alt</kbd>+<kbd>D</kbd> drücken – das Debug-Panel erscheint und ein grüner <strong>💾 Export</strong>-Button oben links auf dem Spielfeld wird eingeblendet.</li>
+    <li>Erneutes <kbd>Alt</kbd>+<kbd>D</kbd> blendet das Panel wieder aus.</li>
+  </ol>
+
+  <h4>Inhalt des Debug-Panels</h4>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Zeile</th><th>Farbe</th><th>Bedeutung</th></tr>
+      <tr>
+        <td>1</td>
+        <td><span class="badge badge-green">Grün</span></td>
+        <td>KI-Profil und Spielvariante · Kandidaten-Trichter (erzeugt → gefiltert → bewertet) · Planungsdauer in ms · Erlaubte Zielkugeln</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><span class="badge badge-gold">Gelb</span></td>
+        <td>Gewählter Schuss: Typ, Score-Wert, Einloch-Wahrscheinlichkeit, Scratch-Risiko</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><span class="badge badge-blue">Cyan</span></td>
+        <td><strong>Auswahlgrund</strong> – z.&nbsp;B. „safety &gt; pot (180 vs 142)", „kick (2-rail)", „hard direct lock", „ball-in-hand planner"</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><span class="badge badge-green">Grün</span></td>
+        <td>Vergleich: bester verfügbarer Pot vs. beste verfügbare Safety (auch wenn nicht gewählt)</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><span class="badge badge-gray">Grau</span></td>
+        <td>Validierungsstatus des Schusses · Anzahl verworfener Kandidaten · bei 8-Ball: Anzahl eigener Kugeln und wie viele davon blockiert sind</td>
+      </tr>
+      <tr>
+        <td>6–13</td>
+        <td>Grau / Blau / Gelb</td>
+        <td>Liste aller bewerteten Kandidaten nach Score · Safety-Kandidaten in Blau · Gewählter Kandidat in Gelb</td>
+      </tr>
+    </table>
+  </div>
+  <p>Zusätzlich wird der <strong>Geisterball</strong> (gelber Kreis) für den gewählten Einloch-Schuss auf dem Tisch eingezeichnet, der die exakte Treffposition anzeigt.</p>
+
+  <h4>Debug-Daten exportieren</h4>
+  <p>Im aktiven Debug-Modus stehen zwei Export-Wege zur Verfügung:</p>
+  <ul>
+    <li><strong>💾 Export-Button</strong> (erscheint oben links auf dem Spielfeld, sobald Debug aktiv) – einfach klicken.</li>
+    <li><strong><kbd>Alt</kbd>+<kbd>E</kbd></strong> – Tastenkürzel für denselben Vorgang.</li>
+  </ul>
+  <p>Gespeichert wird eine <strong>JSON-Datei</strong> mit dem Namen <code>ki-debug-DATUM-UHRZEIT.json</code>, die den vollständigen Planungsstand des letzten KI-Zugs enthält: alle bewerteten Kandidaten mit Scores, Auswahlgrund, Tischanalyse (8-Ball), Validierungsstatus und mehr.</p>
+  <div class="tip">
+    <strong>💡 Tipp zur Analyse</strong>
+    Die exportierte JSON-Datei lässt sich z.&nbsp;B. in VS&nbsp;Code oder einem Online-JSON-Viewer (jsoncrack.com) bequem aufklappen und durchsuchen – ideal um die KI-Entscheidungen Schritt für Schritt nachzuvollziehen.
+  </div>
+
   <a href="#" class="back">↑ Nach oben</a>
 </section>
 
@@ -1090,9 +1183,13 @@
     <table>
       <tr><th>Taste</th><th>Funktion</th></tr>
       <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>Ziel fein nach links / rechts drehen</td></tr>
-      <tr><td><kbd>Shift</kbd>+<kbd>←</kbd> / <kbd>Shift</kbd>+<kbd>→</kbd></td><td>Ziel sehr fein justieren (Mikro)</td></tr>
+      <tr><td><kbd>Shift</kbd>+<kbd>←</kbd> / <kbd>Shift</kbd>+<kbd>→</kbd></td><td>Ziel sehr fein justieren (Mikro-Schritte)</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>←</kbd> / <kbd>Ctrl</kbd>+<kbd>→</kbd></td><td>Ziel grob justieren (große Schritte)</td></tr>
+      <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Stoßstärke um 2 % erhöhen / verringern</td></tr>
       <tr><td><kbd>Space</kbd></td><td>Stoß ausführen</td></tr>
-      <tr><td><kbd>M</kbd></td><td>Zurück zum Hauptmenü</td></tr>
+      <tr><td><kbd>M</kbd></td><td>Zurück zum Hauptmenü (nur außerhalb Vollbild)</td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>D</kbd></td><td>KI-Debug-Overlay ein-/ausblenden <span class="badge badge-gray">Entwickler</span></td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>E</kbd></td><td>KI-Debug als JSON-Datei exportieren (nur wenn Debug aktiv) <span class="badge badge-gray">Entwickler</span></td></tr>
       <tr><td>RMB halten + ziehen</td><td>Power einstellen (Loslassen = Schießen)</td></tr>
       <tr><td>LMB halten + ziehen (Spielfeld)</td><td>Zielrichtung einstellen</td></tr>
       <tr><td>LMB halten + ziehen (Ball-in-Hand)</td><td>Weiße positionieren</td></tr>
@@ -1105,7 +1202,7 @@
 </div>
 
 <footer>
-  PBC Erding Pool – Spielanleitung &nbsp;|&nbsp; Stand: 2025 &nbsp;|&nbsp;
+  PBC Erding Pool – Spielanleitung &nbsp;|&nbsp; Stand: 2026 &nbsp;|&nbsp;
   <a href="index.html" class="footer-link">→ Zur App</a>
 </footer>
 

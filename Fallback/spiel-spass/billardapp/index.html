@@ -159,6 +159,7 @@
     gap: 12px;
     align-items: start;
     width: min(98vw, 1200px);
+    position: relative;
   }
   #gameCanvas {
     background: #000;
@@ -1338,6 +1339,7 @@
 
   <div id="playArea">
     <canvas id="gameCanvas" width="920" height="500"></canvas>
+    <button id="btnDebugExport" style="display:none;position:absolute;top:4px;left:4px;z-index:60;font-size:11px;padding:2px 8px;background:rgba(0,180,0,0.85);color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:monospace;" title="KI-Debug als JSON speichern (Alt+E)">💾 Export</button>
     <div id="spectatorBadge" style="display:none; position:fixed; top:8px; left:50%; transform:translateX(-50%); z-index:50; flex-direction:row; gap:12px; align-items:center; background:rgba(10,10,11,0.85); border:1px solid rgba(212,160,67,0.4); border-radius:999px; padding:6px 16px; font-size:0.82rem; color:rgba(255,255,255,0.8);">
       <span>👁 Zuschauer-Modus</span>
       <button id="btnSpectatorLeave" style="font-size:0.78rem; padding:3px 10px;">← Verlassen</button>
@@ -1432,6 +1434,8 @@
     <button id="btnTimerExtend" style="display:none;">⏱ +30s</button>
     <button id="btnPhysics" style="display:none;">⚙ Physik</button>
     <button id="btnOnlineSync" style="display:none" title="Spielzustand synchronisieren – bei eingefrorenem Spiel">⟳ Sync</button>
+    <button id="btnPause" style="display:none;">⏸ Pause</button>
+    <button id="btnUndo" style="display:none;" disabled>↩ Zurück</button>
     <div id="fsQuickControls">
       <button id="fsQuickAimMicroLeft"  title="Sehr fein links (Shift+←)">◄◄</button>
       <button id="fsQuickAimLeft"       title="Fein links (←)">◄</button>
@@ -1594,6 +1598,7 @@
 /* PBC Erding – POOL BILLARD (8-Ball & 9-Ball)
    Single-file Web-App, 100% client-side, keine Build-Tools nötig. */
 
+// ── 01 Config / Constants ─────────────────────────────────────────────
 const W = 920, H = 500;
 const RAIL = 40;
 let CFG_POCKET_R_CORNER = 20; // Ecklocheintrittsradius (px) – per Tischprofil anpassbar
@@ -1655,6 +1660,7 @@ const BALL_COLORS = {
   13: "#e8731f", 14: "#1f7a3a", 15: "#7a2236",
 };
 
+// ── 02 Game State / Runtime State ─────────────────────────────────────
 const game = {
   variant: "8ball", mode: "hotseat", difficulty: "medium", soundOn: true,
   balls: [], cueBall: null, currentPlayer: 0,
@@ -1689,6 +1695,8 @@ const game = {
   matchScore: [0, 0],
   breakRule: "wechsel",
   nextBreakPlayer: 0,
+  paused: false,
+  lastSnapshot: null,
 };
 
 const online = {
@@ -1722,6 +1730,7 @@ function scheduleSyncWatchdog() {
   }, 2500);
 }
 
+// ── 03 Geometry / Math Helpers ────────────────────────────────────────
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
 // Pinch-to-Zoom state
@@ -1737,7 +1746,7 @@ let _lastPreviewSent = 0;
 let _fullscreen = false;
 let _fullscreenMode = "spectator"; // "spectator" | "playable"
 
-// ── KI-Profile ───────────────────────────────────────────────────────────────
+// ── 07 AI Skill Profiles ──────────────────────────────────────────────
 const AI_PROFILES = {
   easy: {
     name: "Anfänger",
@@ -2047,6 +2056,7 @@ function _onTimerExpired() {
 
 // ── Ende Shot-Timer ───────────────────────────────────────────────────────────
 
+// ── 04 Physics Engine ─────────────────────────────────────────────────
 class Ball {
   constructor(num, x, y) {
     this.num = num; this.x = x; this.y = y;
@@ -2326,6 +2336,14 @@ function launchCueBall(cue, dirX, dirY, power, spinX, spinY, elevationNorm, cueT
   }
 }
 
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 function setup8BallRack() {
   game.balls = [];
   const cue = new Ball(0, PLAY_X1 + PLAY_W * 0.25, PLAY_Y1 + PLAY_H * 0.5);
@@ -2334,13 +2352,37 @@ function setup8BallRack() {
   const apexY = PLAY_Y1 + PLAY_H * 0.5;
   const dx = BALL_R * 2 * Math.cos(Math.PI / 6) + 0.3;
   const dy = BALL_R * 2 + 0.2;
-  const rackOrder = [[1],[9,2],[10,8,3],[11,4,12,5],[6,13,7,14,15]];
+
+  // WPA-Regel: Ecken der letzten Reihe = je eine Volle + eine Halbe (Seite zufällig)
+  const solids = shuffleArray([2,3,4,5,6,7]);
+  const stripes = shuffleArray([9,10,11,12,13,14,15]);
+  const cornerSolid = solids.pop();
+  const cornerStripe = stripes.pop();
+  const leftIsStripe = Math.random() < 0.5;
+  const leftCorner  = leftIsStripe ? cornerStripe : cornerSolid;
+  const rightCorner = leftIsStripe ? cornerSolid  : cornerStripe;
+
+  // Verbleibende 11 Kugeln gemischt auf die freien Positionen verteilen
+  const pool = shuffleArray([...solids, ...stripes]);
+  let pi = 0;
+  const next = () => pool[pi++];
+  const rackOrder = [
+    [1],
+    [next(), next()],
+    [next(), 8, next()],
+    [next(), next(), next(), next()],
+    [leftCorner, next(), next(), next(), rightCorner]
+  ];
+
+  const JITTER = 0.4;
   for (let row = 0; row < 5; row++) {
     const rowBalls = rackOrder[row];
     const rowX = apexX + row * dx;
-    const startY = apexY - (row * dy) / 2;
+    const startY = apexY - ((rowBalls.length - 1) * dy) / 2;
     for (let col = 0; col < rowBalls.length; col++) {
-      game.balls.push(new Ball(rowBalls[col], rowX, startY + col * dy));
+      const jx = row === 0 ? 0 : (Math.random() - 0.5) * JITTER;
+      const jy = row === 0 ? 0 : (Math.random() - 0.5) * JITTER;
+      game.balls.push(new Ball(rowBalls[col], rowX + jx, startY + col * dy + jy));
     }
   }
 }
@@ -2353,13 +2395,28 @@ function setup9BallRack() {
   const apexY = PLAY_Y1 + PLAY_H * 0.5;
   const dx = BALL_R * 2 * Math.cos(Math.PI / 6) + 0.3;
   const dy = BALL_R * 2 + 0.2;
-  const rack = [[1],[2,3],[4,9,5],[6,7],[8]];
+
+  // Ball 1 (Apex) und Ball 9 (Mitte) fix; Kugeln 2–8 zufällig
+  const pool = shuffleArray([2,3,4,5,6,7,8]);
+  let pi = 0;
+  const next = () => pool[pi++];
+  const rack = [
+    [1],
+    [next(), next()],
+    [next(), 9, next()],
+    [next(), next()],
+    [next()]
+  ];
+
+  const JITTER = 0.4;
   for (let row = 0; row < rack.length; row++) {
     const rowBalls = rack[row];
     const rowX = apexX + row * dx;
     const startY = apexY - ((rowBalls.length - 1) * dy) / 2;
     for (let col = 0; col < rowBalls.length; col++) {
-      game.balls.push(new Ball(rowBalls[col], rowX, startY + col * dy));
+      const jx = row === 0 ? 0 : (Math.random() - 0.5) * JITTER;
+      const jy = row === 0 ? 0 : (Math.random() - 0.5) * JITTER;
+      game.balls.push(new Ball(rowBalls[col], rowX + jx, startY + col * dy + jy));
     }
   }
 }
@@ -2373,13 +2430,28 @@ function setup9BallVorgelagert() {
   // 1-Ball liegt eine Kugelbreite vor dem Fußpunkt → Fußpunkt fällt zwischen Reihe 0 und 1
   const apexX = PLAY_X1 + PLAY_W * 0.75 - dx;
   const apexY = PLAY_Y1 + PLAY_H * 0.5;
-  const rack = [[1],[2,3],[4,9,5],[6,7],[8]];
+
+  // Ball 1 (Apex) und Ball 9 (Mitte) fix; Kugeln 2–8 zufällig
+  const pool = shuffleArray([2,3,4,5,6,7,8]);
+  let pi = 0;
+  const next = () => pool[pi++];
+  const rack = [
+    [1],
+    [next(), next()],
+    [next(), 9, next()],
+    [next(), next()],
+    [next()]
+  ];
+
+  const JITTER = 0.4;
   for (let row = 0; row < rack.length; row++) {
     const rowBalls = rack[row];
     const rowX = apexX + row * dx;
     const startY = apexY - ((rowBalls.length - 1) * dy) / 2;
     for (let col = 0; col < rowBalls.length; col++) {
-      game.balls.push(new Ball(rowBalls[col], rowX, startY + col * dy));
+      const jx = row === 0 ? 0 : (Math.random() - 0.5) * JITTER;
+      const jy = row === 0 ? 0 : (Math.random() - 0.5) * JITTER;
+      game.balls.push(new Ball(rowBalls[col], rowX + jx, startY + col * dy + jy));
     }
   }
 }
@@ -2669,8 +2741,127 @@ function syncSpinElevTab() {
   document.getElementById("tabWinkel").classList.toggle("active",  showWinkel);
 }
 
+// ── 14 Shot Execution ─────────────────────────────────────────────────
+function saveSnapshot() {
+  game.lastSnapshot = {
+    balls: game.balls.map(b => ({
+      num: b.num, x: b.x, y: b.y,
+      vx: b.vx, vy: b.vy,
+      wx: b.wx, wy: b.wy, wz: b.wz,
+      z: b.z, vz: b.vz,
+      inPlay: b.inPlay, motionState: b.motionState
+    })),
+    currentPlayer: game.currentPlayer,
+    open8ball: game.open8ball,
+    ballInHand: game.ballInHand,
+    isBreakShot: game.isBreakShot,
+    pushOutAvailable: game.pushOutAvailable,
+    inPushOut: game.inPushOut,
+    awaitingPushOutDecision: game.awaitingPushOutDecision,
+    pushOutDoneBy: game.pushOutDoneBy,
+    winner: game.winner,
+    endMessage: game.endMessage,
+    drill15Potted: game.drill15Potted,
+    drill15Shots: game.drill15Shots,
+    drill15NextBall: game.drill15NextBall,
+    drill15Score: game.drill15Score,
+    basisRepeatMode: game.basisRepeatMode,
+    players: game.players.map(p => ({
+      group: p.group,
+      potted: [...(p.potted || [])],
+      consecutiveFouls: p.consecutiveFouls,
+      name: p.name
+    })),
+    matchScore: [...game.matchScore],
+    calledBall: game.calledBall,
+    called8Pocket: game.called8Pocket,
+    lowestAtShotStart: game.lowestAtShotStart,
+  };
+}
+
+function restoreSnapshot() {
+  const s = game.lastSnapshot;
+  if (!s) return;
+
+  for (const saved of s.balls) {
+    const b = game.balls.find(b => b.num === saved.num);
+    if (!b) continue;
+    b.x = saved.x; b.y = saved.y;
+    b.vx = saved.vx; b.vy = saved.vy;
+    b.wx = saved.wx; b.wy = saved.wy; b.wz = saved.wz;
+    b.z = saved.z; b.vz = saved.vz;
+    b.inPlay = saved.inPlay; b.motionState = saved.motionState;
+  }
+  game.cueBall = game.balls.find(b => b.isCue) || null;
+
+  game.currentPlayer    = s.currentPlayer;
+  game.open8ball        = s.open8ball;
+  game.ballInHand       = s.ballInHand;
+  game.isBreakShot      = s.isBreakShot;
+  game.pushOutAvailable = s.pushOutAvailable;
+  game.inPushOut        = s.inPushOut;
+  game.awaitingPushOutDecision = s.awaitingPushOutDecision;
+  game.pushOutDoneBy    = s.pushOutDoneBy;
+  game.winner           = s.winner;
+  game.endMessage       = s.endMessage;
+  game.drill15Potted    = s.drill15Potted;
+  game.drill15Shots     = s.drill15Shots;
+  game.drill15NextBall  = s.drill15NextBall;
+  game.drill15Score     = s.drill15Score;
+  game.basisRepeatMode  = s.basisRepeatMode;
+  game.matchScore       = [...s.matchScore];
+  game.calledBall       = s.calledBall;
+  game.called8Pocket    = s.called8Pocket;
+  game.lowestAtShotStart = s.lowestAtShotStart;
+
+  for (let i = 0; i < s.players.length; i++) {
+    game.players[i].group          = s.players[i].group;
+    game.players[i].potted         = [...s.players[i].potted];
+    game.players[i].consecutiveFouls = s.players[i].consecutiveFouls;
+    game.players[i].name           = s.players[i].name;
+  }
+
+  game.state                = "aiming";
+  game.shotInProgress       = false;
+  game.aiThinking           = false;
+  game.aiPlanning           = false;
+  game.aiPlanToken++;
+  game.ballsPottedThisShot  = [];
+  game.cuePotted            = false;
+  game.firstHit             = null;
+  game.placingCue           = false;
+  game.paused               = false;
+  game.lastSnapshot         = null;
+
+  const btnPause = document.getElementById("btnPause");
+  if (btnPause) btnPause.textContent = "⏸ Pause";
+  updateUI();
+
+  // KI-Zug neu anstoßen wenn nach Undo die KI dran ist
+  if (game.mode === "ai" && game.currentPlayer === 1 && game.state === "aiming") {
+    game.aiThinking = true;
+    game.aiTimer    = 45;
+  }
+}
+
+function togglePause() {
+  game.paused = !game.paused;
+
+  if (!game.paused) {
+    if (game.mode === "ai" && game.currentPlayer === 1
+        && game.state === "aiming" && !game.aiThinking && !game.aiPlanning) {
+      game.aiThinking = true;
+      game.aiTimer    = 30;
+    }
+  }
+
+  const btnPause = document.getElementById("btnPause");
+  if (btnPause) btnPause.textContent = game.paused ? "▶ Weiter" : "⏸ Pause";
+  updateUI();
+}
 
 function startShot() {
+  if (game.paused) return;
   if (game.state !== "aiming" || game.shotInProgress) return;
   syncCueSelectorToShotState();
   stopShotTimer();
@@ -2703,6 +2894,7 @@ function startShot() {
     const headX = PLAY_X1 + PLAY_W * 0.25;
     game.drill15FromKitchen = game.cueBall.x <= headX;
   }
+  saveSnapshot();
   const power = (game.powerPercent / 100) * MAX_POWER;
   const cueProfile = getCueProfile(game.cueType);
   // Deflection (Squirt) – Queue-Profil-abhängig: harte Spitze = mehr Squirt
@@ -2713,6 +2905,8 @@ function startShot() {
     const deflAngle = K_DEF * Math.abs(game.spinX) * Math.pow(pf, P_DEF);
     shotAngle -= Math.sign(game.spinX) * deflAngle;
   }
+  // Break-Streuung: minimales Winkelrauschen (±~0.5°) simuliert reale Anstoß-Varianz
+  if (game.isBreakShot) shotAngle += (Math.random() - 0.5) * 0.018;
   const dirX = Math.cos(shotAngle), dirY = Math.sin(shotAngle);
   game.firstHit = null;
   game.ballsPottedThisShot = [];
@@ -2729,12 +2923,19 @@ function startShot() {
   soundCueHit(power);
   if (game.mode === "online") sendOnlineShot();
   game.spinX = 0; game.spinY = 0; game.cueElevation = 0;
-  drawSpinCanvas(); updateSpinLabel();
-  drawElevCanvas(); updateElevLabel();
+  if (!game.aiPlanning) {
+    drawSpinCanvas(); updateSpinLabel();
+    drawElevCanvas(); updateElevLabel();
+    syncSpinElevTab();
+  }
 }
 
+// ── 15 Rule Resolution After Shot ──────────────────────────────────────
 function onShotComplete() {
   clearTimeout(_shotSafetyTimer);
+  drawSpinCanvas(); updateSpinLabel();
+  drawElevCanvas(); updateElevLabel();
+  syncSpinElevTab();
   // Online: fremder Schuss → nur Animation, keine eigene Spiellogik → sync anwenden
   if (game.mode === "online" && online.waitingForSync) {
     online.waitingForSync = false;
@@ -2790,6 +2991,7 @@ function respawnCueBall() {
   game.ballInHand = true;
 }
 
+// ── 05 Rules Engine ───────────────────────────────────────────────────
 function handle8BallShot() {
   const me = game.players[game.currentPlayer];
   const other = game.players[1 - game.currentPlayer];
@@ -2840,12 +3042,17 @@ function handle8BallShot() {
       showRefAnnounce(foulReason, `Foul beim Versenken der 8 – ${other.name} gewinnt!`);
       game.endMessage = `${other.name} gewinnt – ${me.name}: Foul beim Versenken der 8 (${foulReason})`;
       game.state = "ended"; game.winner = 1 - game.currentPlayer; return;
+    } else if (!wasBreak) {
+      // WPA: 8 vorzeitig versenkt (Gruppe nicht geräumt) → sofortiger Spielverlust
+      showRefAnnounce("Schwarze 8 vorzeitig versenkt", `${me.name} hat die Schwarze Acht vor der eigenen Gruppe versenkt – ${other.name} gewinnt!`);
+      game.endMessage = `${other.name} gewinnt – ${me.name}: Schwarze Acht vorzeitig versenkt!`;
+      game.state = "ended"; game.winner = 1 - game.currentPlayer; return;
     } else {
-      // Gruppe noch nicht geräumt – 8 vorzeitig versenkt: kein Foul, einfach aufsetzen
+      // Anstoß: 8 vorzeitig versenkt → aufsetzen und weiterspielen
       respotBlackBall();
       game.ballsPottedThisShot = game.ballsPottedThisShot.filter(n => n !== 8);
-      if (!foul) showRefAnnounce("Schwarze 8 aufgesetzt", "8 wird neu aufgesetzt – Spiel weiter");
-      // Kein return – normale Spiellogik (Fouls anderer Art, Zugwechsel etc.) läuft weiter
+      if (!foul) showRefAnnounce("Schwarze 8 aufgesetzt", "8 beim Anstoß versenkt – wird neu aufgesetzt");
+      // Kein return – Anstoß-Logik läuft weiter
     }
   }
   if (wasBreak) {
@@ -3259,6 +3466,82 @@ function aiRecordSimPreFirstHitRail(result, ball, side) {
   }
 }
 
+// ── Rules interface (read-only queries, no state mutation) ─────────────
+const Rules = {
+  // Returns the balls the current player is legally allowed to target.
+  getLegalTargets(ctx) {
+    const { variant, balls, player: me } = ctx;
+    if (variant === "9ball") {
+      const low = lowestBallOnTable();
+      const b = balls.find(bb => bb.num === low);
+      const tgts = b ? [b] : [];
+      return tgts.length ? tgts : balls.filter(bb => bb.inPlay && !bb.isCue);
+    }
+    if (variant === "8ball") {
+      const tgts = ai8BallGetTargets(me);
+      return tgts.length ? tgts : balls.filter(bb => bb.inPlay && !bb.isCue);
+    }
+    return balls.filter(bb => bb.inPlay && !bb.isCue);
+  },
+
+  // Returns which ball must be contacted first for a legal shot.
+  // type: "lowestBall" | "eight" | "ownGroup" | "notEight" | "any"
+  getFirstHitRequirement(ctx) {
+    const { variant, player: me } = ctx;
+    if (variant === "9ball") {
+      return { type: "lowestBall", targetNum: lowestBallOnTable(), targetGroup: null };
+    }
+    if (variant === "8ball") {
+      if (canTarget8Ball(me))          return { type: "eight",    targetNum: 8,    targetGroup: null };
+      if (game.open8ball || !me.group) return { type: "notEight", targetNum: null, targetGroup: null };
+      return { type: "ownGroup", targetNum: null, targetGroup: me.group };
+    }
+    return { type: "any", targetNum: null, targetGroup: null };
+  },
+
+  // Returns what must (or may legally) be potted.
+  // type: "any" | "ownGroup" | "calledGroup" | "eight"
+  getPotRequirement(ctx) {
+    const { variant, player: me } = ctx;
+    if (variant === "9ball") return { type: "any", group: null };
+    if (variant === "8ball") {
+      if (canTarget8Ball(me))          return { type: "eight",       group: null };
+      if (game.open8ball || !me.group) return { type: "calledGroup", group: null };
+      return { type: "ownGroup", group: me.group };
+    }
+    return { type: "any", group: null };
+  },
+
+  // Returns whether the shot needs an explicit ball/pocket call.
+  getCallRequirement(ctx) {
+    const { variant, player: me } = ctx;
+    if (variant === "8ball") {
+      return {
+        needsCall:       !!(game.open8ball || !me.group),
+        needsPocketCall: !!canTarget8Ball(me),
+      };
+    }
+    return { needsCall: false, needsPocketCall: false };
+  },
+
+  // Validates that `firstHitNum` satisfies the given first-hit requirement.
+  isFirstHitLegal(firstHitNum, req) {
+    if (firstHitNum === null || firstHitNum === undefined) return false;
+    switch (req.type) {
+      case "lowestBall": return firstHitNum === req.targetNum;
+      case "eight":      return firstHitNum === 8;
+      case "notEight":   return firstHitNum !== 8;
+      case "ownGroup":
+        if (req.targetGroup === "solid")  return firstHitNum >= 1 && firstHitNum <= 7;
+        if (req.targetGroup === "stripe") return firstHitNum >= 9 && firstHitNum <= 15;
+        return false;
+      case "any": return true;
+      default:    return false;
+    }
+  },
+};
+
+// ── 06 Shot Simulation ────────────────────────────────────────────────
 function aiSimulateShotResult(shot) {
   const balls = aiCloneBallsForSimulation();
   const cue = balls.find(b => b.isCue);
@@ -3515,10 +3798,17 @@ function aiBallInHandPowerVariants(basePower, shot) {
 function aiValidateBallInHandPot(cue, shot, prof) {
   const basePower = clamp(shot.powerPercent || 34, 22, prof?.searchDepth >= 3 ? 82 : 72);
   const valid = [];
-  for (const pw of aiBallInHandPowerVariants(basePower, shot)) {
-    const testShot = { ...shot, powerPercent: pw, type: "ballInHandPot", isSafety: false };
-    const validated = aiValidateShotBySimulation(testShot);
-    if (validated) valid.push(validated);
+  // Bei geraden BIH-Schüssen kann die Weiße der Zielkugel in die Tasche folgen
+  // (Follow-Scratch). Leichtes Draw-Effet (-0.10) verhindert das und gibt der
+  // Simulation eine realistischere Chance, den Stoß zu bestätigen.
+  const spinOptions = (shot.dotN ?? 0) >= 0.87 ? [0, -0.10] : [0];
+  for (const sY of spinOptions) {
+    for (const pw of aiBallInHandPowerVariants(basePower, shot)) {
+      const testShot = { ...shot, powerPercent: pw, spinY: sY, type: "ballInHandPot", isSafety: false };
+      const validated = aiValidateShotBySimulation(testShot);
+      if (validated) valid.push(validated);
+    }
+    if (valid.length) break; // Center-Ball funktioniert → Draw-Variant nicht nötig
   }
   if (!valid.length) return null;
 
@@ -3574,7 +3864,7 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
           const basePower = clamp(Math.max(shot.powerPercent || 0, 46 + dTP * 0.018), 48, 80);
           const powers = aiUniqueSortedPowers([basePower, basePower + 8, basePower + 16, 58, 68, 78]);
           for (const pw of powers) {
-            const testShot = {
+            const baseTestShot = {
               ...shot,
               type: "ballInHandStraightLock",
               isSafety: false,
@@ -3582,7 +3872,9 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
               spinHint: "none",
               noRandomError: true
             };
-            const validated = aiValidateShotBySimulation(testShot);
+            // Zuerst Center; schlägt das durch Follow-Scratch fehl → Draw-Fallback.
+            let validated = aiValidateShotBySimulation({ ...baseTestShot, spinY: 0 });
+            if (!validated) validated = aiValidateShotBySimulation({ ...baseTestShot, spinY: -0.10 });
             if (!validated) continue;
             const posValue = aiScoreCuePositionForNextShot(aiSimCueBall(validated.sim), validated.sim.finalBalls, validated.targetNum);
             const score = 500000
@@ -3668,25 +3960,23 @@ function aiScoreBallInHandControl(validated, prof) {
   };
 }
 
-async function aiFindProBallInHandPlan(cue, targets, prof, token) {
+async function aiFindProBallInHandPlan(cue, targets, prof, token, tableAnalysis) {
   const fastLock = aiFindFastStraightBallInHandPot(cue, targets, prof);
   if (fastLock) return fastLock;
 
   const started = performance.now();
   const savedX = cue.x, savedY = cue.y;
 
-  // Schneller zweistufiger Ball-in-Hand-Planer:
+  // Zweistufiger BIH-Planer (budget=balanced):
   // 1. viele günstige Geometrie-Kandidaten prüfen,
   // 2. nur die besten wenigen Kandidaten voll simulieren.
-  // Dadurch bleibt die Profi-KI auch bei Ball-in-Hand normalerweise deutlich
-  // unter 2–3 Sekunden, ohne wieder einfache offene Bälle zu verschießen.
   const offsets = [30, 42, 58, 78, 104, 138, 182, 240, 318, 420];
   const laterals = [0, -7, 7, -16, 16, -29, 29, -46, 46];
   const MAX_TARGET_POCKET_PAIRS = 24;
-  const MAX_GEO_CANDIDATES = 40;
-  const MAX_FULL_VALIDATIONS = 16;
-  const SOFT_TIME_BUDGET_MS = 1150;
-  const HARD_TIME_BUDGET_MS = 1800;
+  const MAX_GEO_CANDIDATES = 48;
+  const MAX_FULL_VALIDATIONS = 20;
+  const SOFT_TIME_BUDGET_MS = 1300;
+  const HARD_TIME_BUDGET_MS = 2100;
 
   const targetPocketPairs = [];
   for (const t of targets) {
@@ -3736,11 +4026,13 @@ async function aiFindProBallInHandPlan(cue, targets, prof, token) {
           cue.x = cx; cue.y = cy;
           const shot = aiEvaluatePotShot(cue, t, p);
           if (!shot) continue;
+          // fallbackPos vor dem dotN-Filter: auch bei dünnem Cut bleibt eine
+          // sinnvolle Cue-Startposition für den Notfall-Pot erhalten.
+          if (!fallbackPos) fallbackPos = { x: cx, y: cy };
           // Bei Ball-in-Hand auf Profi-Niveau werden bewusst nur sehr gute
           // Geometrien vollständig simuliert. Dünne Cuts sind unnötig, wenn die
           // Weiße frei gelegt werden darf.
           if (shot.dotN < 0.82) continue;
-          if (!fallbackPos) fallbackPos = { x: cx, y: cy };
 
           const straightTier = shot.dotN >= 0.992 ? 3 : (shot.dotN >= 0.970 ? 2 : (shot.dotN >= 0.925 ? 1 : 0));
           const cueRailSafety = Math.min(cx - PLAY_X1, PLAY_X2 - cx, cy - PLAY_Y1, PLAY_Y2 - cy);
@@ -3780,14 +4072,23 @@ async function aiFindProBallInHandPlan(cue, targets, prof, token) {
       cue.x = savedX; cue.y = savedY;   // Originalposition vor yield herstellen
       await yieldToBrowser();
       if (token !== game.aiPlanToken) return null;
+      if (game.paused) return null;
       if (!validated) continue;
       const control = aiScoreBallInHandControl(validated, prof);
+      const bihCtx8 = tableAnalysis ? { variant: game.variant, player: game.players[game.currentPlayer] } : null;
+      const bihRob8 = tableAnalysis ? {
+        bestSim: validated.sim, potProbability: 1, scratchRisk: 0, foulRisk: 0, positionValue: control.posValue
+      } : null;
+      const eightBonus = tableAnalysis
+        ? EightBallStrategy.scoreCandidate(bihCtx8, { targetNum: validated.targetNum }, bihRob8, tableAnalysis, prof)
+        : 0;
       const totalScore = 200000
         + cand.geoScore
         + validated.score
         + clamp(control.posValue, -120, 145) * 4.4
         + (control.plan?.score ?? 0) * 2.4
         + control.controlBonus
+        + eightBonus
         - control.shot.powerPercent * 0.16;
 
       if (!best || totalScore > best.score) {
@@ -3983,7 +4284,7 @@ function aiHasHardDirectEdgeWindow(cue, target) {
 }
 
 function aiFindHardVisibleEdgeContactGuard(cue, target, prof) {
-  if (!cue || !target || game.variant !== "9ball" || prof?.searchDepth < 3) return null;
+  if (!cue || !target || prof?.searchDepth < 3) return null;
 
   const centerVisible = clearPath(cue, target.x, target.y, target);
   if (!centerVisible && !aiHasHardDirectEdgeWindow(cue, target)) return null;
@@ -4105,6 +4406,10 @@ function aiFindHardDirectPotLock(cue, target, prof) {
       };
       const validated = aiValidateShotBySimulation(testShot);
       if (!validated) continue;
+      // Robust check: verify the pot survives small aim/power perturbations.
+      // noRandomError must be removed so aiSimulateRobust actually draws samples.
+      const robustCheck = aiSimulateRobust({ ...testShot, noRandomError: false }, 5, 0.45, 0.04);
+      if (robustCheck.potProbability < HARD_SAFE_POT_THRESHOLD) continue;
       const cueAfter = aiSimCueBall(validated.sim);
       const posValue = aiScoreCuePositionForNextShot(cueAfter, validated.sim.finalBalls, validated.targetNum);
       const score = 420000
@@ -4121,9 +4426,9 @@ function aiFindHardDirectPotLock(cue, target, prof) {
         spinHint: "none",
         bihControl: { spinX: 0, spinY: 0, mode: "pot-first" },
         robust: {
-          potProbability: 1,
-          scratchRisk: 0,
-          foulRisk: 0,
+          potProbability: robustCheck.potProbability,
+          scratchRisk: robustCheck.scratchRisk,
+          foulRisk: robustCheck.foulRisk,
           positionValue: posValue,
           bestSim: validated.sim
         },
@@ -4172,7 +4477,12 @@ function aiApplyHardDirectPotGuardUniversal(cue, targets, bestShot, prof) {
   }
 
   for (const target of targets) {
-    if (!clearPath(cue, target.x, target.y, target) && !aiHasHardDirectEdgeWindow(cue, target)) continue;
+    const centerVisible = clearPath(cue, target.x, target.y, target);
+    if (!centerVisible && !aiHasHardDirectEdgeWindow(cue, target)) continue;
+    if (!centerVisible) {
+      const edgeGuard = aiFindHardVisibleEdgeContactGuard(cue, target, prof);
+      if (edgeGuard) return edgeGuard;
+    }
     const legalFallback = aiFindLegalDirectFallback(cue, target, prof);
     if (legalFallback) {
       return {
@@ -4188,9 +4498,7 @@ function aiApplyHardDirectPotGuardUniversal(cue, targets, bestShot, prof) {
   return bestShot;
 }
 
-function aiApplyHardNineBallDirectGuard(cue, target, bestShot, prof) {
-  if (!cue || !target || game.variant !== "9ball" || prof?.searchDepth < 3 || game.isBreakShot) return bestShot;
-
+function aiApplyDirectContactGuardForTarget(cue, target, bestShot, prof) {
   const centerVisible = clearPath(cue, target.x, target.y, target);
   const isKick = bestShot && (bestShot.type === "kickShot" || bestShot.type === "multiRailKick" || bestShot.type === "railProbeKick");
   const tooSoft = !bestShot || (bestShot.powerPercent || 0) < (bestShot.isSafety ? 50 : 38);
@@ -4199,18 +4507,12 @@ function aiApplyHardNineBallDirectGuard(cue, target, bestShot, prof) {
   const riskyPot = bestShot && !bestShot.isSafety && ((bestShot.robust?.foulRisk ?? 0) > 0.015 || (bestShot.robust?.scratchRisk ?? 0) > 0.10);
   const weakPot = bestShot && !bestShot.isSafety && ((bestShot.robust?.potProbability ?? 0) < 0.86 || !selectedPotActuallyPots);
 
-  // Verdeckte Mitte, aber sichtbare Kante: direkter Pflichtkontakt schlägt
-  // Kick/Vorbande. Damit wird kein blindes Bandenfoul gespielt, nur weil die
-  // Kugelmitte nicht frei ist.
   if (!centerVisible) {
     const edgeGuard = aiFindHardVisibleEdgeContactGuard(cue, target, prof);
     if (edgeGuard && (isKick || !bestShot || tooSoft || exactIllegal || bestShot.isSafety)) return edgeGuard;
     return bestShot;
   }
 
-  // Wenn ein Direkt-Pot der Pflichtkugel möglich ist, schlägt er Safety, Effet
-  // und Folgestellung. Das verhindert die bisherigen Aussetzer bei einfachen
-  // Kugeln, bleibt aber schnell, weil nur wenige Kandidaten geprüft werden.
   const lockedPot = aiFindHardDirectPotLock(cue, target, prof);
   if (lockedPot && (isKick || !bestShot || bestShot.isSafety || tooSoft || exactIllegal || riskyPot || weakPot)) {
     return lockedPot;
@@ -4251,6 +4553,11 @@ function aiApplyHardNineBallDirectGuard(cue, target, bestShot, prof) {
   };
 }
 
+function aiApplyHardNineBallDirectGuard(cue, target, bestShot, prof) {
+  if (!cue || !target || game.variant !== "9ball" || prof?.searchDepth < 3 || game.isBreakShot) return bestShot;
+  return aiApplyDirectContactGuardForTarget(cue, target, bestShot, prof);
+}
+
 // ─── Phase-based AI Architecture ────────────────────────────────────────────
 
 function aiIsFirstHitLegalForTarget(sim, targetNum) {
@@ -4268,6 +4575,41 @@ function aiIsFirstHitLegalForTarget(sim, targetNum) {
   }
 
   return true;
+}
+
+// ── 08 AI Context Builder ─────────────────────────────────────────────
+function buildAIContext(token) {
+  const prof = aiGetProfile();
+  const me   = game.players[game.currentPlayer];
+  const opp  = game.players[1 - game.currentPlayer];
+  const cue  = game.cueBall;
+
+  const ctx = {
+    variant:          game.variant,
+    difficulty:       game.difficulty,
+    profile:          prof,
+    state:            game.state,
+    cueBall:          cue,
+    balls:            game.balls,
+    currentPlayer:    game.currentPlayer,
+    player:           me,
+    opponent:         opp,
+    isBreakShot:      game.isBreakShot,
+    ballInHand:       game.ballInHand,
+    placingCue:       game.placingCue,
+    kitchenOnly:      game.kitchenOnly,
+    pushOutAvailable: game.pushOutAvailable,
+    token:            token,
+    timeBudgetMs:     2500,
+  };
+
+  // Rules layer – replaces inline variant-checks scattered across the AI
+  ctx.legalTargets        = Rules.getLegalTargets(ctx);
+  ctx.firstHitRequirement = Rules.getFirstHitRequirement(ctx);
+  ctx.potRequirement      = Rules.getPotRequirement(ctx);
+  ctx.callRequirement     = Rules.getCallRequirement(ctx);
+
+  return ctx;
 }
 
 function aiCheckFirstHitLegal(sim, targetNum) {
@@ -4390,6 +4732,7 @@ function aiScoreCuePositionForNextShot(cueBall, finalBalls, justPottedNum = null
   return dist < 65 ? -35 : dist > 520 ? Math.max(-70, 45 - (dist - 520) * 0.14) : Math.max(0, 85 - Math.abs(dist - 220) * 0.24);
 }
 
+// ── 09 AI Strategy Modules ────────────────────────────────────────────
 function aiBuildCueControlPlan(shot, cueFinal, finalBalls, prof) {
   if (!shot || !cueFinal || !finalBalls || shot.isSafety) return null;
   const nextTgt = aiFindNextTargetFromState(finalBalls, cueFinal, shot.targetNum);
@@ -4462,6 +4805,181 @@ function aiSimulateRobust(baseShot, samples, aimNoiseDeg, powerNoise) {
   return { potProbability: potCount / denom, scratchRisk: scratchCount / denom, foulRisk: foulCount / denom, positionValue: bestPosVal, bestSim };
 }
 
+// ── CommonStrategy – named scoring components, same numbers as before ──
+const CommonStrategy = {
+
+  // Pot probability → raw pot score incl. quality bonuses
+  scorePot(potProb, prof) {
+    const base = potProb * (prof.searchDepth >= 3 ? 310 : 120);
+    let bonus = 0;
+    if      (potProb >= 0.86) bonus += 38;
+    else if (potProb >= 0.74) bonus += 16;
+    else if (prof.searchDepth >= 3 && potProb < 0.50) bonus -= 70;
+    return base + bonus;
+  },
+
+  // Combined position + cue-control-plan value
+  scorePosition(posValue, planScore, prof) {
+    const posV  = clamp(posValue ?? 0, -100, 135) * (prof.positionWeight || 0.5);
+    const planV = (planScore ?? 0) * (prof.searchDepth >= 3 ? 0.70 : 0.25);
+    return posV + planV;
+  },
+
+  // Bonus for having many balls left (more shots available)
+  scoreNextShot(finalBalls) {
+    const nextTgts = (finalBalls || []).filter(b => b.inPlay && !b.isCue);
+    return nextTgts.length > 0 ? 45 * clamp(nextTgts.length / 7, 0, 1) : 35;
+  },
+
+  // Scratch risk penalty
+  scoreScratchRisk(risk) { return -risk * 560; },
+
+  // Foul risk penalty
+  scoreFoulRisk(risk)    { return -risk * 500; },
+
+  // Penalty for leaving the opponent a gift if we miss
+  scoreSellout(risk)     { return -risk * 95; },
+
+  // Power penalty (keep shots controlled)
+  scorePower(powerPercent, prof) {
+    const base        = -powerPercent * (prof.searchDepth >= 3 ? 0.36 : 0.12);
+    const highPenalty = -Math.max(0, powerPercent - 58) * (prof.searchDepth >= 3 ? 1.35 : 0.25);
+    return base + highPenalty;
+  },
+
+  // Thin-cut penalty (high-angle cuts are unreliable)
+  scoreCutRisk(dotN, prof) {
+    return -(1 - (dotN ?? 0.75)) * (prof.searchDepth >= 3 ? 18 : 6);
+  },
+
+  // Reward confirmed legal first hit; penalise illegal (all difficulty levels)
+  scoreLegality(firstHitNum, req) {
+    if (!req || req.type === "any" || firstHitNum == null) return 0;
+    return Rules.isFirstHitLegal(firstHitNum, req) ? 18 : -180;
+  },
+
+  // Compute how much of a "gift" a miss would leave the opponent
+  calcSelloutRisk(robust, targetNum) {
+    if (!robust.bestSim || robust.bestSim.potted.includes(targetNum)) return 0;
+    const cueAfterMiss = aiSimCueBall(robust.bestSim);
+    if (!cueAfterMiss) return 0;
+    let risk = 0;
+    for (const ob of robust.bestSim.finalBalls.filter(b => b.inPlay && !b.isCue)) {
+      for (const p of POCKETS) {
+        const dxTP = p.x - ob.x, dyTP = p.y - ob.y;
+        const dTP = Math.hypot(dxTP, dyTP);
+        if (dTP < 1) continue;
+        const nx = dxTP / dTP, ny = dyTP / dTP;
+        const ghostX = ob.x - nx * ob.r * 2, ghostY = ob.y - ny * ob.r * 2;
+        if (aiClearPathInBallState(cueAfterMiss.x, cueAfterMiss.y, ghostX, ghostY, robust.bestSim.finalBalls, [ob.num]) &&
+            aiClearPathInBallState(ob.x, ob.y, p.x, p.y, robust.bestSim.finalBalls, [ob.num])) {
+          risk = Math.min(1, risk + 0.25);
+          break;
+        }
+      }
+      if (risk >= 1) break;
+    }
+    return risk;
+  },
+
+  // Full safety score (hide + rail distance + kick bonus – penalties)
+  scoreSafety(sim, targetNum, robust, cand, prof) {
+    const hideScore  = aiSafetyVisibilityScore(sim, targetNum);
+    const railScore  = aiRailDistanceSafetyScore(sim, targetNum);
+    const cueBall    = aiSimCueBall(sim);
+    const nearPocketPenalty = cueBall && POCKETS.some(p => Math.hypot(cueBall.x - p.x, cueBall.y - p.y) < POCKET_NEAR) ? 90 : 0;
+    const legalKickBonus = (cand.type === "multiRailKick" || cand.type === "railProbeKick" || cand.type === "kickShot")
+      ? 36 + (cand.kickRails || 1) * 10 : 0;
+    let score = Math.max(hideScore, 0) * 1.45 + railScore * 0.70
+      + legalKickBonus - nearPocketPenalty
+      - robust.scratchRisk * 260 - cand.powerPercent * 0.10;
+    if (prof.searchDepth >= 3 && !(cand.type === "multiRailKick" || cand.type === "railProbeKick" || cand.type === "kickShot")) score -= 28;
+    return score;
+  },
+};
+
+// 8-Ball variant-specific tactical scoring — computed on top of CommonStrategy
+const EightBallStrategy = {
+
+  // Snapshot of 8-ball table state — call once per planning turn, not per candidate
+  analyzeTable(ctx) {
+    const { balls, player: me } = ctx;
+    const inPlay   = balls.filter(b => b.inPlay && !b.isCue && b.num !== 8);
+    const ownBalls = inPlay.filter(b => me.group && isMyGroupBall(b.num, me));
+    const eight    = balls.find(b => b.num === 8 && b.inPlay);
+
+    // Count own balls that have no clear ball→pocket path (blocked by other balls)
+    let ownBlocked = 0;
+    for (const ob of ownBalls) {
+      if (!POCKETS.some(p => aiClearPathInBallState(ob.x, ob.y, p.x, p.y, balls, [ob.num]))) {
+        ownBlocked++;
+      }
+    }
+
+    return {
+      ownCount:    ownBalls.length,
+      ownBlocked,
+      isLastBall:  ownBalls.length === 1,
+      lastBallNum: ownBalls.length === 1 ? ownBalls[0].num : null,
+      eightInPlay: !!eight,
+    };
+  },
+
+  // Per-candidate 8-ball tactical bonus/penalty
+  scoreCandidate(ctx, cand, robust, tableAnalysis, prof) {
+    if (ctx.variant !== "8ball" || !ctx.player.group) return 0;
+    const me        = ctx.player;
+    const finalSim  = robust.bestSim;
+    const potted    = finalSim?.potted ?? [];
+    const cueFinal  = finalSim ? aiSimCueBall(finalSim) : null;
+    const isOwnBall = cand.targetNum != null && isMyGroupBall(cand.targetNum, me);
+    let bonus = 0;
+
+    if (isOwnBall && potted.includes(cand.targetNum)) {
+      bonus += 30;  // reward: own group ball potted
+
+      // Runout quality + breakout: one loop over post-shot own balls
+      if (finalSim) {
+        const ownAfter = finalSim.finalBalls.filter(b => b.inPlay && !b.isCue && isMyGroupBall(b.num, me));
+        let openAfter = 0, blockedAfter = 0;
+        for (const ob of ownAfter) {
+          if (POCKETS.some(p => aiClearPathInBallState(ob.x, ob.y, p.x, p.y, finalSim.finalBalls, [ob.num]))) {
+            openAfter++;
+          } else {
+            blockedAfter++;
+          }
+        }
+        // Runout quality: fraction of own balls with open pocket paths after this shot (0–28 pts)
+        bonus += ownAfter.length > 0
+          ? Math.round((openAfter / ownAfter.length) * 28)
+          : 28;  // all own cleared
+        // Breakout bonus: this shot freed at least one previously blocked own ball
+        if (tableAnalysis.ownBlocked > 0 && blockedAfter < tableAnalysis.ownBlocked) bonus += 28;
+      }
+
+      // Last group ball → value landing with a clear line on the 8
+      if (tableAnalysis.isLastBall && cueFinal && finalSim) {
+        const eight = finalSim.finalBalls.find(b => b.num === 8 && b.inPlay);
+        if (eight) {
+          const has8Path = POCKETS.some(p => {
+            const dxTP = p.x - eight.x, dyTP = p.y - eight.y;
+            const dTP  = Math.hypot(dxTP, dyTP);
+            if (dTP < 1) return false;
+            const nx = dxTP / dTP, ny = dyTP / dTP;
+            const gx = eight.x - nx * BALL_R * 2, gy = eight.y - ny * BALL_R * 2;
+            return aiClearPathInBallState(cueFinal.x, cueFinal.y, gx, gy, finalSim.finalBalls, [eight.num]) &&
+                   aiClearPathInBallState(eight.x, eight.y, p.x, p.y, finalSim.finalBalls, [eight.num]);
+          });
+          bonus += has8Path ? 120 : -80;
+        }
+      }
+    }
+
+    return bonus;
+  },
+};
+
+// ── 10 AI Candidate Generation ────────────────────────────────────────
 function aiBuildDirectPotCandidates(cue, targets) {
   const candidates = [];
   const prof = aiGetProfile();
@@ -5133,6 +5651,33 @@ function aiFindHardRailPotLock(cue, targets, prof) {
   return best;
 }
 
+// Normalises any candidate object to the unified ShotCandidate shape.
+// Fills missing fields with safe defaults — never overwrites existing values.
+function normalizeShotCandidate(cand, source) {
+  let intent;
+  if      (cand.isJump && cand.isSafety)  intent = "jumpEscape";
+  else if (cand.isJump)                   intent = "pot";
+  else if (cand.type === "kickShot" || cand.type === "multiRailKick" || cand.type === "railProbeKick") intent = "legalContact";
+  else if (cand.isSafety)                 intent = "safety";
+  else if (cand.type === "comboShot")     intent = "combo";
+  else if (cand.type === "ballInHandPot" || cand.type === "ballInHandStraightLock") intent = "pot";
+  else if (cand.type === "safety" || cand.type === "ballInHandSafety") intent = "safety";
+  else                                    intent = "pot";
+
+  return {
+    ...cand,
+    intent:        cand.intent        ?? intent,
+    spinX:         cand.spinX         ?? 0,
+    spinY:         cand.spinY         ?? 0,
+    cueElevation:  cand.cueElevation  ?? 0,
+    cueType:       cand.cueType       ?? "playing",
+    noRandomError: cand.noRandomError ?? false,
+    objectNum:     cand.objectNum     ?? cand.comboThrough ?? cand.targetNum ?? null,
+    ruleTags:      cand.ruleTags      ?? [],
+    source:        source             ?? cand.source ?? "unknown",
+  };
+}
+
 function generateShotCandidates(cue, targets, prof) {
   let candidates = [];
 
@@ -5176,10 +5721,11 @@ function generateShotCandidates(cue, targets, prof) {
     candidates.push(...kicks);
   }
 
-  return candidates;
+  return candidates.map(c => normalizeShotCandidate(c));
 }
 
-function evaluateShotCandidate(cand, prof) {
+// ── 11 AI Candidate Evaluation ────────────────────────────────────────
+function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   let samples;
   if (cand.type === "kickShot" || cand.type === "multiRailKick" || cand.type === "railProbeKick") {
     samples = aiIsHardenedProfi(prof) ? 5 : 3;
@@ -5201,59 +5747,28 @@ function evaluateShotCandidate(cand, prof) {
   if (cand.isSafety) {
     const sim = robust.bestSim;
     if (!sim || !aiSafetyShotLegal(sim, cand.targetNum)) return null;
-    const hideScore = aiSafetyVisibilityScore(sim, cand.targetNum);
-    const railScore = aiRailDistanceSafetyScore(sim, cand.targetNum);
-    const cueBall = aiSimCueBall(sim);
-    const nearPocketPenalty = cueBall && POCKETS.some(p => Math.hypot(cueBall.x - p.x, cueBall.y - p.y) < POCKET_NEAR) ? 90 : 0;
-    const legalKickBonus = (cand.type === "multiRailKick" || cand.type === "railProbeKick" || cand.type === "kickShot") ? 36 + (cand.kickRails || 1) * 10 : 0;
     if (aiIsHardenedProfi(prof) && (robust.scratchRisk > HARD_SCRATCH_VETO_THRESHOLD || robust.foulRisk > 0.06)) return null;
-    score = Math.max(hideScore, 0) * 1.45 + railScore * 0.70 + legalKickBonus - nearPocketPenalty - robust.scratchRisk * 260 - cand.powerPercent * 0.10;
-    if (prof.searchDepth >= 3 && !(cand.type === "multiRailKick" || cand.type === "railProbeKick" || cand.type === "kickShot")) score -= 28; // Profi soll offene Tische ausschießen, nicht übervorsichtig werden.
+    score = CommonStrategy.scoreSafety(sim, cand.targetNum, robust, cand, prof);
   } else {
     if (aiIsHardenedProfi(prof) && (robust.scratchRisk > HARD_SCRATCH_VETO_THRESHOLD || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD || robust.potProbability < HARD_SAFE_POT_THRESHOLD)) return null;
     if (prof.searchDepth >= 3 && (robust.scratchRisk > 0.22 || robust.foulRisk > 0.22)) return null;
     const cueFinal = robust.bestSim ? aiSimCueBall(robust.bestSim) : null;
     positionPlan = robust.bestSim ? aiBuildCueControlPlan(cand, cueFinal, robust.bestSim.finalBalls, prof) : null;
-    const potV = robust.potProbability * (prof.searchDepth >= 3 ? 310 : 120);
-    const posV = clamp(robust.positionValue, -100, 135) * (prof.positionWeight || 0.5);
-    const planV = (positionPlan?.score ?? 0) * (prof.searchDepth >= 3 ? 0.70 : 0.25);
-    const nextTgts = robust.bestSim ? robust.bestSim.finalBalls.filter(b => b.inPlay && !b.isCue) : [];
-    const nextShotV = nextTgts.length > 0 ? 45 * clamp(nextTgts.length / 7, 0, 1) : 35;
-    let selloutRisk = 0;
-    if (robust.bestSim && !robust.bestSim.potted.includes(cand.targetNum)) {
-      const cueAfterMiss = aiSimCueBall(robust.bestSim);
-      if (cueAfterMiss) {
-        for (const ob of robust.bestSim.finalBalls.filter(b => b.inPlay && !b.isCue)) {
-          for (const p of POCKETS) {
-            const dxTP = p.x - ob.x, dyTP = p.y - ob.y;
-            const dTP = Math.hypot(dxTP, dyTP);
-            if (dTP < 1) continue;
-            const nx = dxTP / dTP, ny = dyTP / dTP;
-            const ghostX = ob.x - nx * ob.r * 2, ghostY = ob.y - ny * ob.r * 2;
-            if (aiClearPathInBallState(cueAfterMiss.x, cueAfterMiss.y, ghostX, ghostY, robust.bestSim.finalBalls, [ob.num]) &&
-                aiClearPathInBallState(ob.x, ob.y, p.x, p.y, robust.bestSim.finalBalls, [ob.num])) {
-              selloutRisk = Math.min(1, selloutRisk + 0.25);
-              break;
-            }
-          }
-          if (selloutRisk >= 1) break;
-        }
-      }
-    }
-    const cutRiskPenalty = (1 - (cand.dotN ?? 0.75)) * (prof.searchDepth >= 3 ? 18 : 6);
-    const highPowerPenalty = Math.max(0, cand.powerPercent - 58) * (prof.searchDepth >= 3 ? 1.35 : 0.25);
-    score = potV + posV + planV + nextShotV
-      - robust.scratchRisk * 560
-      - robust.foulRisk * 500
-      - selloutRisk * 95
-      - cand.powerPercent * (prof.searchDepth >= 3 ? 0.36 : 0.12)
-      - highPowerPenalty
-      - cutRiskPenalty;
+    const selloutRisk = CommonStrategy.calcSelloutRisk(robust, cand.targetNum);
+    score = CommonStrategy.scorePot(robust.potProbability, prof)
+          + CommonStrategy.scorePosition(robust.positionValue, positionPlan?.score, prof)
+          + CommonStrategy.scoreNextShot(robust.bestSim?.finalBalls)
+          + CommonStrategy.scoreScratchRisk(robust.scratchRisk)
+          + CommonStrategy.scoreFoulRisk(robust.foulRisk)
+          + CommonStrategy.scoreSellout(selloutRisk)
+          + CommonStrategy.scorePower(cand.powerPercent, prof)
+          + CommonStrategy.scoreCutRisk(cand.dotN, prof);
     if (aiIsHardenedProfi(prof) && robust.potProbability >= HARD_OPEN_POT_THRESHOLD && robust.scratchRisk <= HARD_SCRATCH_VETO_THRESHOLD && robust.foulRisk <= HARD_FOUL_VETO_THRESHOLD) score += 200000;
-    if (robust.potProbability >= 0.86) score += 38;
-    else if (robust.potProbability >= 0.74) score += 16;
-    else if (prof.searchDepth >= 3 && robust.potProbability < 0.50) score -= 70;
     if (cand.type === "comboShot" && cand.targetNum === 9) score += robust.potProbability * 120;
+    if (ctx) {
+      score += CommonStrategy.scoreLegality(robust.bestSim?.firstHit, ctx.firstHitRequirement);
+      if (tableAnalysis) score += EightBallStrategy.scoreCandidate(ctx, cand, robust, tableAnalysis, prof);
+    }
   }
   if (cand.type === "jumpContactSafety") {
     let score = 0;
@@ -5349,35 +5864,102 @@ function aiSelectSpin(shot) {
   game.spinY = spinY;
 }
 
-// ─── Debug overlay// ─── Debug overlay ───────────────────────────────────────────────────────────
+// ── 19 Debug Tools ────────────────────────────────────────────────────
 let _aiDebugMode = false;
 let _aiLastDebugInfo = null;
+
+function aiDebugSelectedReason(shot, bestPot, bestSafety) {
+  if (!shot) return "none";
+  if (shot.ballInHandPerfect || (shot.type ?? "").includes("ballInHand") || (shot.type ?? "").includes("BallInHand")) return "ball-in-hand planner";
+  if (shot.isJump) return `jump (blocker:${shot.blockerNum ?? "?"})`;
+  if (aiIsKickShotType(shot)) return `kick (${shot.kickRails ?? 1}-rail)`;
+  if (shot.type === "hardLongPotLock") return "hard long-pot lock";
+  if (shot.type === "hardRailPotLock") return "hard rail-pot lock";
+  if (shot.type === "hardDirectPotLock" || shot.type === "hardDirectContactGuard" || shot.type === "hardUniversalContactGuard") return "hard direct lock";
+  if (shot.type === "hardFinalFallbackPot") return "hard fallback (pot)";
+  if (shot.type === "hardFinalFallbackSafety" || shot.type === "hardDirectEmergencyGuard" || shot.type === "hardBlockedLastResort") return "hard emergency";
+  if (shot.isSafety && bestPot) return `safety > pot (${(shot.score??-Infinity).toFixed(1)} vs ${(bestPot.score??-Infinity).toFixed(1)})`;
+  if (shot.isSafety) return "safety (no pot)";
+  return `pot t:${shot.targetNum ?? "?"} p:${((shot.robust?.potProbability ?? 0) * 100).toFixed(0)}%`;
+}
+
+function aiDebugExport() {
+  if (!_aiLastDebugInfo) return;
+  const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const blob = new Blob([JSON.stringify(_aiLastDebugInfo, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `ki-debug-${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 function aiDrawDebugOverlay(ctx) {
   if (!_aiDebugMode || !_aiLastDebugInfo) return;
   const info = _aiLastDebugInfo;
   ctx.save();
   ctx.font = "11px monospace";
-  const rows = Math.min((info.candidates?.length || 0) + 3, 15);
-  ctx.fillStyle = "rgba(0,0,0,0.65)";
-  ctx.fillRect(PLAY_X1, PLAY_Y1, 290, rows * 14 + 10);
+  const candRows = Math.min((info.candidates?.length || 0), 8);
+  const totalRows = candRows + 5;
+  const BOX_W = 340;
+  ctx.fillStyle = "rgba(0,0,0,0.70)";
+  ctx.fillRect(PLAY_X1, PLAY_Y1, BOX_W, totalRows * 14 + 10);
+
+  // Row 1: profile / variant / counts / duration
+  const tgts = (info.legalTargets ?? []).join(",");
   ctx.fillStyle = "#0f0";
-  ctx.fillText(`AI [${info.profile}]  cands:${info.totalCandidates ?? 0}/${info.evaluatedCandidates ?? 0}  ${info.durationMs ?? 0}ms`, PLAY_X1 + 4, PLAY_Y1 + 13);
+  ctx.fillText(
+    `AI[${info.profile}/${info.variant ?? "?"}] cands:${info.totalCandidates ?? 0}→${info.filteredCandidates ?? 0}→${info.evaluatedCandidates ?? 0}  ${info.durationMs ?? 0}ms  tgt:[${tgts}]`,
+    PLAY_X1 + 4, PLAY_Y1 + 13
+  );
+
+  // Row 2: selected shot + reason
   if (info.selected) {
     const s = info.selected;
     ctx.fillStyle = "#ff0";
-    ctx.fillText(`→ ${s.type}  sc:${s.score?.toFixed(1)}  pot:${((s.robust?.potProbability ?? 0) * 100).toFixed(0)}%`, PLAY_X1 + 4, PLAY_Y1 + 26);
-    if (info.finalValidation) {
-      ctx.fillText(`final:${info.finalValidation.passed ? "ok" : info.finalValidation.reason}`, PLAY_X1 + 4, PLAY_Y1 + 39);
-    }
+    const potPct = ((s.robust?.potProbability ?? 0) * 100).toFixed(0);
+    const scr = (s.robust?.scratchRisk ?? 0).toFixed(3);
+    ctx.fillText(
+      `→ ${(s.type ?? "?").slice(0, 20)}  sc:${s.score?.toFixed(1)}  pot:${potPct}%  scr:${scr}`,
+      PLAY_X1 + 4, PLAY_Y1 + 26
+    );
+    // Row 3: selected reason
+    ctx.fillStyle = "#adf";
+    ctx.fillText(`  ${info.selectedReason ?? ""}`, PLAY_X1 + 4, PLAY_Y1 + 39);
   }
-  let y = PLAY_Y1 + 40;
-  for (const c of (info.candidates || []).slice(0, 10)) {
-    if (y > PLAY_Y1 + rows * 14 + 4) break;
-    ctx.fillStyle = c === info.selected ? "#ff0" : "#aaa";
-    ctx.fillText(`${c.type.padEnd(16)} sc:${c.score?.toFixed(1)}`, PLAY_X1 + 4, y);
+
+  // Row 4: best pot vs best safety comparison
+  const bp = info.bestPot;
+  const bs = info.bestSafety;
+  ctx.fillStyle = "#8f8";
+  const bpStr = bp ? `pot:${(bp.type ?? "").slice(0, 10)} sc:${bp.score?.toFixed(1)} p:${((bp.robust?.potProbability ?? 0)*100).toFixed(0)}%` : "pot:none";
+  const bsStr = bs ? `safe:${(bs.type ?? "").slice(0, 8)} sc:${bs.score?.toFixed(1)}` : "safe:none";
+  ctx.fillText(`${bpStr}  |  ${bsStr}`, PLAY_X1 + 4, PLAY_Y1 + 52);
+
+  // Row 5: final validation + 8-ball table analysis
+  ctx.fillStyle = "#ccc";
+  let row5 = "";
+  if (info.finalValidation) row5 += `final:${info.finalValidation.passed ? "ok" : info.finalValidation.reason}  `;
+  if (info.notScoredCount) row5 += `null:${info.notScoredCount}  `;
+  if (info.tableAnalysis8) {
+    const ta = info.tableAnalysis8;
+    row5 += `own:${ta.ownCount}(blk:${ta.ownBlocked})${ta.isLastBall ? " LAST" : ""}`;
+  }
+  if (row5) ctx.fillText(row5, PLAY_X1 + 4, PLAY_Y1 + 65);
+  ctx.fillStyle = "rgba(0,200,0,0.6)";
+  ctx.fillText("[Alt+E] Export JSON", PLAY_X1 + BOX_W - 140, PLAY_Y1 + 13);
+
+  // Candidate list
+  let y = PLAY_Y1 + 66;
+  for (const c of (info.candidates || []).slice(0, candRows)) {
     y += 13;
+    if (y > PLAY_Y1 + totalRows * 14 + 4) break;
+    ctx.fillStyle = c === info.selected ? "#ff0" : (c.isSafety ? "#88f" : "#aaa");
+    const pp = ((c.robust?.potProbability ?? 0) * 100).toFixed(0);
+    ctx.fillText(`${(c.type ?? "").slice(0, 18).padEnd(18)} sc:${(c.score ?? 0).toFixed(1)}  p:${pp}%`, PLAY_X1 + 4, y);
   }
+
+  // Ghost ball for selected pot
   if (info.selected && !info.selected.isSafety && info.selected.pocketIdx >= 0) {
     const cue = game.cueBall;
     const tgt = game.balls.find(b => b.inPlay && !b.isCue && b.num === info.selected.targetNum);
@@ -5400,14 +5982,15 @@ function yieldToBrowser() {
   return new Promise(resolve => setTimeout(resolve, 0));
 }
 
-async function evaluateCandidatesAsync(allCands, prof) {
+async function evaluateCandidatesAsync(allCands, prof, ctx, tableAnalysis) {
   const evaluated = [];
   let sliceStart = performance.now();
   for (let i = 0; i < allCands.length; i++) {
-    const ev = evaluateShotCandidate(allCands[i], prof);
+    const ev = evaluateShotCandidate(allCands[i], prof, ctx, tableAnalysis);
     if (ev) evaluated.push(ev);
     if (performance.now() - sliceStart > 18) {
       await yieldToBrowser();
+      if (game.paused) break;
       sliceStart = performance.now();
     }
   }
@@ -5427,12 +6010,16 @@ function aiKickSequenceMatches(sim, expectedSequence, minRails = 1) {
   return true;
 }
 
-function aiFinalValidateHardShot(shot) {
+// ── 12 AI Final Validation ────────────────────────────────────────────
+function aiFinalValidateHardShot(shot, ctx) {
   if (!shot) return { ok: false, reason: "missing-shot", sim: null };
   const sim = aiSimulateShotResult(shot);
   if (!sim) return { ok: false, reason: "no-simulation", sim };
   if (sim.cuePotted) return { ok: false, reason: "scratch", sim };
-  if (!aiCheckFirstHitLegal(sim, shot.targetNum)) return { ok: false, reason: "illegal-first-hit", sim };
+  const fhLegal = ctx
+    ? Rules.isFirstHitLegal(sim.firstHit, ctx.firstHitRequirement)
+    : aiCheckFirstHitLegal(sim, shot.targetNum);
+  if (!fhLegal) return { ok: false, reason: "illegal-first-hit", sim };
   if (!aiMeetsPostContactRule(sim)) return { ok: false, reason: "no-cushion-after-contact", sim };
   if (shot.requiresPreFirstHitRail) {
     const minRails = shot.minPreFirstHitRails || Math.max(1, shot.kickRails || 1);
@@ -5641,23 +6228,21 @@ function aiDecidePushOut() {
   }
 }
 
+// ── 13 AI Planner ─────────────────────────────────────────────────────
 async function aiPlanShot() {
   const token = ++game.aiPlanToken;
   if (game.awaitingPushOutDecision) { aiDecidePushOut(); return; }
-  const cue = game.cueBall;
-  const me = game.players[game.currentPlayer];
-  const prof = aiGetProfile();
+
+  // ── Build AI context ──────────────────────────────────────────────────────
+  const _ctx    = buildAIContext(token);
+  const cue     = _ctx.cueBall;
+  const me      = _ctx.player;
+  const prof    = _ctx.profile;
+  let   targets = [..._ctx.legalTargets];
   let forcedBIHShot = null;
 
-  let targets = [];
-  if (game.variant === "9ball") {
-    const low = lowestBallOnTable();
-    const b = game.balls.find(bb => bb.num === low);
-    if (b) targets.push(b);
-  } else {
-    targets = ai8BallGetTargets(me);
-  }
-  if (targets.length === 0) targets = game.balls.filter(b => b.inPlay && !b.isCue);
+  // Computed once, used by BIH planner and evaluateCandidatesAsync
+  const tableAnalysis = game.variant === "8ball" ? EightBallStrategy.analyzeTable(_ctx) : null;
 
   // ── Ball in hand ──────────────────────────────────────────────────────────
   const wasPlacingBIH = game.placingCue;
@@ -5673,7 +6258,7 @@ async function aiPlanShot() {
         // einen tatsächlich simuliert versenkten Pot erzwingen. Die Bewertung ist
         // bewusst pot-sicherheitslastig: gerade/fast gerade Linien schlagen
         // riskantere Cuts, Positionsspiel wird danach über moderaten Längsdrall ergänzt.
-        const bihPlan = await aiFindProBallInHandPlan(cue, targets, prof, token);
+        const bihPlan = await aiFindProBallInHandPlan(cue, targets, prof, token, tableAnalysis);
         if (token !== game.aiPlanToken) return;
         if (bihPlan) {
           bestPos = bihPlan.bestPos;
@@ -5766,7 +6351,7 @@ async function aiPlanShot() {
 
     const bihCtrl = forcedBIHShot.bihControl || {};
     game.spinX = 0;
-    game.spinY = aiIsHardenedProfi(prof) ? 0 : (forcedBIHShot.type === "ballInHandStraightLock" ? 0 : clamp(bihCtrl.spinY || 0, -0.18, 0.18));
+    game.spinY = forcedBIHShot.type === "ballInHandStraightLock" ? 0 : clamp(bihCtrl.spinY || 0, -0.16, 0.16);
     if (Math.abs(game.spinY) < 0.04) game.spinY = 0;
 
     if (aiIsHardenedProfi(prof) && !game.isBreakShot) {
@@ -5828,7 +6413,7 @@ async function aiPlanShot() {
     }
     return true;
   });
-  const evaluated = await evaluateCandidatesAsync(filteredCands, prof);
+  const evaluated = await evaluateCandidatesAsync(filteredCands, prof, _ctx, tableAnalysis);
   evaluated.sort((a, b) => b.score - a.score);
 
   const potCands = evaluated.filter(c => !c.isSafety);
@@ -5955,16 +6540,27 @@ async function aiPlanShot() {
     bestShot = aiApplyHardNineBallDirectGuard(cue, targets[0], bestShot, prof);
   }
 
+  const _dbgCandsByType = {};
+  for (const c of allCands) { const k = c.type || "unknown"; _dbgCandsByType[k] = (_dbgCandsByType[k] || 0) + 1; }
   _aiLastDebugInfo = {
     profile: prof.name,
+    variant: game.variant,
+    legalTargets: targets.map(t => t.num),
     totalCandidates: allCands.length,
     filteredCandidates: filteredCands.length,
     evaluatedCandidates: evaluated.length,
+    notScoredCount: filteredCands.length - evaluated.length,
+    candidatesByType: _dbgCandsByType,
     durationMs: Math.round(performance.now() - t0),
     candidates: evaluated.slice(0, 12),
-    selected: null
+    bestPot: potCands[0] ?? null,
+    bestSafety: safeCands[0] ?? null,
+    tableAnalysis8: tableAnalysis ?? null,
+    selected: null,
+    selectedReason: null,
   };
   _aiLastDebugInfo.selected = bestShot;
+  _aiLastDebugInfo.selectedReason = aiDebugSelectedReason(bestShot, potCands[0], safeCands[0]);
   _aiLastDebugInfo.hardSpecial = bestShot ? {
     jumpUsed: !!bestShot.isJump,
     jumpCueType: bestShot.cueType,
@@ -6027,7 +6623,7 @@ async function aiPlanShot() {
     // wieder zugelassen, wenn er final validiert simuliert werden kann.
     const bihCtrl = bestShot.bihControl || {};
     game.spinX = 0;
-    game.spinY = aiIsHardenedProfi(prof) ? 0 : (bestShot.type === "ballInHandStraightLock" ? 0 : clamp(bihCtrl.spinY || 0, -0.18, 0.18));
+    game.spinY = bestShot.type === "ballInHandStraightLock" ? 0 : clamp(bihCtrl.spinY || 0, -0.16, 0.16);
     if (Math.abs(game.spinY) < 0.04) game.spinY = 0;
   } else if (bestShot.type === "hardValidatedKickFallback") {
     // Mehrbanden-Kicks dürfen kontrolliertes, final validiertes Seiteneffet behalten.
@@ -6043,7 +6639,7 @@ async function aiPlanShot() {
   }
   if (aiIsHardenedProfi(prof) && !game.isBreakShot) {
     const finalShot = aiBuildFinalShotFromGame(bestShot);
-    let finalCheck = aiFinalValidateHardShot(finalShot);
+    let finalCheck = aiFinalValidateHardShot(finalShot, _ctx);
     if (!finalCheck.ok) {
       const fallback = aiFindHardFinalFallback(cue, targets, prof, finalShot);
       if (fallback) {
@@ -6051,7 +6647,7 @@ async function aiPlanShot() {
         aiApplyHardFallbackShotState(fallback);
         if (game.variant === "8ball" && game.open8ball && bestShot.targetNum) game.calledBall = bestShot.targetNum;
         if (game.variant === "8ball" && canTarget8Ball(me)) game.called8Pocket = bestShot.pocketIdx >= 0 ? bestShot.pocketIdx : 0;
-        finalCheck = aiFinalValidateHardShot(aiBuildFinalShotFromGame(bestShot));
+        finalCheck = aiFinalValidateHardShot(aiBuildFinalShotFromGame(bestShot), _ctx);
       }
     }
     if (_aiLastDebugInfo) {
@@ -6066,7 +6662,11 @@ async function aiPlanShot() {
 
   if (typeof updateCueTypeHint === "function") updateCueTypeHint();
   updatePowerUI();
+  drawSpinCanvas(); updateSpinLabel();
+  drawElevCanvas(); updateElevLabel();
+  syncSpinElevTab();
   if (token !== game.aiPlanToken) return;
+  if (game.paused) return;
   startShot();
 }
 
@@ -6491,6 +7091,7 @@ function roundRect(ctx, x, y, w, h, r, fill, stroke) {
   if (fill) ctx.fill(); if (stroke) ctx.stroke();
 }
 
+// ── 16 Rendering ──────────────────────────────────────────────────────
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (isPortraitMode()) {
@@ -6508,6 +7109,15 @@ function render() {
     for (const b of game.balls) drawBall(b);
     drawPlacementHint();
     aiDrawDebugOverlay(ctx);
+  }
+  if (game.paused) {
+    ctx.fillStyle = "rgba(0,0,0,0.50)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold " + Math.round(canvas.height * 0.07) + "px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("⏸  PAUSE", canvas.width / 2, canvas.height / 2);
+    ctx.textAlign = "left";
   }
 }
 
@@ -6613,37 +7223,39 @@ function loop(ts = 0) {
   const elapsed = clamp(((ts || performance.now()) - _lastFrameTs) / 16.6667, 0.25, 3.0);
   _lastFrameTs = ts || performance.now();
 
-  // Bei kurzen Browser-Hängern wird die Physik in kleinen Portionen nachgeführt.
-  // Dadurch entstehen weniger sichtbare Sprünge, ohne die bewährten alten
-  // Banden-/Effetwerte vollständig umzuskalieren.
-  _physicsCarry += elapsed;
-  const updates = Math.max(1, Math.min(3, Math.floor(_physicsCarry)));
-  for (let k = 0; k < updates; k++) {
-    if (game.shotInProgress) step();
-    _physicsCarry -= 1;
-  }
-  if (_physicsCarry > 2) _physicsCarry = 1;
-
-  if (game.mode === "online" && !game.shotInProgress) tryDequeueOnlineShot();
-  if (game.aiThinking) {
-    game.aiTimer--;
-    if (game.aiTimer <= 0 && !game.aiPlanning) {
-      game.aiPlanning = true;
-      aiPlanShot()
-        .catch(err => console.error("KI-Planung fehlgeschlagen:", err))
-        .finally(() => {
-          game.aiThinking = false;
-          game.aiPlanning = false;
-        });
+  if (!game.paused) {
+    // Bei kurzen Browser-Hängern wird die Physik in kleinen Portionen nachgeführt.
+    // Dadurch entstehen weniger sichtbare Sprünge, ohne die bewährten alten
+    // Banden-/Effetwerte vollständig umzuskalieren.
+    _physicsCarry += elapsed;
+    const updates = Math.max(1, Math.min(3, Math.floor(_physicsCarry)));
+    for (let k = 0; k < updates; k++) {
+      if (game.shotInProgress) step();
+      _physicsCarry -= 1;
     }
-  }
-  if (game.foulTimer > 0) {
-    game.foulTimer--;
-    if (game.foulTimer === 0) { game.foulMessage = ""; updateUI(); }
-  }
-  if (refTimer > 0) {
-    refTimer--;
-    if (refTimer === 0) hideRefAnnounce();
+    if (_physicsCarry > 2) _physicsCarry = 1;
+
+    if (game.mode === "online" && !game.shotInProgress) tryDequeueOnlineShot();
+    if (game.aiThinking) {
+      game.aiTimer--;
+      if (game.aiTimer <= 0 && !game.aiPlanning) {
+        game.aiPlanning = true;
+        aiPlanShot()
+          .catch(err => console.error("KI-Planung fehlgeschlagen:", err))
+          .finally(() => {
+            game.aiThinking = false;
+            game.aiPlanning = false;
+          });
+      }
+    }
+    if (game.foulTimer > 0) {
+      game.foulTimer--;
+      if (game.foulTimer === 0) { game.foulMessage = ""; updateUI(); }
+    }
+    if (refTimer > 0) {
+      refTimer--;
+      if (refTimer === 0) hideRefAnnounce();
+    }
   }
   render(); updateShootButton();
   requestAnimationFrame(loop);
@@ -6977,9 +7589,15 @@ window.addEventListener("keydown", (e) => {
     sendPreview();
   } else if (e.key === "ArrowUp") { e.preventDefault(); game.powerPercent = clamp(game.powerPercent + 2, 0, 100); updatePowerUI(); sendPreview(); }
   else if (e.key === "ArrowDown") { e.preventDefault(); game.powerPercent = clamp(game.powerPercent - 2, 0, 100); updatePowerUI(); sendPreview(); }
-  else if (e.altKey && e.key.toLowerCase() === "d") { _aiDebugMode = !_aiDebugMode; }
+  else if (e.altKey && e.key.toLowerCase() === "d") {
+    _aiDebugMode = !_aiDebugMode;
+    const btn = document.getElementById("btnDebugExport");
+    if (btn) btn.style.display = _aiDebugMode ? "block" : "none";
+  }
+  else if (e.altKey && e.key.toLowerCase() === "e") { if (_aiDebugMode) aiDebugExport(); }
 });
 
+// ── 17 UI / Input / Mobile Controls ───────────────────────────────────
 const ui = {
   menu: document.getElementById("menu"),
   optVariant: document.getElementById("optVariant"),
@@ -7029,6 +7647,8 @@ const ui = {
   btnRotateTable: document.getElementById("btnRotateTable"),
   btnBasisRepeat: document.getElementById("btnBasisRepeat"),
   btnTimerExtend: document.getElementById("btnTimerExtend"),
+  btnPause: document.getElementById("btnPause"),
+  btnUndo: document.getElementById("btnUndo"),
   miniCountSection: document.getElementById("miniCountSection"),
   miniCount8Opts:   document.getElementById("miniCount8Opts"),
   miniCount9Opts:   document.getElementById("miniCount9Opts"),
@@ -7412,6 +8032,8 @@ document.getElementById("confirmCancel").addEventListener("click", () => {
 ui.btnMenu.addEventListener("click", () => {
   showConfirm("Zum Menü wechseln? Aktueller Spielstand wird zurückgesetzt.", showMenu);
 });
+document.getElementById("btnDebugExport").addEventListener("click", aiDebugExport);
+
 ui.btnRestart.addEventListener("click", () => {
   if (game.mode === "online") { showConfirm("Zum Menü wechseln? Aktueller Spielstand wird zurückgesetzt.", showMenu); return; }
   showConfirm("Spiel neu starten? Aktueller Spielstand wird zurückgesetzt.", () => {
@@ -7421,6 +8043,10 @@ ui.btnRestart.addEventListener("click", () => {
   });
 });
 ui.btnSound.addEventListener("click", () => { game.soundOn = !game.soundOn; ui.btnSound.style.opacity = game.soundOn ? "1" : "0.4"; });
+ui.btnPause.addEventListener("click", togglePause);
+ui.btnUndo.addEventListener("click", () => {
+  if (game.lastSnapshot && (!game.shotInProgress || game.paused) && game.mode !== "online") restoreSnapshot();
+});
 document.getElementById("btnFullscreen").addEventListener("click", () => {
   _fullscreen = !_fullscreen;
   document.body.classList.toggle("fullscreen-mode", _fullscreen);
@@ -7611,6 +8237,7 @@ function updateShootButton() {
   // On open table: button enabled once player has actively aimed (pressing STOSS triggers the call dialog)
   const canShoot = game.state === "aiming"
     && !game.shotInProgress
+    && !game.paused
     && game.cueBall.inPlay
     && !(game.mode === "ai" && game.currentPlayer === 1)
     && (!needsCall || game.aimActive)
@@ -7781,6 +8408,14 @@ function updateUI() {
   document.getElementById("btnOnlineSync").style.display =
     (game.mode === "online" && online.connected && online.role !== "spectator"
      && game.state !== "ended") ? "" : "none";
+  if (ui.btnPause) {
+    ui.btnPause.style.display = (game.mode === "online" || game.state === "ended") ? "none" : "";
+    ui.btnPause.textContent = game.paused ? "▶ Weiter" : "⏸ Pause";
+  }
+  if (ui.btnUndo) {
+    ui.btnUndo.style.display = (game.mode === "online" || game.state === "ended") ? "none" : "";
+    ui.btnUndo.disabled = !game.lastSnapshot || (game.shotInProgress && !game.paused) || game.mode === "online";
+  }
   _updateTimerDisplay();
   _updateExtendBtn();
   maybeShowCallModal();
@@ -7851,6 +8486,7 @@ function playerInfoText(player) {
   return `Versenkt: ${player.potted.length}`;
 }
 
+// ── 20 Initialization ─────────────────────────────────────────────────
 function newGame() {
   const savedNames = game.mode === "online"
     ? [game.players[0].name, game.players[1].name] : null;
@@ -7871,6 +8507,8 @@ function newGame() {
   game.aiThinking = false;
   game.aiPlanning = false;
   game.aiPlanToken++;
+  game.paused = false;
+  game.lastSnapshot = null;
   game.breakCushionBalls = new Set();
   game.called8Pocket = null; game.ball8PocketIdx = -1; game.selecting8Pocket = false;
   game.pushOutAvailable = false; game.inPushOut = false;
@@ -8171,6 +8809,7 @@ function handleRelayMessage(msg) {
   }
 }
 
+// ── 18 Online Sync ────────────────────────────────────────────────────
 function tryDequeueOnlineShot() {
   if (_onlineShotQueue.length === 0) return;
   if (game.state !== "aiming" || game.shotInProgress) return;
