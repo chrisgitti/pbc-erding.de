@@ -6058,7 +6058,10 @@ function aiBuildFinalShotFromGame(bestShot) {
     targetNum: bestShot?.targetNum,
     pocketIdx: bestShot?.pocketIdx ?? -1,
     isSafety: !!bestShot?.isSafety,
-    isJump: !!bestShot?.isJump
+    isJump: !!bestShot?.isJump,
+    // Validierung prüft den exakt geplanten Stoß – keine Winkelstreuung.
+    // Sonst werden präzisionsabhängige Schüsse (Combo, Rail-Nähe) zu Unrecht abgelehnt.
+    noRandomError: true
   };
 }
 
