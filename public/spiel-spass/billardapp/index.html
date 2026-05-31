@@ -1826,7 +1826,8 @@ const HARD_OPEN_POT_THRESHOLD = 0.95;
 const HARD_JUMP_SHORT_GAP = BALL_R * 2.1;
 const HARD_LONG_POT_DISTANCE = PLAY_W * 0.55;
 const HARD_RAIL_BALL_DISTANCE = BALL_R * 2.0;
-const HARD_RAIL_POT_MIN_DOT = 0.48;
+const HARD_RAIL_POT_SEARCH_DISTANCE = BALL_R * 5.5; // Suchradius für Bandenball-Erkennung in der Profi-KI
+const HARD_RAIL_POT_MIN_DOT = 0.22;                 // war 0.48; jetzt auch dünne Bandenschnitte erlaubt
 const HARD_CONTACT_WINDOW_MARGIN = BALL_R * 1.05;
 const HARD_KICK_SPIN_VARIANTS = [0, -0.16, 0.16, -0.26, 0.26];
 const HARD_JUMP_MAX_VALIDATIONS    = 80;
@@ -5940,8 +5941,14 @@ function aiPocketMatchesRailSide(pocket, railSide) {
   return false;
 }
 
-function aiRailPotAngleVariants(railSide, target, pocket) {
-  const base = [-0.020, -0.014, -0.009, -0.005, -0.002, 0, 0.002, 0.005, 0.009, 0.014, 0.020];
+function aiRailPotAngleVariants(railSide, target, pocket, dotN = 1) {
+  // Dünne Schnitte (kleines dotN) brauchen breiteren Suchbereich
+  const spread = dotN < 0.38 ? 0.032 : dotN < 0.58 ? 0.025 : 0.020;
+  const base = [
+    -spread, -spread * 0.65, -spread * 0.38,
+    -0.005, -0.002, 0, 0.002, 0.005,
+    spread * 0.38, spread * 0.65, spread
+  ];
   if (!railSide || !target || !pocket) return base;
   const railNormal = railSide === "top" ? { x: 0, y: 1 }
     : railSide === "bottom" ? { x: 0, y: -1 }
@@ -5960,36 +5967,45 @@ function aiFindHardRailPotLock(cue, targets, prof) {
   let best = null;
 
   for (const t of targets) {
-    const railInfo = aiGetNearestRailInfo(t);
+    // Erweiterter Suchradius: Bälle bis ~5,5 Kugelradien von jeder Bande werden erfasst
+    const railInfo = aiGetNearestRailInfo(t, HARD_RAIL_POT_SEARCH_DISTANCE);
     if (!railInfo) continue;
     if (!clearPath(cue, t.x, t.y, t) && !aiHasHardDirectEdgeWindow(cue, t)) continue;
 
     for (let pi = 0; pi < POCKETS.length; pi++) {
       const p = POCKETS[pi];
       if (!aiPocketMatchesRailSide(p, railInfo.side)) continue;
-      const shot = aiEvaluatePotShot(cue, t, p);
-      if (!shot) continue;
-      if ((shot.dotN ?? 0) < HARD_RAIL_POT_MIN_DOT) continue;
 
-      const railPressBonus = clamp((HARD_RAIL_BALL_DISTANCE - railInfo.dist) / HARD_RAIL_BALL_DISTANCE, 0, 1);
-      const dist = (shot.dCG || 0) + (shot.dTP || 0);
+      // aiGhostBallAngle direkt verwenden – NICHT aiEvaluatePotShot – damit
+      // prof.minDotN den Bandenball-Schnitt nicht zusätzlich aussiebt.
+      const gb = aiGhostBallAngle(cue, t, p);
+      if (!gb) continue;
+      if (gb.dotN < HARD_RAIL_POT_MIN_DOT) continue;
+
+      const { angle, dotN, dCG, dTP } = gb;
+      const railPressBonus = clamp((HARD_RAIL_POT_SEARCH_DISTANCE - railInfo.dist) / HARD_RAIL_POT_SEARCH_DISTANCE, 0, 1);
+      const dist = dCG + dTP;
       const basePower = clamp(
-        45 + dist * 0.020 + Math.max(0, 1 - (shot.dotN ?? 1)) * 22 + railPressBonus * 8,
-        50,
-        88
+        46 + dist * 0.022 + Math.max(0, 1 - dotN) * 26 + railPressBonus * 8,
+        50, 92
       );
-      const angleVariants = aiRailPotAngleVariants(railInfo.side, t, p);
-      const powerVariants = aiUniqueSortedPowers([basePower, basePower + 5, basePower + 10, basePower + 15, 56, 64, 72, 82, 88]);
+      const angleVariants = aiRailPotAngleVariants(railInfo.side, t, p, dotN);
+      const powerVariants = aiUniqueSortedPowers([
+        basePower, basePower + 5, basePower + 10, basePower + 15,
+        basePower - 5, 52, 60, 68, 76, 84, 90
+      ]);
 
       for (const da of angleVariants) {
         for (const pw of powerVariants) {
           const cand = {
-            ...shot,
             type: "hardRailPotLock",
             railSide: railInfo.side,
             railDistance: railInfo.dist,
-            angle: shot.angle + da,
-            powerPercent: clamp(pw, prof.powerMin, Math.max(prof.powerMax, 88)),
+            angle: angle + da,
+            powerPercent: clamp(pw, prof.powerMin, Math.max(prof.powerMax, 90)),
+            pocketIdx: pi,
+            targetNum: t.num,
+            dotN, dCG, dTP,
             spinX: 0,
             spinY: 0,
             spinHint: "none",
@@ -6006,11 +6022,11 @@ function aiFindHardRailPotLock(cue, targets, prof) {
           const posValue = aiScoreCuePositionForNextShot(cueAfter, check.sim.finalBalls, t.num);
           const score = 520000
             + railPressBonus * 35000
-            + (shot.dotN ?? 0) * 12000
+            + dotN * 12000
             + clamp(posValue, -100, 140) * 0.75
             - Math.abs(da) * 36000
             - Math.abs(cand.powerPercent - basePower) * 8
-            - (shot.dTP || 0) * 0.05;
+            - dTP * 0.05;
 
           const item = {
             ...cand,
@@ -6027,7 +6043,7 @@ function aiFindHardRailPotLock(cue, targets, prof) {
             score
           };
           if (!best || item.score > best.score) best = item;
-          if ((shot.dotN ?? 0) >= 0.92 && Math.abs(da) <= 0.003 && railPressBonus > 0.65) return item;
+          if (dotN >= 0.92 && Math.abs(da) <= 0.003 && railPressBonus > 0.65) return item;
         }
       }
     }
