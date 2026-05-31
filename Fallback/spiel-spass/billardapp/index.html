@@ -6036,6 +6036,135 @@ function aiFindHardRailPotLock(cue, targets, prof) {
   return best;
 }
 
+// ── Profi KI: Bank shot (Objektball von Bande ins Loch) ──────────────────
+// Spiegelt jedes Loch an der Bande → berechnet den Geistball-Winkel für den
+// gefundenen virtuellen Zielpunkt → validiert per Simulation.
+function aiFindHardBankShotCandidates(cue, targets, prof) {
+  if (!aiIsHardenedProfi(prof) || !cue || !targets?.length || game.isBreakShot) return null;
+  let best = null;
+  const SIDES = ["top", "bottom", "left", "right"];
+  const MIN_DOT_N = 0.28;
+
+  for (const t of targets) {
+    for (const side of SIDES) {
+      const railLine = aiRailLine(side);
+
+      for (let pi = 0; pi < POCKETS.length; pi++) {
+        const p = POCKETS[pi];
+
+        // Virtuelles Loch: Spiegelung des echten Lochs an der Bande
+        const vp = aiReflectPointAcrossRail(p, side);
+
+        // Richtung vom Objektball zum virtuellen Loch
+        const dvx = vp.x - t.x, dvy = vp.y - t.y;
+        const dvDist = Math.hypot(dvx, dvy);
+        if (dvDist < 1) continue;
+        const tnx = dvx / dvDist, tny = dvy / dvDist;
+
+        // Schnittpunkt Objektball-Trajektorie mit der Bande (parametrisch)
+        let s, xInt, yInt;
+        if (railLine.axis === "x") {
+          if (Math.abs(dvx) < 0.5) continue;
+          s = (railLine.value - t.x) / dvx;
+          xInt = railLine.value;
+          yInt = t.y + s * dvy;
+          if (yInt < PLAY_Y1 + CORNER_CUT * 2.2 || yInt > PLAY_Y2 - CORNER_CUT * 2.2) continue;
+        } else {
+          if (Math.abs(dvy) < 0.5) continue;
+          s = (railLine.value - t.y) / dvy;
+          xInt = t.x + s * dvx;
+          yInt = railLine.value;
+          if (xInt < PLAY_X1 + CORNER_CUT * 2.2 || xInt > PLAY_X2 - CORNER_CUT * 2.2) continue;
+        }
+        // Bande muss zwischen Objektball und virtuellem Loch liegen
+        if (s <= 0.02 || s >= 1.0) continue;
+
+        // Geistball-Position: entgegengesetzt zur Richtung t → vp
+        const gx = t.x - tnx * BALL_R * 2;
+        const gy = t.y - tny * BALL_R * 2;
+
+        const dxCG = gx - cue.x, dyCG = gy - cue.y;
+        const dCG = Math.hypot(dxCG, dyCG);
+        if (dCG < 1) continue;
+
+        // Alignment-Faktor (dotN): wie vollständig trifft die Weiße den Geistball
+        const dotN = tnx * (dxCG / dCG) + tny * (dyCG / dCG);
+        if (dotN < MIN_DOT_N) continue;
+
+        // Freie Bahn: Weiße → Geistball (Objektball ausgeblendet)
+        if (!clearPath(cue, gx, gy, t)) continue;
+        // Freie Bahn: Objektball → Bandenpunkt
+        if (!clearPath(t, xInt, yInt, t)) continue;
+
+        const dTR = Math.hypot(xInt - t.x, yInt - t.y);
+        const dRP = Math.hypot(p.x - xInt, p.y - yInt);
+        const basePower = clamp(
+          44 + (dCG + dTR + dRP) * 0.036 + Math.max(0, 1 - dotN) * 16,
+          54, 90
+        );
+
+        const angle = Math.atan2(dyCG, dxCG);
+        const angleVariants = [-0.018, -0.010, -0.004, 0, 0.004, 0.010, 0.018];
+        const powerVariants = aiUniqueSortedPowers([basePower, basePower + 5, basePower + 10, basePower + 15, basePower - 4, 58, 66, 74]);
+
+        for (const da of angleVariants) {
+          for (const pw of powerVariants) {
+            const cand = {
+              type: "bankShot",
+              angle: angle + da,
+              powerPercent: clamp(pw, prof.powerMin, Math.max(prof.powerMax, 92)),
+              pocketIdx: pi,
+              targetNum: t.num,
+              dotN,
+              dCG,
+              bankSide: side,
+              spinX: 0,
+              spinY: 0,
+              spinHint: "none",
+              cueType: "playing",
+              cueElevation: 0,
+              noRandomError: true,
+              isSafety: false
+            };
+
+            const check = aiFinalValidateHardShot(cand);
+            if (!check.ok) continue;
+            if (!check.sim?.potted?.includes(t.num)) continue;
+
+            const cueAfter = aiSimCueBall(check.sim);
+            const posValue = aiScoreCuePositionForNextShot(cueAfter, check.sim.finalBalls, t.num);
+            const score = 400000
+              + dotN * 8000
+              + clamp(posValue, -100, 140) * 0.7
+              - Math.abs(da) * 28000
+              - Math.abs(pw - basePower) * 8
+              - dTR * 0.06
+              - dRP * 0.04;
+
+            const item = {
+              ...cand,
+              sim: check.sim,
+              hardFinalValidated: true,
+              robust: {
+                potProbability: 1,
+                scratchRisk: 0,
+                foulRisk: 0,
+                bestSim: check.sim,
+                positionValue: posValue
+              },
+              positionPlan: null,
+              score
+            };
+            if (!best || item.score > best.score) best = item;
+          }
+        }
+      }
+    }
+  }
+
+  return best;
+}
+
 // Normalises any candidate object to the unified ShotCandidate shape.
 // Fills missing fields with safe defaults — never overwrites existing values.
 function normalizeShotCandidate(cand, source) {
@@ -6971,6 +7100,12 @@ async function aiPlanShot() {
     const railPotLock = aiFindHardRailPotLock(cue, targets, prof);
     if (railPotLock && (!bestShot || bestShot.isSafety || (railPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
       bestShot = railPotLock;
+    }
+    if (!bestShot || bestShot.isSafety) {
+      const bankShotLock = aiFindHardBankShotCandidates(cue, targets, prof);
+      if (bankShotLock && (!bestShot || bestShot.isSafety || (bankShotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
+        bestShot = bankShotLock;
+      }
     }
     const longPotLock = aiFindHardLongPotLock(cue, targets, prof);
     if (longPotLock && (!bestShot || bestShot.isSafety || (longPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
