@@ -103,7 +103,7 @@ function EventRow({ ev }: { ev: CalEvent }) {
 
   return (
     <div
-      data-cal-date={d.toISOString().slice(0, 10)}
+      data-cal-date={`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`}
       className={`group relative flex items-center gap-5 rounded-[1.5rem] border bg-white/[0.02] px-5 py-4 sm:gap-6 sm:px-6 overflow-hidden ${
         isTurnier
           ? 'border-gold-500/20 hover:border-gold-500/40 hover:bg-gold-500/[0.04]'
