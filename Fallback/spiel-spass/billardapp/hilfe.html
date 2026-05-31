@@ -338,6 +338,7 @@
       <ol>
         <li><a href="#s6-1">Schwierigkeitsgrade</a></li>
         <li><a href="#s6-2">KI-Debug-Modus</a></li>
+        <li><a href="#s6-3">KI-Ansage &amp; Vorschau</a></li>
       </ol>
     </li>
     <li><a href="#s7">Online-Modus</a>
@@ -356,6 +357,7 @@
         <li><a href="#s8-2">Physik &amp; Tischprofile</a></li>
         <li><a href="#s8-3">Shot-Timer</a></li>
         <li><a href="#s8-4">Sound</a></li>
+        <li><a href="#s8-5">KI-Stoßverzögerung</a></li>
       </ol>
     </li>
     <li><a href="#s9">Vollbild &amp; Mobile</a></li>
@@ -1021,6 +1023,24 @@
     Die exportierte JSON-Datei lässt sich z.&nbsp;B. in VS&nbsp;Code oder einem Online-JSON-Viewer (jsoncrack.com) bequem aufklappen und durchsuchen – ideal um die KI-Entscheidungen Schritt für Schritt nachzuvollziehen.
   </div>
 
+  <h3 id="s6-3">6.3 KI-Ansage &amp; Vorschau <span class="badge badge-red">Profi</span></h3>
+  <p>Nachdem die Profi-KI ihren Zug geplant hat, stellt sie Queue, Stoßstärke und Effét ein und <strong>wartet sichtbar</strong>, bevor der Stoß ausgelöst wird. In dieser Vorschauphase ist erkennbar, was die KI vorhat:</p>
+  <ul>
+    <li>Die <strong>Statuszeile</strong> oben zeigt „KI plant: Kugel N → Tasche …".</li>
+    <li>Bei <strong>8-Ball</strong> erscheint neben der Gruppenanzeige „Ziel: N" – die angesagte Zielkugel.</li>
+    <li>Plant die KI eine <strong>Safety</strong>, wird stattdessen „Safe" angezeigt.</li>
+    <li>Die <strong>Zieltasche</strong> wird gelb hervorgehoben.</li>
+  </ul>
+  <div class="tip">
+    <strong>💡 Tipp: Debug-Export während der Vorschau</strong>
+    Während die KI ihre Ansage anzeigt, kann bequem ein <a href="#s6-2">Debug-Export</a> ausgelöst werden (<kbd>Alt</kbd>+<kbd>E</kbd>). Die KI wartet, bis der Stoß tatsächlich ausgelöst wird – genug Zeit, um die vollständige Planung zu exportieren.
+  </div>
+  <div class="rule">
+    <strong>📋 8-Ball: Call-Shot-Regel für die KI</strong>
+    Im 8-Ball sagt die Profi-KI zu jedem Zug Zielkugel und Zieltasche an. Das Stoßrecht bleibt nur erhalten, wenn die angesagte Kugel tatsächlich in der angesagten Tasche fällt. Fällt sie in eine andere Tasche oder gar nicht, wechselt das Stoßrecht – auch wenn die Kugel versenkt wurde. Eingelochte Kugeln bleiben dabei vom Tisch.
+  </div>
+  <p>Die Länge der Wartezeit ist einstellbar → <a href="#s8-5">8.5 KI-Stoßverzögerung</a>. <strong>Pause</strong> friert die Vorschau ein; <strong>Zurück</strong> bricht die geplante Aktion ab.</p>
+
   <a href="#" class="back">↑ Nach oben</a>
 </section>
 
@@ -1179,6 +1199,16 @@
 
   <h3 id="s8-4">8.4 Sound</h3>
   <p>Der Sound-Button (<strong>♪</strong>) in der unteren Leiste schaltet alle Spielgeräusche ein oder aus. Einstellbar auch vor dem Spiel im Startmenü.</p>
+
+  <h3 id="s8-5">8.5 KI-Stoßverzögerung <span class="badge badge-gray">Erweiterte Optionen</span></h3>
+  <p>Im Startmenü unter <strong>Erweiterte Optionen</strong> befindet sich der Schieberegler <em>„Ansage bis Stoß"</em>. Er legt fest, wie viele Sekunden die KI nach dem Aufstellen des Stoßes wartet, bevor sie abzieht.</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Einstellung</th><th>Bereich</th><th>Standardwert</th></tr>
+      <tr><td>Ansage bis Stoß</td><td>0,5 s – 10 s</td><td>3,6 s</td></tr>
+    </table>
+  </div>
+  <p>Während dieser Wartezeit ist die KI-Ansage sichtbar (→ <a href="#s6-3">6.3 KI-Ansage &amp; Vorschau</a>). Bei kurzen Werten ist die Vorschau kaum wahrnehmbar; höhere Werte geben genug Zeit zum Beobachten und für den Debug-Export. Die Wartezeit läuft bei <strong>Pause</strong> nicht weiter.</p>
   <a href="#" class="back">↑ Nach oben</a>
 </section>
 
