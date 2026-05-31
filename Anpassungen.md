@@ -13,7 +13,7 @@ Dokumentiert alle wesentlichen Änderungen an der Next.js-Website des Pool Billa
 ---
 
 <details>
-<summary><strong>Website – Phasen 1–20</strong></summary>
+<summary><strong>Website – Phasen 1–21</strong></summary>
 
 ## Phase 1 – Vorstand-Feedback (Robert) zur Startseite
 
@@ -1187,6 +1187,31 @@ Drei Stabilitätsverbesserungen analog zur Billard-App:
 
 ---
 
+## Phase 21 – Quiz-Fragedaten bereinigt und erweitert (31. Mai 2026)
+
+Die Quiz-Fragendateien wurden überarbeitet: veraltete und redundante Fragen entfernt, eine falsche Antwort korrigiert und der Multiple-Choice-Pool um neue Fragen zu Stoßtechnik, fortgeschrittener Physik und Turnierwissen erweitert.
+
+### 21.1  True-or-False-Quiz – Fragen bereinigt
+
+**Datei:** `public/spiel-spass/quiz/td_poolbillard.htm`
+
+9 veraltete oder redundante Fragen wurden entfernt; Schwerpunkte: Fouls, Gruppenregeln beim 8-Ball, Push-Out beim 9-Ball, 10-Ball und 14.1, BBV-Ligabetrieb.
+
+### 21.2  Multiple-Choice-Quiz – Bereinigung, Korrektur und Erweiterung
+
+**Datei:** `public/spiel-spass/quiz/tq_poolbillard.htm`
+
+- 3 Fragen entfernt (Duplikate und fehlerhafte Inhalte, darunter die „Queue"-Frage mit veralteter Antwort)
+- Push-Out-Antwort präzisiert: „Ein Stoß nur mit der Hand" → „Das freie Aufsetzen der Weißen auf dem Tisch nach einem Faul des Gegners"
+- ~15 neue Fragen in mittlerem und schwerem Schwierigkeitsgrad ergänzt:
+  - Stoßtechnik: Rückläufer, Nachläufer, Bank Shot, Push Out, offener Tisch
+  - Fortgeschrittene Physik: Squirt/Deflection, Swerve, Kontaktwurf, Scoop-Jump, Effet an der Bande
+  - Turnierwissen: Mosconi Cup (Namensgeber, Format, Atmosphäre)
+  - Grundlagen: Pomeranze kreiden, Stellungsspiel
+- JSON-Formatierung vereinheitlicht (Antwort-Arrays mehrzeilig)
+
+---
+
 ## Architektur & Seitenstruktur (Stand: Mai 2026)
 
 ### Technologie-Stack
@@ -1373,7 +1398,7 @@ ohne Build-Prozess, für Pflege ohne Next.js-Kenntnisse.
 ---
 
 <details>
-<summary><strong>Billard App – Phasen 1–13</strong></summary>
+<summary><strong>Billard App – Phasen 1–14</strong></summary>
 
 ## Phase 1 – Proof of Concept einer PBC Erding Billard-App integriert (1. Mai 2026)
 
@@ -2631,6 +2656,100 @@ Die Erkennung erfolgt jetzt über den exakten Ball-Kontaktpunkt statt der Kugelk
 **Datei:** `public/spiel-spass/billardapp/hilfe.html`
 
 Die „Kopffeld"-Sektion der Hilfe-Seite wurde um eine Erläuterung der WPA-Kontaktpunkt-Regel ergänzt.
+
+---
+
+## Phase 14 – KI-Profi: Stellungsspiel, Ansage, Pause/Undo & Regelkorrekturen (25.–31. Mai 2026)
+
+Umfangreiche Verbesserungen der Profi-KI: Längsdrehll-Simulation ermöglicht echtes Stellungsspiel; sichtbare Stoß-Ansage; Pause/Undo-Funktion; 8-Ball-Kopffeldregel nach Anstoßfoul korrigiert; harte Safety-Prüfung; variable KI-Stoßverzögerung; KI-Debug-Modus.
+
+### 14.1  Vollbild: Spieler-/Zuschauer-Layout & Schnell-Buttons
+
+**Dateien:** `public/spiel-spass/billardapp/index.html`, `public/spiel-spass/billardapp/hilfe.html`
+
+Im Vollbildmodus gibt es jetzt zwei Layout-Varianten, umschaltbar per ⚙-Button (neben ⛶):
+- **Zuschauer-Layout**: Reines Spielfeld; fünf Schnell-Buttons links neben ⚙: ◄◄ (sehr fein links), ◄ (fein links), 🎱 (Stoß auslösen), ► (fein rechts), ►► (sehr fein rechts)
+- **Spieler-Layout**: Overlay mit allen Steuerelementen; Live-Anzeige von Zielrichtung, Power, Effet, Queue-Neigung
+
+Im Online-Zuschauer-Modus ebenfalls verfügbar; Eingreifen ins Spiel weiterhin nicht möglich.
+
+### 14.2  KI-Profi – Längsdrehll-Simulation & Stellungsspiel
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Die KI-Simulation (`aiSimulateShotResult`) berücksichtigt jetzt Längsdrehll (`spinY → wx, wy`) analog zur echten Stoßphysik. Dadurch können Nachläufer, Rückläufer und Stop-nahe Varianten geplant und korrekt bewertet werden.
+
+Neue Funktion `aiApplyValidatedPositionControl()`: Testet moderate Follow-/Draw-Varianten und übernimmt Drehll-Werte nur, wenn der Pot in der Simulation weiterhin legal bleibt. Seiteneffet bei Ball-in-Hand gesperrt. Profi-Profil angepasst: `spinUsage: 0.92`, `positionWeight: 1.28` (vorher 0.20 / 0.75).
+
+### 14.3  KI-Profi – Jump-Shot-Korrekturen für blockierte Lagen (8-Ball)
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Bei blockierten 8-Ball-Lagen fiel die KI zuvor auf `hardBlockedLastResort` (illegaler Erstkontakt) zurück. Korrekturen:
+- Jump-Kandidaten markieren sich explizit mit `isJump: true`
+- Neuer Kandidatentyp `hardJumpCaromAttack` für Karambolage-Kontakte in Endlagen
+- `jumpContactSafety` wird vor dem allgemeinen Safety-Filter bewertet
+- Jump-Fallback-Sortierung: `hardJumpCaromAttack` → `hardJumpPot` → normale Kontakte
+
+### 14.4  KI-Profi – Sichtbare Ansage & 8-Ball-Call-Shot-Regel
+
+**Dateien:** `public/spiel-spass/billardapp/index.html`, `public/spiel-spass/billardapp/hilfe.html`
+
+Nach der Stoßplanung zeigt die KI ihre Absicht sichtbar, bevor der Stoß ausgelöst wird:
+- Statuszeile: „KI plant: Kugel N → Tasche …"
+- Bei 8-Ball: „Ziel: N" neben der Gruppenanzeige (bei Safety: „Safe")
+- Geplante Tasche wird gelb markiert
+
+8-Ball-Regelkorrektur: Stoßrecht bleibt nur, wenn die angesagte Kugel in die angesagte Tasche fällt. Fällt sie in die falsche Tasche oder gar nicht, wechselt das Stoßrecht (kein Foul, aber kein Recht). Hilfe-Seite ergänzt (Abschnitt 6.3).
+
+### 14.5  8-Ball-Kopffeldregel nach Anstoßfoul (Kontaktpunkt-Prüfung)
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Nach einem 8-Ball-Anstoßfoul ist nur ein Erstkontakt an einem Kugelteil *außerhalb* des Kopffelds legal. Die Erkennung erfolgt jetzt kontaktpunktgenau (`isKitchenContactInHeadField()`). Die Profi-KI filtert entsprechende Zielkugeln (`filter8BallKitchenTargets()`).
+
+### 14.6  Pause & Undo
+
+**Dateien:** `public/spiel-spass/billardapp/index.html`, `public/spiel-spass/billardapp/hilfe.html`
+
+Zwei neue Buttons in der Toolbar:
+- **⏸ Pause** – friert das Spiel sofort ein (auch während KI-Planung); ▶ Weiter setzt fort
+- **↩ Zurück** – stellt Tischzustand vor dem letzten Stoß wieder her (Kugeln, Gruppen, Foul-Status, Spielstand); kein doppeltes Undo
+
+Im Online-Modus ausgeblendet. Hilfe-Seite ergänzt (Abschnitt 4.8).
+
+### 14.7  Variable KI-Stoßverzögerung
+
+**Dateien:** `public/spiel-spass/billardapp/index.html`, `public/spiel-spass/billardapp/hilfe.html`
+
+Neuer Slider „KI-Stoßverzögerung" unter Erweiterte Optionen: 0,5–10 s, Standardwert 3,6 s. Legt fest, wie lange die KI nach der Stoßankündigung wartet, bevor sie auslöst. Bei Pause läuft die Wartezeit nicht weiter. Hilfe-Seite ergänzt (Abschnitte 6.3, 8.5).
+
+### 14.8  Harte Safety-Prüfung im Profi-Modus
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Neue Funktion `aiValidateHardSafetyShot()`: Safety-Kandidaten werden im Profi-Modus verworfen, wenn `scratchRisk > 0` oder `foulRisk > Schwellenwert`. Vor der Ausführung wird die gewählte Safety nochmals geprüft; bei Ablehnung sucht die KI einen validierten Fallback.
+
+### 14.9  Handy-Vollbild: Touch-Schutzbereich erweitert
+
+**Datei:** `public/spiel-spass/billardapp/index.html`
+
+Knapp neben den Vollbild-Buttons (`fsQuickControls`, `fullscreenPlayControls`, ⛶, ⚙) landende Touches werden nicht mehr als Zielgeste interpretiert. Der Canvas ignoriert Touches in einem erweiterten Schutzbereich (18 px Padding) um diese Buttons.
+
+### 14.10  KI-Debug-Modus & Analyse-Export
+
+**Dateien:** `public/spiel-spass/billardapp/index.html`, `public/spiel-spass/billardapp/hilfe.html`
+
+- **Alt+D** aktiviert ein Debug-Panel auf dem Canvas: KI-Profil, Kandidatentrichter, Planungsdauer, gewählter Schuss (Typ, Score, Einloch-Wahrscheinlichkeit, Scratch-Risiko)
+- **Alt+E** (grüner 💾-Button) exportiert die vollständige KI-Planung als JSON
+- Debug-Panel bleibt während der Ansage-Wartezeit sichtbar – ideal für Exports
+- Hilfe-Seite ergänzt (Abschnitt 6.2)
+
+### 14.11  Zufällige Rack-Aufstellung in Hilfe dokumentiert
+
+**Datei:** `public/spiel-spass/billardapp/hilfe.html`
+
+Abschnitt 5.3.1 ergänzt: Dokumentiert die zufällige Kugelverteilung bei jedem neuen Spiel sowie die Break-Streuung. 8-Ball: Ball 1 und 8 fix; Ecken der letzten Reihe je eine Volle/Halbe; Rest zufällig. 9-Ball: Ball 1 und 9 fix; Rest zufällig.
 
 ---
 

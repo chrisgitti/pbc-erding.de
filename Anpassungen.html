@@ -327,7 +327,7 @@
 
   <!-- Gruppe Website -->
   <details class="group">
-    <summary><span class="group-label">Website – Phasen 1–20</span></summary>
+    <summary><span class="group-label">Website – Phasen 1–21</span></summary>
     <div class="group-body">
 
   <!-- Phase 1 -->
@@ -1254,6 +1254,36 @@
 
   <hr>
 
+  <!-- Phase 21 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 21 – Quiz-Fragedaten bereinigt und erweitert <span class="date">(31. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Die Quiz-Fragendateien wurden überarbeitet: veraltete und redundante Fragen entfernt, eine falsche Antwort korrigiert und der Multiple-Choice-Pool um neue Fragen zu Stoßtechnik, fortgeschrittener Physik und Turnierwissen erweitert.</p>
+
+      <h3>21.1 &nbsp;True-or-False-Quiz – Fragen bereinigt</h3>
+      <p><strong>Datei:</strong> <code>public/spiel-spass/quiz/td_poolbillard.htm</code></p>
+      <p>9 veraltete oder redundante Fragen wurden entfernt; Schwerpunkte: Fouls, Gruppenregeln beim 8-Ball, Push-Out beim 9-Ball, 10-Ball und 14.1, BBV-Ligabetrieb.</p>
+
+      <h3>21.2 &nbsp;Multiple-Choice-Quiz – Bereinigung, Korrektur und Erweiterung</h3>
+      <p><strong>Datei:</strong> <code>public/spiel-spass/quiz/tq_poolbillard.htm</code></p>
+      <ul>
+        <li>3 Fragen entfernt (Duplikate und fehlerhafte Inhalte, darunter die „Queue"-Frage mit veralteter Antwort)</li>
+        <li>Push-Out-Antwort präzisiert: „Ein Stoß nur mit der Hand" → „Das freie Aufsetzen der Weißen auf dem Tisch nach einem Faul des Gegners"</li>
+        <li>~15 neue Fragen in mittlerem und schwerem Schwierigkeitsgrad ergänzt:
+          <ul>
+            <li>Stoßtechnik: Rückläufer, Nachläufer, Bank Shot, Push Out, offener Tisch</li>
+            <li>Fortgeschrittene Physik: Squirt/Deflection, Swerve, Kontaktwurf, Scoop-Jump, Effet an der Bande</li>
+            <li>Turnierwissen: Mosconi Cup (Namensgeber, Format, Atmosphäre)</li>
+            <li>Grundlagen: Pomeranze kreiden, Stellungsspiel</li>
+          </ul>
+        </li>
+        <li>JSON-Formatierung vereinheitlicht (Antwort-Arrays mehrzeilig)</li>
+      </ul>
+    </div>
+  </details>
+
+  <hr>
+
   <!-- Architektur -->
   <details class="phase">
     <summary><span class="summary-text">Architektur &amp; Seitenstruktur <span class="date">(Stand: Mai 2026)</span></span></summary>
@@ -1427,7 +1457,7 @@
 
   <!-- Gruppe Billard App -->
   <details class="group">
-    <summary><span class="group-label">Billard App – Phasen 1–13</span></summary>
+    <summary><span class="group-label">Billard App – Phasen 1–14</span></summary>
     <div class="group-body">
 
   <!-- Phase 1 -->
@@ -2289,6 +2319,88 @@
       <h3>13.4 &nbsp;Kopffeld-Sonderregel in Hilfe dokumentiert</h3>
       <p><strong>Datei:</strong> <code>public/spiel-spass/billardapp/hilfe.html</code></p>
       <p>Die „Kopffeld"-Sektion der Hilfe-Seite wurde um eine Erläuterung der WPA-Kontaktpunkt-Regel ergänzt.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 14 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 14 – KI-Profi: Stellungsspiel, Ansage, Pause/Undo &amp; Regelkorrekturen <span class="date">(25.–31. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Umfangreiche Verbesserungen der Profi-KI: Längsdrehll-Simulation ermöglicht echtes Stellungsspiel; sichtbare Stoß-Ansage; Pause/Undo-Funktion; 8-Ball-Kopffeldregel nach Anstoßfoul korrigiert; harte Safety-Prüfung; variable KI-Stoßverzögerung; KI-Debug-Modus.</p>
+
+      <h3>14.1 &nbsp;Vollbild: Spieler-/Zuschauer-Layout &amp; Schnell-Buttons</h3>
+      <p><strong>Dateien:</strong> <code>public/spiel-spass/billardapp/index.html</code>, <code>public/spiel-spass/billardapp/hilfe.html</code></p>
+      <p>Im Vollbildmodus gibt es jetzt zwei Layout-Varianten, umschaltbar per ⚙-Button (neben ⛶):</p>
+      <ul>
+        <li><strong>Zuschauer-Layout</strong>: Reines Spielfeld; fünf Schnell-Buttons: ◄◄ (sehr fein links), ◄ (fein links), 🎱 (Stoß auslösen), ► (fein rechts), ►► (sehr fein rechts)</li>
+        <li><strong>Spieler-Layout</strong>: Overlay mit allen Steuerelementen; Live-Anzeige von Zielrichtung, Power, Effet, Queue-Neigung</li>
+      </ul>
+      <p>Im Online-Zuschauer-Modus ebenfalls verfügbar; Eingreifen ins Spiel weiterhin nicht möglich.</p>
+
+      <h3>14.2 &nbsp;KI-Profi – Längsdrehll-Simulation &amp; Stellungsspiel</h3>
+      <p><strong>Datei:</strong> <code>public/spiel-spass/billardapp/index.html</code></p>
+      <p>Die KI-Simulation (<code>aiSimulateShotResult</code>) berücksichtigt jetzt Längsdrehll (<code>spinY → wx, wy</code>) analog zur echten Stoßphysik. Nachläufer, Rückläufer und Stop-nahe Varianten können von der Profi-KI geplant und korrekt bewertet werden.</p>
+      <p>Neue Funktion <code>aiApplyValidatedPositionControl()</code>: Testet moderate Follow-/Draw-Varianten und übernimmt Drehll-Werte nur, wenn der Pot in der Simulation weiterhin legal bleibt. Seiteneffet bei Ball-in-Hand gesperrt. Profi-Profil angepasst: <code>spinUsage: 0.92</code>, <code>positionWeight: 1.28</code> (vorher 0.20 / 0.75).</p>
+
+      <h3>14.3 &nbsp;KI-Profi – Jump-Shot-Korrekturen für blockierte Lagen (8-Ball)</h3>
+      <p><strong>Datei:</strong> <code>public/spiel-spass/billardapp/index.html</code></p>
+      <p>Bei blockierten 8-Ball-Lagen fiel die KI zuvor auf <code>hardBlockedLastResort</code> (illegaler Erstkontakt) zurück. Korrekturen:</p>
+      <ul>
+        <li>Jump-Kandidaten markieren sich explizit mit <code>isJump: true</code></li>
+        <li>Neuer Kandidatentyp <code>hardJumpCaromAttack</code> für Karambolage-Kontakte in Endlagen</li>
+        <li><code>jumpContactSafety</code> wird vor dem allgemeinen Safety-Filter bewertet</li>
+        <li>Jump-Fallback-Sortierung: <code>hardJumpCaromAttack</code> → <code>hardJumpPot</code> → normale Kontakte</li>
+      </ul>
+
+      <h3>14.4 &nbsp;KI-Profi – Sichtbare Ansage &amp; 8-Ball-Call-Shot-Regel</h3>
+      <p><strong>Dateien:</strong> <code>public/spiel-spass/billardapp/index.html</code>, <code>public/spiel-spass/billardapp/hilfe.html</code></p>
+      <p>Nach der Stoßplanung zeigt die KI ihre Absicht sichtbar, bevor der Stoß ausgelöst wird:</p>
+      <ul>
+        <li>Statuszeile: „KI plant: Kugel N → Tasche …"</li>
+        <li>Bei 8-Ball: „Ziel: N" neben der Gruppenanzeige (bei Safety: „Safe")</li>
+        <li>Geplante Tasche wird gelb markiert</li>
+      </ul>
+      <p>8-Ball-Regelkorrektur: Stoßrecht bleibt nur, wenn die angesagte Kugel in die angesagte Tasche fällt. Fällt sie in die falsche Tasche oder gar nicht, wechselt das Stoßrecht (kein Foul, aber kein Recht). Hilfe-Seite ergänzt (Abschnitt 6.3).</p>
+
+      <h3>14.5 &nbsp;8-Ball-Kopffeldregel nach Anstoßfoul (Kontaktpunkt-Prüfung)</h3>
+      <p><strong>Datei:</strong> <code>public/spiel-spass/billardapp/index.html</code></p>
+      <p>Nach einem 8-Ball-Anstoßfoul ist nur ein Erstkontakt an einem Kugelteil <em>außerhalb</em> des Kopffelds legal. Die Erkennung erfolgt jetzt kontaktpunktgenau (<code>isKitchenContactInHeadField()</code>). Die Profi-KI filtert entsprechende Zielkugeln (<code>filter8BallKitchenTargets()</code>).</p>
+
+      <h3>14.6 &nbsp;Pause &amp; Undo</h3>
+      <p><strong>Dateien:</strong> <code>public/spiel-spass/billardapp/index.html</code>, <code>public/spiel-spass/billardapp/hilfe.html</code></p>
+      <p>Zwei neue Buttons in der Toolbar:</p>
+      <ul>
+        <li><strong>⏸ Pause</strong> – friert das Spiel sofort ein (auch während KI-Planung); ▶ Weiter setzt fort</li>
+        <li><strong>↩ Zurück</strong> – stellt Tischzustand vor dem letzten Stoß wieder her (Kugeln, Gruppen, Foul-Status, Spielstand); kein doppeltes Undo</li>
+      </ul>
+      <p>Im Online-Modus ausgeblendet. Hilfe-Seite ergänzt (Abschnitt 4.8).</p>
+
+      <h3>14.7 &nbsp;Variable KI-Stoßverzögerung</h3>
+      <p><strong>Dateien:</strong> <code>public/spiel-spass/billardapp/index.html</code>, <code>public/spiel-spass/billardapp/hilfe.html</code></p>
+      <p>Neuer Slider „KI-Stoßverzögerung" unter Erweiterte Optionen: 0,5–10 s, Standardwert 3,6 s. Legt fest, wie lange die KI nach der Stoßankündigung wartet, bevor sie auslöst. Bei Pause läuft die Wartezeit nicht weiter. Hilfe-Seite ergänzt (Abschnitte 6.3, 8.5).</p>
+
+      <h3>14.8 &nbsp;Harte Safety-Prüfung im Profi-Modus</h3>
+      <p><strong>Datei:</strong> <code>public/spiel-spass/billardapp/index.html</code></p>
+      <p>Neue Funktion <code>aiValidateHardSafetyShot()</code>: Safety-Kandidaten werden im Profi-Modus verworfen, wenn <code>scratchRisk &gt; 0</code> oder <code>foulRisk &gt; Schwellenwert</code>. Vor der Ausführung wird die gewählte Safety nochmals geprüft; bei Ablehnung sucht die KI einen validierten Fallback.</p>
+
+      <h3>14.9 &nbsp;Handy-Vollbild: Touch-Schutzbereich erweitert</h3>
+      <p><strong>Datei:</strong> <code>public/spiel-spass/billardapp/index.html</code></p>
+      <p>Knapp neben den Vollbild-Buttons (<code>fsQuickControls</code>, <code>fullscreenPlayControls</code>, ⛶, ⚙) landende Touches werden nicht mehr als Zielgeste interpretiert. Der Canvas ignoriert Touches in einem erweiterten Schutzbereich (18 px Padding) um diese Buttons.</p>
+
+      <h3>14.10 &nbsp;KI-Debug-Modus &amp; Analyse-Export</h3>
+      <p><strong>Dateien:</strong> <code>public/spiel-spass/billardapp/index.html</code>, <code>public/spiel-spass/billardapp/hilfe.html</code></p>
+      <ul>
+        <li><kbd>Alt</kbd>+<kbd>D</kbd> aktiviert ein Debug-Panel auf dem Canvas: KI-Profil, Kandidatentrichter, Planungsdauer, gewählter Schuss (Typ, Score, Einloch-Wahrscheinlichkeit, Scratch-Risiko)</li>
+        <li><kbd>Alt</kbd>+<kbd>E</kbd> (grüner 💾-Button) exportiert die vollständige KI-Planung als JSON</li>
+        <li>Debug-Panel bleibt während der Ansage-Wartezeit sichtbar – ideal für Exports</li>
+        <li>Hilfe-Seite ergänzt (Abschnitt 6.2)</li>
+      </ul>
+
+      <h3>14.11 &nbsp;Zufällige Rack-Aufstellung in Hilfe dokumentiert</h3>
+      <p><strong>Datei:</strong> <code>public/spiel-spass/billardapp/hilfe.html</code></p>
+      <p>Abschnitt 5.3.1 ergänzt: Zufällige Kugelverteilung bei jedem neuen Spiel sowie Break-Streuung. 8-Ball: Ball 1 und 8 fix; Ecken der letzten Reihe je eine Volle/Halbe; Rest zufällig. 9-Ball: Ball 1 und 9 fix; Rest zufällig.</p>
     </div>
   </details>
 

@@ -27,6 +27,26 @@ export type NewsItem = {
 
 export const news: NewsItem[] = [
   {
+    id: '12',
+    title: 'Mittwoch-Cup Mai – Lucki Weidinger holt den Sieg',
+    excerpt:
+      'Die Mai-Ausgabe des Mi-Cups im Bowling Castle Erding: 15 Teilnehmer, 10-Ball auf drei Gewinnsätze – Ludwig „Lucki" Weidinger setzt sich durch.',
+    date: '2026-05-27',
+    category: 'Turnier',
+    slug: 'mittwoch-cup-mai-2026',
+    content: `Die Mai-Ausgabe des Mittwoch-Cups fand am 27. Mai 2026 im Bowling Castle Erding statt. 15 Teilnehmer traten im 10-Ball-Modus auf drei Gewinnsätze gegeneinander an – und lieferten einen kurzweiligen Turnierabend.
+
+Das Siegertreppchen:
+– Platz 1: Ludwig „Lucki" Weidinger 🥇 (PBC Erding)
+– Platz 2: Leon Bozbel 🥈 (PBC Freising)
+– Platz 3: Markus Merz 🥉 (PBC Erding)
+– Platz 4: John Popitz (PBC Freising)
+
+Herzlichen Glückwunsch an alle Platzierten – und ein besonderes Dankeschön an Björn für die Organisation und das Team des Bowling Castle Erding für den reibungslosen Abend!
+
+Der nächste Mi-Cup findet am 24. Juni statt. Anmeldungen über die Mi-Cup-WhatsApp-Gruppe oder per E-Mail an turnier@pbc-erding.de – wir freuen uns auf eure Teilnahme!`,
+  },
+  {
     id: '10',
     title: 'Trainer-Fortbildung: Bart Claessen erfolgreich zertifiziert',
     excerpt:
@@ -658,6 +678,7 @@ export type ChronikEntry = {
 
 export const chronik: ChronikEntry[] = [
   // 2026
+  { title: 'Mittwoch-Cup Mai – Ludwig „Lucki" Weidinger gewinnt',                       date: '2026-05-27', slug: 'mittwoch-cup-mai-2026'                },
   { title: 'Saisonabschluss: Erding II – Kreisliga 2025/26 ungeschlagen abgeschlossen', date: '2026-05-16', slug: 'saisonabschluss-erding-2-2025-26'   },
   { title: 'Trainer-Fortbildung: Bart Claessen erfolgreich zertifiziert',               date: '2026-05-09', slug: 'trainer-fortbildung-bart-claessen'   },
   { title: 'Saisonabschluss: PBC Erding III – Kreisliga 2025/26',                       date: '2026-05-09', slug: 'saisonabschluss-erding-3-2025-26'   },
