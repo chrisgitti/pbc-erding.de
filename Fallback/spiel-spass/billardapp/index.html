@@ -1697,7 +1697,7 @@ const game = {
   aimAngle: 0, aimLocked: false, aimActive: false, powerPercent: 50,
   spinX: 0, spinY: 0, cueElevation: 0, cueType: "playing",
   spinPending: { x:0, y:0, dirX:0, dirY:0, power:0, used:false },
-  placingCue: false, aiThinking: false, aiTimer: 0, aiPlanning: false, aiPlanToken: 0,
+  placingCue: false, aiThinking: false, aiTimer: 0, aiPlanning: false, aiPlanToken: 0, aiPlanProgress: null,
   aiPlannedTargetNum: null, aiPlannedPocketIdx: null, aiPlannedIsSafety: false,
   aiShotDelaySeconds: 3.6,
   foulMessage: "", foulTimer: 0,
@@ -2132,6 +2132,44 @@ function isBallInCornerPocketJaw(ball, p) {
   return jawX && jawY;
 }
 
+function cornerPocketFacingDistance(ball, p) {
+  if (p.type !== "corner") return Infinity;
+  const isLeft = p.x < (PLAY_X1 + PLAY_X2) / 2;
+  const isTop = p.y < (PLAY_Y1 + PLAY_Y2) / 2;
+  const xComp = isLeft ? ball.x - PLAY_X1 : PLAY_X2 - ball.x;
+  const yComp = isTop ? ball.y - PLAY_Y1 : PLAY_Y2 - ball.y;
+  // Positive = vor der diagonalen Taschennase, negativ = im Taschenhals.
+  return (xComp + yComp - CORNER_CUT) / Math.SQRT2;
+}
+
+function isBallBehindCornerPocketNoses(ball, p) {
+  if (!isBallInCornerPocketJaw(ball, p)) return false;
+  const isLeft = p.x < (PLAY_X1 + PLAY_X2) / 2;
+  const isTop = p.y < (PLAY_Y1 + PLAY_Y2) / 2;
+  const d = Math.hypot(p.x - ball.x, p.y - ball.y);
+  const catchR = getPocketCatchRadius(p);
+  if (d > catchR + ball.r + CORNER_CUT * 0.95) return false;
+
+  const facingDist = cornerPocketFacingDistance(ball, p);
+  if (facingDist <= -ball.r * 0.22) return true;
+
+  const behindSideRail = isLeft
+    ? ball.x < PLAY_X1 - ball.r * 0.18
+    : ball.x > PLAY_X2 + ball.r * 0.18;
+  const inVerticalMouth = isTop
+    ? ball.y < PLAY_Y1 + CORNER_CUT + ball.r * 1.2
+    : ball.y > PLAY_Y2 - CORNER_CUT - ball.r * 1.2;
+
+  const behindEndRail = isTop
+    ? ball.y < PLAY_Y1 - ball.r * 0.18
+    : ball.y > PLAY_Y2 + ball.r * 0.18;
+  const inHorizontalMouth = isLeft
+    ? ball.x < PLAY_X1 + CORNER_CUT + ball.r * 1.2
+    : ball.x > PLAY_X2 - CORNER_CUT - ball.r * 1.2;
+
+  return (behindSideRail && inVerticalMouth) || (behindEndRail && inHorizontalMouth);
+}
+
 function isBallInSidePocketJaw(ball, p) {
   if (p.type !== "side") return false;
 
@@ -2144,6 +2182,21 @@ function isBallInSidePocketJaw(ball, p) {
     : ball.y > PLAY_Y2 - ball.r * 1.15;
 
   return jawX && jawY;
+}
+
+function isBallBehindSidePocketNoses(ball, p) {
+  if (!isBallInSidePocketJaw(ball, p)) return false;
+  const midX = (PLAY_X1 + PLAY_X2) / 2;
+  const isTop = p.y < (PLAY_Y1 + PLAY_Y2) / 2;
+  const d = Math.hypot(p.x - ball.x, p.y - ball.y);
+  const catchR = getPocketCatchRadius(p);
+  if (d > catchR + ball.r + HALF_SIDE_PW * 0.75) return false;
+
+  const behindEndRail = isTop
+    ? ball.y < PLAY_Y1 - ball.r * 0.18
+    : ball.y > PLAY_Y2 + ball.r * 0.18;
+  const insideOpening = Math.abs(ball.x - midX) < HALF_SIDE_PW + ball.r * 0.85;
+  return behindEndRail && insideOpening;
 }
 
 function shouldPocketBall(ball, p) {
@@ -2160,8 +2213,10 @@ function shouldPocketBall(ball, p) {
   // Realistischere Fallzone im Taschenmaul: Langsame Kugeln, die bereits klar
   // in der Öffnung stehen, dürfen nicht auf der Taschenkante "parken".
   if (p.type === "corner") {
+    if (isBallBehindCornerPocketNoses(ball, p)) return true;
     if (isBallInCornerPocketJaw(ball, p) && d < catchR + 8 && speed < 1.35) return true;
   } else if (p.type === "side") {
+    if (isBallBehindSidePocketNoses(ball, p)) return true;
     if (isBallInSidePocketJaw(ball, p) && d < catchR + 7 && speed < 1.25) return true;
   }
 
@@ -2175,7 +2230,9 @@ function isBallInPocketEntryZone(ball) {
     const catchR = getPocketCatchRadius(p);
 
     if (d < catchR + ball.r) return true;
+    if (p.type === "corner" && isBallBehindCornerPocketNoses(ball, p)) return true;
     if (p.type === "corner" && isBallInCornerPocketJaw(ball, p) && d < catchR + ball.r + 8) return true;
+    if (p.type === "side" && isBallBehindSidePocketNoses(ball, p)) return true;
     if (p.type === "side" && isBallInSidePocketJaw(ball, p) && d < catchR + ball.r + 7) return true;
     return false;
   });
@@ -2775,6 +2832,41 @@ function clearAiPlannedShotDisplay() {
   game.aiPlannedIsSafety = false;
 }
 
+function aiClearPlanProgress() {
+  game.aiPlanProgress = null;
+}
+
+function aiProgressText() {
+  const p = game.aiPlanProgress;
+  if (!p) return "KI denkt nach...";
+  const parts = [p.label || `KI analysiert: ${p.phase}`];
+  if (p.total > 0) parts.push(`${Math.min(p.current, p.total)}/${p.total}`);
+  else if (p.percent !== null && p.percent !== undefined) parts.push(`${Math.round(p.percent)}%`);
+  if (p.detail) parts.push(p.detail);
+  const elapsed = Math.max(0, Math.floor((performance.now() - (p.startedAt || performance.now())) / 1000));
+  if (elapsed >= 3) parts.push(`${elapsed}s`);
+  return parts.join(" · ");
+}
+
+function aiSetPlanProgress(phase, current = null, total = null, detail = "", label = null) {
+  if (game.mode !== "ai" || game.currentPlayer !== 1) return;
+  const prev = game.aiPlanProgress;
+  const startedAt = prev?.startedAt || performance.now();
+  const hasTotal = Number.isFinite(total) && total > 0;
+  const safeCurrent = Number.isFinite(current) ? current : (hasTotal ? 0 : null);
+  game.aiPlanProgress = {
+    phase,
+    detail,
+    current: safeCurrent,
+    total: hasTotal ? total : null,
+    percent: hasTotal && safeCurrent !== null ? clamp((safeCurrent / total) * 100, 0, 100) : null,
+    label,
+    startedAt,
+    updatedAt: performance.now()
+  };
+  if (typeof updateUI === "function") updateUI();
+}
+
 function aiSetPlannedShotDisplay(shot) {
   if (game.mode !== "ai" || game.currentPlayer !== 1 || game.variant !== "8ball" || !shot) {
     clearAiPlannedShotDisplay();
@@ -2837,6 +2929,8 @@ function aiShotDelayMs() {
 }
 
 async function aiPreviewThenShoot(shot, token, delayMs = null) {
+  aiClearPlanProgress();
+  aiSetPlanProgress("Stoß vorbereiten", 6, 6, "Queue, Stärke, Effet", "KI bereitet den Stoß vor");
   aiSetPlannedShotDisplay(shot);
   if (typeof updateCueTypeHint === "function") updateCueTypeHint();
   updateUI();
@@ -2846,10 +2940,11 @@ async function aiPreviewThenShoot(shot, token, delayMs = null) {
   syncSpinElevTab();
   render();
   await waitNextPaint();
-  const waited = await aiWaitPreviewTime(token, Math.max(500, delayMs ?? aiShotDelayMs()));
+  const waited = await aiWaitPreviewTime(token, Math.max(2000, delayMs ?? aiShotDelayMs()));
   if (!waited) return;
   if (token !== game.aiPlanToken) return;
   if (!game.aiThinking || game.state !== "aiming" || game.paused || game.shotInProgress) return;
+  aiClearPlanProgress();
   startShot();
 }
 
@@ -2943,6 +3038,7 @@ function restoreSnapshot() {
   game.aiPlanning           = false;
   game.aiPlanToken++;
   clearAiPlannedShotDisplay();
+  aiClearPlanProgress();
   game.ballsPottedThisShot  = [];
   game.cuePotted            = false;
   game.firstHit             = null;
@@ -2985,6 +3081,7 @@ function startShot() {
   syncCueSelectorToShotState();
   stopShotTimer();
   clearAiPlannedShotDisplay();
+  aiClearPlanProgress();
   game.shotNumber++;
   game.placingCue = false; game.ballInHand = false;
   if (!game.cueBall.inPlay) return;
@@ -3896,7 +3993,7 @@ function aiSimulateShotResult(shot) {
     }
   }
 
-  result.finalBalls = balls.map(b => ({ num: b.num, isCue: b.isCue, x: b.x, y: b.y, inPlay: b.inPlay }));
+  result.finalBalls = balls.map(b => ({ num: b.num, isCue: b.isCue, x: b.x, y: b.y, r: b.r || BALL_R, inPlay: b.inPlay }));
   return result;
 }
 
@@ -3941,6 +4038,41 @@ function aiUniqueSortedPowers(values) {
     });
 }
 
+function aiSidePocketApproachQuality(target, pocket) {
+  if (!target || !pocket || pocket.type !== "side") return 1;
+  const dx = pocket.x - target.x;
+  const dy = pocket.y - target.y;
+  const d = Math.hypot(dx, dy);
+  if (d < 1) return 0;
+  // Side pockets punish shallow, rail-parallel approaches. 1.0 is square into the pocket.
+  return clamp(Math.abs(dy) / d, 0, 1);
+}
+
+function aiBallInHandPairSortValue(pair) {
+  if (!pair) return Infinity;
+  const pocket = pair.p;
+  if (pocket?.type !== "side") return pair.dTP - 70;
+  const approach = aiSidePocketApproachQuality(pair.t, pocket);
+  return pair.dTP + 130 + Math.max(0, 0.62 - approach) * 320;
+}
+
+function aiBallInHandPocketBias(target, pocket, shot = null) {
+  if (!pocket) return 0;
+  if (pocket.type !== "side") return 8200;
+  const approach = aiSidePocketApproachQuality(target, pocket);
+  const dotN = shot?.dotN ?? 1;
+  return -2600
+    - Math.max(0, 0.66 - approach) * 34000
+    - Math.max(0, 0.96 - dotN) * 18000;
+}
+
+function aiBallInHandSidePocketTooSharp(target, pocket, shot = null) {
+  if (!pocket || pocket.type !== "side") return false;
+  const approach = aiSidePocketApproachQuality(target, pocket);
+  const dotN = shot?.dotN ?? 1;
+  return approach < 0.30 || (approach < 0.42 && dotN < 0.992);
+}
+
 function aiBallInHandPowerVariants(basePower, shot) {
   const dist = (shot?.dCG || 0) + (shot?.dTP || 0);
   // Profi-Korrektur: Nach Ball-in-Hand darf ein Pflicht-Pot niemals daran
@@ -3970,9 +4102,9 @@ function aiValidateBallInHandPot(cue, shot, prof) {
   const basePower = clamp(shot.powerPercent || 34, 22, prof?.searchDepth >= 3 ? 82 : 72);
   const valid = [];
   // Bei geraden BIH-Schüssen kann die Weiße der Zielkugel in die Tasche folgen
-  // (Follow-Scratch). Leichtes Draw-Effet (-0.10) verhindert das und gibt der
+  // (Follow-Scratch). Leichtes Draw-Effet (+0.10) verhindert das und gibt der
   // Simulation eine realistischere Chance, den Stoß zu bestätigen.
-  const spinOptions = (shot.dotN ?? 0) >= 0.87 ? [0, -0.10] : [0];
+  const spinOptions = (shot.dotN ?? 0) >= 0.87 ? [0, 0.10, 0.16] : [0];
   for (const sY of spinOptions) {
     for (const pw of aiBallInHandPowerVariants(basePower, shot)) {
       const testShot = { ...shot, powerPercent: pw, spinY: sY, type: "ballInHandPot", isSafety: false };
@@ -4007,7 +4139,7 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
       pairs.push({ t, p, dTP });
     }
   }
-  pairs.sort((a, b) => a.dTP - b.dTP);
+  pairs.sort((a, b) => aiBallInHandPairSortValue(a) - aiBallInHandPairSortValue(b));
 
   const offsets = [64, 88, 118, 156, 210, 280];
   // Größere Lateralvarianten: natürlicherer Winkel → bessere Position nach dem Stoß
@@ -4033,6 +4165,7 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
           const shot = aiEvaluatePotShot(cue, t, p);
           // Mit BIH ist jeder Cut bis ~30° (dotN≥0.85) sicher spielbar
           if (!shot || shot.dotN < 0.85) continue;
+          if (aiBallInHandSidePocketTooSharp(t, p, shot)) continue;
 
           const basePower = clamp(Math.max(shot.powerPercent || 0, 46 + dTP * 0.018), 48, 80);
           const powers = aiUniqueSortedPowers([basePower, basePower + 8, basePower + 16, 58, 68, 78]);
@@ -4047,10 +4180,11 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
             };
             // Zuerst Center; schlägt das durch Follow-Scratch fehl → Draw-Fallback.
             let validated = aiValidateShotBySimulation({ ...baseTestShot, spinY: 0 });
-            if (!validated) validated = aiValidateShotBySimulation({ ...baseTestShot, spinY: -0.10 });
+            if (!validated) validated = aiValidateShotBySimulation({ ...baseTestShot, spinY: 0.10 });
             if (!validated) continue;
             const posValue = aiScoreCuePositionForNextShot(aiSimCueBall(validated.sim), validated.sim.finalBalls, validated.targetNum);
             const score = 500000
+              + aiBallInHandPocketBias(t, p, shot)
               + shot.dotN * 4000          // Geradlinigkeit: weniger dominant als früher
               - Math.max(0, 0.85 - shot.dotN) * 3000 // Strafterm für sehr dünne Cuts
               - Math.abs(lat) * 60        // Winkeloffset kaum bestrafen
@@ -4079,7 +4213,7 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
             }
             // Gerade, validiert, kräftig genug: sofort nehmen. Genau dieser
             // Kurzpfad beseitigt die Ball-in-Hand-Aussetzer ohne Wartezeit.
-            if (shot.dotN >= 0.992 && Math.abs(lat) < 0.1) return best;
+            if (p.type !== "side" && shot.dotN >= 0.992 && Math.abs(lat) < 0.1) return best;
           }
         }
       }
@@ -4150,8 +4284,15 @@ function aiApplyValidatedPositionControl(shot, prof, options = {}) {
   const xLimit = options.ballInHand ? 0 : 0.16;
   const plannedY = clamp(plan.spinY || 0, -yLimit, yLimit);
   const plannedX = allowSide ? clamp(plan.spinX || 0, -xLimit, xLimit) : 0;
+  const basePosScore = aiScoreCuePositionForNextShot(cueAfter, baseSim.finalBalls, shot.targetNum);
+  const baseCueDanger = aiCueBallInScratchDanger(cueAfter, 1.9);
+  const modeYVariants = plan.mode === "follow"
+    ? [-0.08, -0.14, -0.20, -0.26]
+    : plan.mode === "draw"
+      ? [0.08, 0.14, 0.20]
+      : [-0.10, 0.10, -0.18, 0.18];
 
-  const spinYs = [0, plannedY, plannedY * 0.70, plannedY * 1.25, plannedY > 0 ? 0.12 : -0.12]
+  const spinYs = [0, plannedY, plannedY * 0.70, plannedY * 1.25, plannedY > 0 ? 0.12 : -0.12, ...modeYVariants]
     .map(v => Math.round(clamp(v, -yLimit, yLimit) * 1000) / 1000)
     .filter((v, i, arr) => arr.findIndex(x => Math.abs(x - v) < 0.01) === i);
   const spinXs = allowSide
@@ -4159,7 +4300,7 @@ function aiApplyValidatedPositionControl(shot, prof, options = {}) {
     : [0];
 
   let best = shot;
-  let bestScore = aiScoreCuePositionForNextShot(cueAfter, baseSim.finalBalls, shot.targetNum);
+  let bestScore = basePosScore + (baseCueDanger ? -45 : 0);
 
   for (const sy of spinYs) {
     for (const sx of spinXs) {
@@ -4176,13 +4317,21 @@ function aiApplyValidatedPositionControl(shot, prof, options = {}) {
       const validated = aiValidateShotBySimulation(testShot);
       if (!validated) continue;
       const finalCue = aiSimCueBall(validated.sim);
+      if (!finalCue) continue;
       const posValue = aiScoreCuePositionForNextShot(finalCue, validated.sim.finalBalls, validated.targetNum);
+      const finalCueDanger = aiCueBallInScratchDanger(finalCue, 1.9);
       const modeBonus =
         (plan.mode === "follow" && sy < -0.04) ? 18 :
         (plan.mode === "draw" && sy > 0.04) ? 18 :
         (plan.mode === "side" && Math.abs(sx) > 0.04) ? 12 : 0;
-      const controlScore = posValue + modeBonus - Math.abs(sx) * 18 - Math.abs(sy) * 10;
-      if (controlScore > bestScore + 8) {
+      const controlScore = posValue
+        + modeBonus
+        - Math.abs(sx) * 18
+        - Math.abs(sy) * 10
+        - (finalCueDanger ? 90 : 0)
+        + (baseCueDanger && !finalCueDanger ? 55 : 0);
+      const requiredGain = options.ballInHand ? 3 : (baseCueDanger ? -8 : 8);
+      if (controlScore > bestScore + requiredGain) {
         bestScore = controlScore;
         best = {
           ...validated,
@@ -4201,7 +4350,7 @@ function aiApplyValidatedPositionControl(shot, prof, options = {}) {
             positionValue: posValue,
             bestSim: validated.sim
           },
-          score: (shot.score ?? 0) + Math.max(0, posValue - bestScore) + modeBonus
+          score: (shot.score ?? 0) + Math.max(0, controlScore - basePosScore) + modeBonus
         };
       }
     }
@@ -4211,6 +4360,8 @@ function aiApplyValidatedPositionControl(shot, prof, options = {}) {
 }
 
 async function aiFindProBallInHandPlan(cue, targets, prof, token, tableAnalysis) {
+  aiSetPlanProgress("Ball-in-Hand planen", 2, 6, "gerade Pflichtpots");
+  await yieldToBrowser();
   const fastLock = aiFindFastStraightBallInHandPot(cue, targets, prof);
   if (fastLock) return fastLock;
 
@@ -4241,7 +4392,9 @@ async function aiFindProBallInHandPlan(cue, targets, prof, token, tableAnalysis)
       targetPocketPairs.push({ t, p, dTP });
     }
   }
-  targetPocketPairs.sort((a, b) => a.dTP - b.dTP);
+  targetPocketPairs.sort((a, b) => aiBallInHandPairSortValue(a) - aiBallInHandPairSortValue(b));
+  aiSetPlanProgress("Ball-in-Hand planen", 2, 6, `${targetPocketPairs.length} Taschenwege`);
+  await yieldToBrowser();
 
   const geoCandidates = [];
   let fallbackPos = null;
@@ -4283,11 +4436,13 @@ async function aiFindProBallInHandPlan(cue, targets, prof, token, tableAnalysis)
           // Geometrien vollständig simuliert. Dünne Cuts sind unnötig, wenn die
           // Weiße frei gelegt werden darf.
           if (shot.dotN < 0.82) continue;
+          if (aiBallInHandSidePocketTooSharp(t, p, shot)) continue;
 
           const straightTier = shot.dotN >= 0.992 ? 3 : (shot.dotN >= 0.970 ? 2 : (shot.dotN >= 0.925 ? 1 : 0));
           const cueRailSafety = Math.min(cx - PLAY_X1, PLAY_X2 - cx, cy - PLAY_Y1, PLAY_Y2 - cy);
           const centerDist = Math.hypot(cx - (PLAY_X1 + PLAY_X2) / 2, cy - (PLAY_Y1 + PLAY_Y2) / 2);
           const geoScore = shot.dotN * 12000
+            + aiBallInHandPocketBias(t, p, shot)
             + straightTier * 2400
             - Math.max(0, 0.985 - shot.dotN) * 8000
             - shot.dCG * 0.35
@@ -4317,6 +4472,7 @@ async function aiFindProBallInHandPlan(cue, targets, prof, token, tableAnalysis)
       cue.x = cand.bestPos.x;
       cue.y = cand.bestPos.y;
       validations++;
+      aiSetPlanProgress("Ball-in-Hand validieren", validations, MAX_FULL_VALIDATIONS, `${geoCandidates.length} Geometrien`);
 
       const validated = aiValidateBallInHandPot(cue, cand.shot, prof);
       cue.x = savedX; cue.y = savedY;   // Originalposition vor yield herstellen
@@ -4957,6 +5113,41 @@ function aiCuePositionSafeInState(x, y, ballState) {
   return true;
 }
 
+function aiScoreNextTargetFromState(target, cueBall, finalBalls) {
+  if (!target || !cueBall) return -Infinity;
+  const tr = target.r || BALL_R;
+  let best = -220 - Math.hypot(cueBall.x - target.x, cueBall.y - target.y) * 0.08;
+
+  for (const p of POCKETS) {
+    const dxTP = p.x - target.x, dyTP = p.y - target.y;
+    const dTP = Math.hypot(dxTP, dyTP);
+    if (dTP < 1) continue;
+    if (!aiClearPathInBallState(target.x, target.y, p.x, p.y, finalBalls, [target.num])) continue;
+
+    const nx = dxTP / dTP, ny = dyTP / dTP;
+    const ghostX = target.x - nx * tr * 2;
+    const ghostY = target.y - ny * tr * 2;
+    const dxCG = ghostX - cueBall.x, dyCG = ghostY - cueBall.y;
+    const dCG = Math.hypot(dxCG, dyCG);
+    if (dCG < 1) continue;
+
+    const dotN = nx * (dxCG / dCG) + ny * (dyCG / dCG);
+    if (dotN <= 0.06) continue;
+    const cuePathClear = aiClearPathInBallState(cueBall.x, cueBall.y, ghostX, ghostY, finalBalls, [target.num]);
+    const railSafety = Math.min(cueBall.x - PLAY_X1, PLAY_X2 - cueBall.x, cueBall.y - PLAY_Y1, PLAY_Y2 - cueBall.y);
+    const score = (cuePathClear ? 175 : -70)
+      + dotN * 145
+      - Math.pow(1 - dotN, 2) * 210
+      - dCG * 0.050
+      - dTP * 0.080
+      + (p.type === "corner" ? 12 : 3)
+      + Math.min(28, Math.max(0, railSafety) * 0.06);
+    if (score > best) best = score;
+  }
+
+  return best;
+}
+
 function aiFindNextTargetFromState(finalBalls, cueBall, justPottedNum = null) {
   const remaining = (finalBalls || []).filter(b => b.inPlay && !b.isCue && b.num !== justPottedNum);
   if (!remaining.length) return null;
@@ -4975,12 +5166,12 @@ function aiFindNextTargetFromState(finalBalls, cueBall, justPottedNum = null) {
     if (!pool.length) pool = remaining;
     return pool.reduce((best, b) => {
       if (!best) return b;
-      return Math.hypot(cueBall.x - b.x, cueBall.y - b.y) < Math.hypot(cueBall.x - best.x, cueBall.y - best.y) ? b : best;
+      return aiScoreNextTargetFromState(b, cueBall, finalBalls) > aiScoreNextTargetFromState(best, cueBall, finalBalls) ? b : best;
     }, null);
   }
   return remaining.reduce((best, b) => {
     if (!best) return b;
-    return Math.hypot(cueBall.x - b.x, cueBall.y - b.y) < Math.hypot(cueBall.x - best.x, cueBall.y - best.y) ? b : best;
+    return aiScoreNextTargetFromState(b, cueBall, finalBalls) > aiScoreNextTargetFromState(best, cueBall, finalBalls) ? b : best;
   }, null);
 }
 
@@ -4993,8 +5184,9 @@ function aiBuildCuePositionZones(nextTgt, finalBalls) {
     if (dTP < 1) continue;
     if (!aiClearPathInBallState(nextTgt.x, nextTgt.y, p.x, p.y, finalBalls, [nextTgt.num])) continue;
     const nx = dxTP / dTP, ny = dyTP / dTP;
-    const ghostX = nextTgt.x - nx * nextTgt.r * 2;
-    const ghostY = nextTgt.y - ny * nextTgt.r * 2;
+    const nr = nextTgt.r || BALL_R;
+    const ghostX = nextTgt.x - nx * nr * 2;
+    const ghostY = nextTgt.y - ny * nr * 2;
     for (const off of [95, 130, 175, 220]) {
       for (const lat of [0, -22, 22]) {
         const x = ghostX - nx * off - ny * lat;
@@ -5786,7 +5978,7 @@ function aiValidateHardJumpShot(shot) {
   };
 }
 
-function aiFindHardValidatedJumpFallback(cue, targets, prof) {
+function aiFindHardValidatedJumpFallback(cue, targets, prof, progressLabel = "Jump prüfen") {
   if (!aiIsHardenedProfi(prof)) return null;
   const candidates = aiBuildHardJumpCandidates(cue, targets, prof)
     .sort((a, b) => {
@@ -5807,6 +5999,7 @@ function aiFindHardValidatedJumpFallback(cue, targets, prof) {
       const db = Math.abs((b.cueElevation || elevGoalB) - elevGoalB) + Math.abs((b.powerPercent || 72) - 72) * 0.004;
       return da - db;
     });
+  aiSetPlanProgress(progressLabel, 0, Math.max(1, candidates.length), "Sprung-Kandidaten");
   let best = null;
   let _jumpValidCount = 0;
   const _jumpTStart = performance.now();
@@ -5815,6 +6008,9 @@ function aiFindHardValidatedJumpFallback(cue, targets, prof) {
     if (_jumpValidCount >= HARD_JUMP_MAX_VALIDATIONS) break;
     if (performance.now() - _jumpTStart > HARD_FALLBACK_TIME_BUDGET_MS) break;
     _jumpValidCount++;
+    if (_jumpValidCount === 1 || _jumpValidCount % 12 === 0) {
+      aiSetPlanProgress(progressLabel, _jumpValidCount, Math.max(1, Math.min(candidates.length, HARD_JUMP_MAX_VALIDATIONS)), "final validieren");
+    }
     const valid = aiValidateHardJumpShot(cand);
     if (!valid) continue;
     const cueAfter = aiSimCueBall(valid.sim);
@@ -5943,11 +6139,11 @@ function aiPocketMatchesRailSide(pocket, railSide) {
 
 function aiRailPotAngleVariants(railSide, target, pocket, dotN = 1) {
   // Dünne Schnitte (kleines dotN) brauchen breiteren Suchbereich
-  const spread = dotN < 0.38 ? 0.032 : dotN < 0.58 ? 0.025 : 0.020;
+  const spread = dotN < 0.38 ? 0.048 : dotN < 0.58 ? 0.036 : 0.026;
   const base = [
-    -spread, -spread * 0.65, -spread * 0.38,
-    -0.005, -0.002, 0, 0.002, 0.005,
-    spread * 0.38, spread * 0.65, spread
+    -spread, -spread * 0.78, -spread * 0.52, -spread * 0.30,
+    -0.008, -0.004, -0.002, 0, 0.002, 0.004, 0.008,
+    spread * 0.30, spread * 0.52, spread * 0.78, spread
   ];
   if (!railSide || !target || !pocket) return base;
   const railNormal = railSide === "top" ? { x: 0, y: 1 }
@@ -5960,6 +6156,19 @@ function aiRailPotAngleVariants(railSide, target, pocket, dotN = 1) {
   const preferred = railNormal.x * (-along.y) + railNormal.y * along.x;
   const railBias = Math.sign(preferred || 1) * 0.006;
   return [...base, railBias, railBias * 1.8, -railBias * 0.6];
+}
+
+function aiRailPotAimPoints(pocket, railSide) {
+  if (!pocket || !railSide) return [];
+  const horizontalRail = railSide === "top" || railSide === "bottom";
+  const shifts = pocket.type === "corner"
+    ? [-18, -12, -7, -3, 0, 3, 7, 12, 18]
+    : [-22, -14, -8, -3, 0, 3, 8, 14, 22];
+  return shifts.map(shift => ({
+    ...pocket,
+    x: horizontalRail ? pocket.x + shift : pocket.x,
+    y: horizontalRail ? pocket.y : pocket.y + shift
+  }));
 }
 
 function aiFindHardRailPotLock(cue, targets, prof) {
@@ -5975,24 +6184,25 @@ function aiFindHardRailPotLock(cue, targets, prof) {
     for (let pi = 0; pi < POCKETS.length; pi++) {
       const p = POCKETS[pi];
       if (!aiPocketMatchesRailSide(p, railInfo.side)) continue;
+      for (const aimPocket of aiRailPotAimPoints(p, railInfo.side)) {
 
       // aiGhostBallAngle direkt verwenden – NICHT aiEvaluatePotShot – damit
       // prof.minDotN den Bandenball-Schnitt nicht zusätzlich aussiebt.
-      const gb = aiGhostBallAngle(cue, t, p);
+      const gb = aiGhostBallAngle(cue, t, aimPocket);
       if (!gb) continue;
-      if (gb.dotN < HARD_RAIL_POT_MIN_DOT) continue;
+      if (gb.dotN < Math.min(HARD_RAIL_POT_MIN_DOT, 0.18)) continue;
 
       const { angle, dotN, dCG, dTP } = gb;
       const railPressBonus = clamp((HARD_RAIL_POT_SEARCH_DISTANCE - railInfo.dist) / HARD_RAIL_POT_SEARCH_DISTANCE, 0, 1);
       const dist = dCG + dTP;
       const basePower = clamp(
-        46 + dist * 0.022 + Math.max(0, 1 - dotN) * 26 + railPressBonus * 8,
-        50, 92
+        42 + dist * 0.018 + Math.max(0, 1 - dotN) * 20 + railPressBonus * 5,
+        42, 78
       );
-      const angleVariants = aiRailPotAngleVariants(railInfo.side, t, p, dotN);
+      const angleVariants = aiRailPotAngleVariants(railInfo.side, t, aimPocket, dotN);
       const powerVariants = aiUniqueSortedPowers([
-        basePower, basePower + 5, basePower + 10, basePower + 15,
-        basePower - 5, 52, 60, 68, 76, 84, 90
+        basePower - 8, basePower - 4, basePower, basePower + 5, basePower + 10,
+        46, 52, 58, 64, 72, 80
       ]);
 
       for (const da of angleVariants) {
@@ -6002,7 +6212,7 @@ function aiFindHardRailPotLock(cue, targets, prof) {
             railSide: railInfo.side,
             railDistance: railInfo.dist,
             angle: angle + da,
-            powerPercent: clamp(pw, prof.powerMin, Math.max(prof.powerMax, 90)),
+            powerPercent: clamp(pw, 38, Math.max(prof.powerMax, 84)),
             pocketIdx: pi,
             targetNum: t.num,
             dotN, dCG, dTP,
@@ -6020,12 +6230,15 @@ function aiFindHardRailPotLock(cue, targets, prof) {
 
           const cueAfter = aiSimCueBall(check.sim);
           const posValue = aiScoreCuePositionForNextShot(cueAfter, check.sim.finalBalls, t.num);
-          const score = 520000
-            + railPressBonus * 35000
-            + dotN * 12000
-            + clamp(posValue, -100, 140) * 0.75
-            - Math.abs(da) * 36000
-            - Math.abs(cand.powerPercent - basePower) * 8
+          const cueDangerPenalty = aiCueBallInScratchDanger(cueAfter, 1.9) ? 220 : 0;
+          const score = 540000
+            + railPressBonus * 36000
+            + dotN * 12500
+            + clamp(posValue, -100, 145) * 1.35
+            - Math.abs(da) * 30000
+            - Math.abs(cand.powerPercent - basePower) * 13
+            - Math.max(0, cand.powerPercent - 72) * 18
+            - cueDangerPenalty
             - dTP * 0.05;
 
           const item = {
@@ -6043,8 +6256,9 @@ function aiFindHardRailPotLock(cue, targets, prof) {
             score
           };
           if (!best || item.score > best.score) best = item;
-          if (dotN >= 0.92 && Math.abs(da) <= 0.003 && railPressBonus > 0.65) return item;
+          if (dotN >= 0.92 && Math.abs(da) <= 0.004 && railPressBonus > 0.65 && cand.powerPercent <= 72) return item;
         }
+      }
       }
     }
   }
@@ -6360,7 +6574,7 @@ function aiPlanPushOutSmart(cue) {
       const dx = cx - cue.x, dy = cy - cue.y;
       const dist = Math.hypot(dx, dy);
       if (dist < 1) continue;
-      const shot = { angle: Math.atan2(dy, dx), powerPercent: 28, pocketIdx: -1, targetNum: -1 };
+      const shot = { type: "pushOut", angle: Math.atan2(dy, dx), powerPercent: 28, pocketIdx: -1, targetNum: -1, isPushOut: true, isSafety: true, spinHint: "none" };
       const sim = aiSimulateShotResult(shot);
       if (!sim || sim.cuePotted) continue;
       const cueFinal = aiSimCueBall(sim);
@@ -6374,7 +6588,7 @@ function aiPlanPushOutSmart(cue) {
       candidates.push({ shot, score: -oppAccess * 200 + railSafety * 0.4 });
     }
   }
-  if (!candidates.length) return { angle: Math.atan2(PLAY_Y1 + PLAY_H * 0.5 - cue.y, PLAY_X1 + PLAY_W * 0.5 - cue.x), powerPercent: 25, pocketIdx: -1 };
+  if (!candidates.length) return { type: "pushOut", angle: Math.atan2(PLAY_Y1 + PLAY_H * 0.5 - cue.y, PLAY_X1 + PLAY_W * 0.5 - cue.x), powerPercent: 25, pocketIdx: -1, targetNum: -1, isPushOut: true, isSafety: true, spinHint: "none" };
   candidates.sort((a, b) => b.score - a.score);
   return candidates[0].shot;
 }
@@ -6427,6 +6641,9 @@ function aiDebugSelectedReason(shot, bestPot, bestSafety) {
   if (!shot) return "none";
   if (shot.ballInHandPerfect || (shot.type ?? "").includes("ballInHand") || (shot.type ?? "").includes("BallInHand")) return "ball-in-hand planner";
   if (shot.isJump) return `jump (blocker:${shot.blockerNum ?? "?"})`;
+  if (shot.type === "hardPlayableKickEscape") return `legal kick escape (${shot.kickRails ?? 1}-rail)`;
+  if (shot.type === "hardPlayableJumpEscape") return "legal jump escape";
+  if (shot.type === "hardPlayableEscape" || shot.type === "hardForcedContactLastResort") return "legal emergency escape";
   if (aiIsKickShotType(shot)) return `kick (${shot.kickRails ?? 1}-rail)`;
   if (shot.type === "hardLongPotLock") return "hard long-pot lock";
   if (shot.type === "hardRailPotLock") return "hard rail-pot lock";
@@ -6540,15 +6757,18 @@ function yieldToBrowser() {
 async function evaluateCandidatesAsync(allCands, prof, ctx, tableAnalysis) {
   const evaluated = [];
   let sliceStart = performance.now();
+  aiSetPlanProgress("Kandidaten simulieren", 0, allCands.length, "Pot, Foul und Scratch");
   for (let i = 0; i < allCands.length; i++) {
     const ev = evaluateShotCandidate(allCands[i], prof, ctx, tableAnalysis);
     if (ev) evaluated.push(ev);
     if (performance.now() - sliceStart > 18) {
+      aiSetPlanProgress("Kandidaten simulieren", i + 1, allCands.length, `${evaluated.length} brauchbar`);
       await yieldToBrowser();
       if (game.paused) break;
       sliceStart = performance.now();
     }
   }
+  aiSetPlanProgress("Kandidaten simulieren", allCands.length, allCands.length, `${evaluated.length} brauchbar`);
   return evaluated;
 }
 
@@ -6620,18 +6840,23 @@ function aiApplyHardFallbackShotState(shot) {
 }
 
 function aiIsKickShotType(shot) {
-  return !!shot && (shot.type === "kickShot" || shot.type === "multiRailKick" || shot.type === "railProbeKick" || shot.type === "hardValidatedKickFallback");
+  return !!shot && (shot.type === "kickShot" || shot.type === "multiRailKick" || shot.type === "railProbeKick" || shot.type === "hardValidatedKickFallback" || shot.type === "hardPlayableKickEscape");
+}
+
+function aiIsPushOutShot(shot) {
+  return !!shot && (shot.isPushOut || shot.type === "pushOut" || shot.targetNum === -1);
 }
 
 function aiIsHardSpecialLockShot(shot) {
   return !!shot && (shot.type === "hardRailPotLock" || shot.type === "hardLongPotLock" || shot.type === "hardJumpPot" || shot.type === "hardJumpContact" || shot.isJump);
 }
 
-function aiFindHardValidatedKickFallback(cue, targets, prof) {
+function aiFindHardValidatedKickFallback(cue, targets, prof, progressLabel = "Kick-Fallback") {
   if (!cue || !targets?.length || !aiIsHardenedProfi(prof)) return null;
 
   const rawKicks = aiBuildKickCandidates(cue, targets)
     .filter(k => k && k.isSafety && k.targetNum !== undefined);
+  aiSetPlanProgress(progressLabel, 0, Math.max(1, rawKicks.length), "Vorbanden-Kandidaten");
 
   // Gehärteter Profi: Kicks werden gestuft validiert.
   // Kein Drei-Banden-Zufallsschuss, solange ein validierter Ein- oder Zwei-Banden-Kick existiert.
@@ -6649,6 +6874,7 @@ function aiFindHardValidatedKickFallback(cue, targets, prof) {
       .slice(0, tier === 1 ? 34 : tier === 2 ? 46 : 60);
 
     let best = null;
+    aiSetPlanProgress(progressLabel, _kickValidCount, HARD_KICK_MAX_VALIDATIONS, `${tier}-Banden prüfen`);
     for (const cand of kicks) {
       if (performance.now() - _kickTStart > HARD_FALLBACK_TIME_BUDGET_MS) break;
       const spinVariants = tier === 1 ? [0] : HARD_KICK_SPIN_VARIANTS;
@@ -6656,6 +6882,9 @@ function aiFindHardValidatedKickFallback(cue, targets, prof) {
         if (_kickValidCount >= HARD_KICK_MAX_VALIDATIONS) break;
         if (performance.now() - _kickTStart > HARD_FALLBACK_TIME_BUDGET_MS) break;
         _kickValidCount++;
+        if (_kickValidCount === 1 || _kickValidCount % 12 === 0) {
+          aiSetPlanProgress(progressLabel, _kickValidCount, HARD_KICK_MAX_VALIDATIONS, `${tier}-Banden prüfen`);
+        }
         const testShot = {
           ...cand,
           type: "hardValidatedKickFallback",
@@ -6710,9 +6939,149 @@ function aiFindHardValidatedKickFallback(cue, targets, prof) {
     }
     if (best) return best;
   }
+  aiSetPlanProgress(progressLabel, _kickValidCount, HARD_KICK_MAX_VALIDATIONS, "kein sicherer Kick");
   return null;
 }
-function aiFindHardFinalFallback(cue, targets, prof, failedShot) {
+
+function aiExactLegalEscapeCheck(shot, ctx = null) {
+  if (!shot) return { ok: false, reason: "missing-shot", sim: null };
+  const sim = aiSimulateShotResult({ ...shot, noRandomError: true });
+  if (!sim) return { ok: false, reason: "no-simulation", sim };
+  if (sim.cuePotted) return { ok: false, reason: "scratch", sim };
+  if (aiIsPushOutShot(shot)) return { ok: true, reason: "push-out", sim };
+  const firstHitOk = ctx
+    ? Rules.isFirstHitLegal(sim.firstHit, ctx.firstHitRequirement)
+    : aiCheckFirstHitLegal(sim, shot.targetNum);
+  if (!firstHitOk) return { ok: false, reason: "illegal-first-hit", sim };
+  if (!aiMeetsPostContactRule(sim)) return { ok: false, reason: "no-cushion-after-contact", sim };
+  return { ok: true, reason: "exact-legal-contact", sim };
+}
+
+function aiFindHardPlayableEscape(cue, targets, prof, seedCandidates = [], ctx = null, progressLabel = "Notstoß suchen") {
+  if (!cue || !targets?.length || !aiIsHardenedProfi(prof)) return null;
+  aiSetPlanProgress(progressLabel, 0, 80, "Jump, Kick, Kontakt");
+
+  const pool = [];
+  const add = (shot, source = "") => {
+    if (!shot) return;
+    pool.push({
+      ...shot,
+      source: shot.source || source,
+      targetNum: shot.targetNum ?? targets[0]?.num,
+      isSafety: shot.isSafety !== false,
+      noRandomError: true,
+      spinHint: shot.spinHint || "none",
+      spinX: shot.spinX || 0,
+      spinY: shot.spinY || 0,
+      cueType: shot.cueType || "playing",
+      cueElevation: shot.cueElevation || 0
+    });
+  };
+
+  for (const cand of seedCandidates || []) add(cand, "seed");
+  for (const cand of aiBuildHardJumpCandidates(cue, targets, prof)) add(cand, "jump");
+  for (const cand of aiBuildKickCandidates(cue, targets)) add(cand, "kick");
+  for (const target of targets) {
+    const directAngle = Math.atan2(target.y - cue.y, target.x - cue.x);
+    add({ type: "hardPlayableDirectContact", angle: directAngle, powerPercent: 54, pocketIdx: -1, targetNum: target.num, isSafety: true }, "direct");
+    add({ type: "hardPlayableDirectContact", angle: directAngle - 0.055, powerPercent: 62, pocketIdx: -1, targetNum: target.num, isSafety: true }, "direct-edge");
+    add({ type: "hardPlayableDirectContact", angle: directAngle + 0.055, powerPercent: 62, pocketIdx: -1, targetNum: target.num, isSafety: true }, "direct-edge");
+  }
+
+  const seen = new Set();
+  const candidates = pool.filter(c => {
+    if (c.targetNum == null || c.targetNum < 0) return false;
+    const key = [
+      c.type || "",
+      c.targetNum,
+      Math.round((c.angle || 0) * 1000),
+      Math.round((c.powerPercent || 0) * 10),
+      Math.round((c.cueElevation || 0) * 100),
+      Math.round((c.spinX || 0) * 100)
+    ].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).sort((a, b) => {
+    const pri = (c) => c.isJump ? 0 : (c.kickRails ? 1 : (c.type === "railProbeKick" ? 2 : 3));
+    const pa = pri(a), pb = pri(b);
+    if (pa !== pb) return pa - pb;
+    const ra = a.kickRails || 0, rb = b.kickRails || 0;
+    if (ra !== rb) return ra - rb;
+    return Math.abs((a.powerPercent || 60) - 62) - Math.abs((b.powerPercent || 60) - 62);
+  }).slice(0, 96);
+
+  let best = null;
+  let checked = 0;
+  for (const cand of candidates) {
+    checked++;
+    if (checked === 1 || checked % 12 === 0) {
+      aiSetPlanProgress(progressLabel, checked, Math.max(1, candidates.length), `${best ? "spielbar gefunden" : "prüfen"}`);
+    }
+    const check = aiExactLegalEscapeCheck(cand, ctx);
+    if (!check.ok) continue;
+    const cueAfter = aiSimCueBall(check.sim);
+    const targetAfter = aiSimBallByNum(check.sim, cand.targetNum);
+    const scratchDanger = aiCueBallInScratchDanger(cueAfter, 1.8) ? 900 : 0;
+    const targetPotted = check.sim.potted.includes(cand.targetNum);
+    const anyPotted = check.sim.potted.some(n => n !== 0);
+    const railScore = aiRailDistanceSafetyScore(check.sim, cand.targetNum);
+    const hideScore = aiSafetyVisibilityScore(check.sim, cand.targetNum);
+    const separation = cueAfter && targetAfter ? Math.hypot(cueAfter.x - targetAfter.x, cueAfter.y - targetAfter.y) : 0;
+    const sourceBonus = cand.isJump ? 1600 : (cand.kickRails ? 2200 - Math.min(3, cand.kickRails) * 260 : 600);
+    const score = 100000
+      + sourceBonus
+      + (targetPotted ? 7000 : 0)
+      + (anyPotted ? 1200 : 0)
+      + Math.max(0, hideScore) * 0.25
+      + Math.max(0, railScore) * 0.16
+      + separation * 0.05
+      - Math.max(0, (cand.powerPercent || 60) - 76) * 45
+      - Math.abs(cand.spinX || 0) * 120
+      - scratchDanger;
+    const item = {
+      ...cand,
+      type: cand.isJump ? "hardPlayableJumpEscape" : (cand.kickRails ? "hardPlayableKickEscape" : "hardPlayableEscape"),
+      isSafety: true,
+      noRandomError: true,
+      hardPlayableEscape: true,
+      hardFinalValidated: false,
+      score,
+      robust: {
+        potProbability: targetPotted ? 1 : 0,
+        scratchRisk: 0,
+        foulRisk: 0,
+        bestSim: check.sim,
+        positionValue: aiEvaluateCuePosition(cueAfter, check.sim.finalBalls)
+      }
+    };
+    if (!best || item.score > best.score) best = item;
+  }
+  if (best) aiSetPlanProgress(progressLabel, checked, Math.max(1, candidates.length), best.type);
+  return best;
+}
+
+function aiBuildForcedContactShot(cue, targets, failedShot = null) {
+  const target = targets?.[0];
+  if (!cue || !target) return null;
+  return {
+    type: "hardForcedContactLastResort",
+    angle: failedShot?.angle ?? Math.atan2(target.y - cue.y, target.x - cue.x),
+    powerPercent: clamp(failedShot?.powerPercent ?? 62, 44, 82),
+    pocketIdx: -1,
+    targetNum: target.num,
+    isSafety: true,
+    spinHint: "none",
+    spinX: 0,
+    spinY: 0,
+    cueType: failedShot?.cueType || "playing",
+    cueElevation: failedShot?.cueElevation || 0,
+    noRandomError: true,
+    hardPlayableEscape: true
+  };
+}
+
+function aiFindHardFinalFallback(cue, targets, prof, failedShot, ctx = null) {
   const longPotLock = aiFindHardLongPotLock(cue, targets, prof);
   if (longPotLock) return { ...longPotLock, spinX: 0, spinY: 0, cueType: "playing", cueElevation: 0 };
 
@@ -6758,6 +7127,9 @@ function aiFindHardFinalFallback(cue, targets, prof, failedShot) {
   const kickFallback = aiFindHardValidatedKickFallback(cue, orderedTargets, prof);
   if (kickFallback) return kickFallback;
 
+  const playableEscape = aiFindHardPlayableEscape(cue, orderedTargets, prof, [], ctx, "Legal Escape suchen");
+  if (playableEscape) return playableEscape;
+
   for (const target of orderedTargets) {
     const legalFallback = aiFindLegalDirectFallback(cue, target, prof);
     if (!legalFallback) continue;
@@ -6800,6 +7172,9 @@ function aiDecidePushOut() {
 async function aiPlanShot() {
   const token = ++game.aiPlanToken;
   if (game.awaitingPushOutDecision) { aiDecidePushOut(); return; }
+  aiClearPlanProgress();
+  aiSetPlanProgress("Regeln prüfen", 0, 6, "legale Ziele");
+  await yieldToBrowser();
 
   // ── Build AI context ──────────────────────────────────────────────────────
   const _ctx    = buildAIContext(token);
@@ -6811,6 +7186,8 @@ async function aiPlanShot() {
 
   // Computed once, used by BIH planner and evaluateCandidatesAsync
   const tableAnalysis = game.variant === "8ball" ? EightBallStrategy.analyzeTable(_ctx) : null;
+  aiSetPlanProgress("Regeln prüfen", 1, 6, `Ziele: ${targets.map(t => t.num).join(", ") || "keine"}`);
+  await yieldToBrowser();
 
   // ── Ball in hand ──────────────────────────────────────────────────────────
   const wasPlacingBIH = game.placingCue;
@@ -6850,6 +7227,8 @@ async function aiPlanShot() {
         // einen tatsächlich simuliert versenkten Pot erzwingen. Die Bewertung ist
         // bewusst pot-sicherheitslastig: gerade/fast gerade Linien schlagen
         // riskantere Cuts, Positionsspiel wird danach über moderaten Längsdrall ergänzt.
+        aiSetPlanProgress("Ball-in-Hand planen", 2, 6, "sicheren Pot suchen");
+        await yieldToBrowser();
         const bihPlan = await aiFindProBallInHandPlan(cue, targets, prof, token, tableAnalysis);
         if (token !== game.aiPlanToken) return;
         if (bihPlan) {
@@ -6943,6 +7322,8 @@ async function aiPlanShot() {
     if (Math.abs(game.spinY) < 0.04) game.spinY = 0;
 
     if (aiIsHardenedProfi(prof) && !game.isBreakShot) {
+      aiSetPlanProgress("Final validieren", 6, 6, "Ball-in-Hand");
+      await yieldToBrowser();
       let finalCheck = aiFinalValidateHardShot(aiBuildFinalShotFromGame(forcedBIHShot));
       if (!finalCheck.ok && !forcedBIHShot.isSafety) {
         for (const retryPow of [52, 60, 68, 76, 44, 84]) {
@@ -6952,7 +7333,9 @@ async function aiPlanShot() {
         }
       }
       if (!finalCheck.ok) {
-        const fallback = aiFindHardFinalFallback(cue, targets, prof, forcedBIHShot);
+        aiSetPlanProgress("Fallback suchen", 6, 6, finalCheck.reason || "Ball-in-Hand");
+        await yieldToBrowser();
+        const fallback = aiFindHardFinalFallback(cue, targets, prof, forcedBIHShot, _ctx);
         if (fallback) {
           forcedBIHShot = fallback;
           aiApplyHardFallbackShotState(fallback);
@@ -6963,6 +7346,35 @@ async function aiPlanShot() {
       if (_aiLastDebugInfo) {
         _aiLastDebugInfo.finalValidation = { passed: finalCheck.ok, reason: finalCheck.reason, fallbackUsed: forcedBIHShot?.type === "hardFinalFallbackPot" || forcedBIHShot?.type === "hardFinalFallbackSafety" || forcedBIHShot?.type === "hardDirectPotLock" || forcedBIHShot?.type === "hardRailPotLock" || forcedBIHShot?.type === "hardLongPotLock" || forcedBIHShot?.isJump };
         _aiLastDebugInfo.selected = forcedBIHShot;
+      }
+      if (!finalCheck.ok) {
+        const playableEscape = aiFindHardPlayableEscape(cue, targets, prof, [], _ctx, "BIH-Notstoß suchen");
+        if (playableEscape) {
+          forcedBIHShot = playableEscape;
+          aiApplyHardFallbackShotState(forcedBIHShot);
+          aiApply8BallCallForShot(forcedBIHShot, me);
+          finalCheck = aiExactLegalEscapeCheck(forcedBIHShot, _ctx);
+        } else {
+          const forced = aiBuildForcedContactShot(cue, targets, forcedBIHShot);
+          if (forced) {
+            forcedBIHShot = forced;
+            aiApplyHardFallbackShotState(forcedBIHShot);
+            aiApply8BallCallForShot(forcedBIHShot, me);
+            finalCheck = { ok: true, reason: "forced-last-resort", sim: null };
+            game.foulMessage = "KI erzwingt Ball-in-Hand-Notstoß statt hängen zu bleiben";
+            game.foulTimer = 120;
+          }
+        }
+        if (!finalCheck.ok) {
+          game.currentPlayer = 1 - game.currentPlayer;
+          game.aiThinking = false;
+          game.aiPlanning = false;
+          aiClearPlanProgress();
+          game.foulMessage = "KI gibt Ball-in-Hand ab: kein Zielball erreichbar";
+          game.foulTimer = 180;
+          updateUI();
+          return;
+        }
       }
     }
 
@@ -6983,7 +7395,11 @@ async function aiPlanShot() {
 
   // ── Generate & evaluate candidates ───────────────────────────────────────
   const t0 = performance.now();
+  aiSetPlanProgress("Kandidaten erzeugen", 2, 6, "Pots, Safes, Jumps");
+  await yieldToBrowser();
   const allCands = generateShotCandidates(cue, targets, prof);
+  aiSetPlanProgress("Kandidaten filtern", 3, 6, `${allCands.length} Kandidaten`);
+  await yieldToBrowser();
   const filteredCands = allCands.filter(cand => {
     if (game.variant === "8ball" && game.open8ball && !cand.isSafety && cand.targetNum !== 8) {
       const eight = game.balls.find(b => b.num === 8 && b.inPlay);
@@ -6999,8 +7415,12 @@ async function aiPlanShot() {
     }
     return true;
   });
+  aiSetPlanProgress("Kandidaten filtern", 3, 6, `${filteredCands.length}/${allCands.length} übrig`);
+  await yieldToBrowser();
   const evaluated = await evaluateCandidatesAsync(filteredCands, prof, _ctx, tableAnalysis);
   evaluated.sort((a, b) => b.score - a.score);
+  aiSetPlanProgress("Besten Stoß wählen", 4, 6, `${evaluated.length} bewertet`);
+  await yieldToBrowser();
 
   const potCands = evaluated.filter(c => !c.isSafety);
   const safeCands = evaluated.filter(c => c.isSafety);
@@ -7060,26 +7480,37 @@ async function aiPlanShot() {
   }
 
   if (aiIsHardenedProfi(prof)) {
+    aiSetPlanProgress("Blockaden prüfen", 4, 6, "Snooker, Jump, Kick");
+    await yieldToBrowser();
     const hardSnooker = aiFindMostRelevantHardSnooker(cue, targets);
     if (hardSnooker?.blocked) {
+      aiSetPlanProgress("Jump prüfen", 4, 6, `Ziel ${hardSnooker.target?.num ?? ""}`);
+      await yieldToBrowser();
       const hardJump = aiFindHardValidatedJumpFallback(cue, [hardSnooker.target], prof);
       if (hardJump) {
         bestShot = hardJump;
       } else if (!bestShot || bestShot.isSafety || aiIsKickShotType(bestShot)) {
-        const tieredKick = aiFindHardValidatedKickFallback(cue, [hardSnooker.target], prof);
+        const tieredKick = aiFindHardValidatedKickFallback(cue, [hardSnooker.target], prof, "Kick-Fallback");
         if (tieredKick) bestShot = tieredKick;
       }
     }
   }
 
-  if (!bestShot && game.variant === "9ball" && game.pushOutAvailable) {
-    bestShot = aiPlanPushOutSmart(cue);
-    game.inPushOut = true; game.pushOutAvailable = false;
-  }
-
   if (!bestShot) {
     if (targets.length > 0) {
       const t = targets[0];
+      if (aiIsHardenedProfi(prof)) {
+        aiSetPlanProgress("Legal Escape suchen", 4, 6, "Jump oder Bande");
+        await yieldToBrowser();
+        const playableEscape = aiFindHardPlayableEscape(cue, targets, prof, filteredCands, _ctx, "Legal Escape suchen");
+        if (playableEscape) bestShot = playableEscape;
+      }
+      if (bestShot) {
+        // Exact legal jump/kick/contact escape found; keep it.
+      } else if (game.variant === "9ball" && game.pushOutAvailable) {
+        bestShot = aiPlanPushOutSmart(cue);
+        game.inPushOut = true; game.pushOutAvailable = false;
+      } else {
       const directAngle = Math.atan2(t.y - cue.y, t.x - cue.x);
       const legalDirectFallback = aiFindLegalDirectFallback(cue, t, prof);
       if (legalDirectFallback) {
@@ -7088,8 +7519,10 @@ async function aiPlanShot() {
         // aus freien 9-Ball-Lagen keine vermeidbaren Vorbanden-Fouls mehr.
         bestShot = legalDirectFallback;
       } else if (!clearPath(cue, t.x, t.y, t)) {
+        if (aiIsHardenedProfi(prof)) aiSetPlanProgress("Notfall-Jump prüfen", 4, 6, `Ziel ${t.num}`);
+        if (aiIsHardenedProfi(prof)) await yieldToBrowser();
         const hardJump = aiIsHardenedProfi(prof) ? aiFindHardValidatedJumpFallback(cue, [t], prof) : null;
-        const hardKick = (!hardJump && aiIsHardenedProfi(prof)) ? aiFindHardValidatedKickFallback(cue, [t], prof) : null;
+        const hardKick = (!hardJump && aiIsHardenedProfi(prof)) ? aiFindHardValidatedKickFallback(cue, [t], prof, "Notfall-Kick") : null;
         if (hardJump) {
           bestShot = hardJump;
         } else if (hardKick) {
@@ -7107,32 +7540,43 @@ async function aiPlanShot() {
       } else {
         bestShot = { type: "directEmergency", angle: directAngle, powerPercent: 78, pocketIdx: -1, targetNum: t.num, isSafety: true, spinHint: "none" };
       }
+      }
     } else {
       bestShot = { angle: Math.random() * Math.PI * 2, powerPercent: 40, pocketIdx: -1 };
     }
   }
 
   if (aiIsHardenedProfi(prof)) {
+    aiSetPlanProgress("Spezial-Locks prüfen", 5, 6, "Bande, Bank, Long Pot");
+    await yieldToBrowser();
     const railPotLock = aiFindHardRailPotLock(cue, targets, prof);
     if (railPotLock && (!bestShot || bestShot.isSafety || (railPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
       bestShot = railPotLock;
     }
     if (!bestShot || bestShot.isSafety) {
+      aiSetPlanProgress("Bank-Shot prüfen", 5, 6, "validierte Bande");
+      await yieldToBrowser();
       const bankShotLock = aiFindHardBankShotCandidates(cue, targets, prof);
       if (bankShotLock && (!bestShot || bestShot.isSafety || (bankShotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
         bestShot = bankShotLock;
       }
     }
+    aiSetPlanProgress("Long-Pot prüfen", 5, 6, "gerade lange Pots");
+    await yieldToBrowser();
     const longPotLock = aiFindHardLongPotLock(cue, targets, prof);
     if (longPotLock && (!bestShot || bestShot.isSafety || (longPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
       bestShot = longPotLock;
     }
+    aiSetPlanProgress("Direkt-Pot prüfen", 5, 6, "Guard");
+    await yieldToBrowser();
     bestShot = aiApplyHardDirectPotGuardUniversal(cue, targets, bestShot, prof);
   } else if (prof.searchDepth >= 3 && game.variant === "9ball" && targets.length === 1) {
     bestShot = aiApplyHardNineBallDirectGuard(cue, targets[0], bestShot, prof);
   }
 
   if (aiIsHardenedProfi(prof) && bestShot && !bestShot.isSafety && !game.isBreakShot) {
+    aiSetPlanProgress("Stellung prüfen", 5, 6, "Follow, Draw, Stun");
+    await yieldToBrowser();
     bestShot = aiApplyValidatedPositionControl(bestShot, prof, {
       ballInHand: wasPlacingBIH || !!bestShot.ballInHandPerfect,
       allowSide: true
@@ -7237,10 +7681,27 @@ async function aiPlanShot() {
   } else {
     game.spinX = 0; game.spinY = 0;
   }
-  if (aiIsHardenedProfi(prof) && !game.isBreakShot) {
+  if (aiIsPushOutShot(bestShot)) {
+    const pushCheck = aiExactLegalEscapeCheck(bestShot, _ctx);
+    if (!pushCheck.ok) {
+      const pushFallback = aiPlanPushOutSmart(cue);
+      bestShot = pushFallback;
+      aiApplyHardFallbackShotState(pushFallback);
+      game.inPushOut = true;
+      game.pushOutAvailable = false;
+    }
+    if (_aiLastDebugInfo) {
+      _aiLastDebugInfo.finalValidation = { passed: true, reason: "push-out", fallbackUsed: false };
+      _aiLastDebugInfo.selected = bestShot;
+    }
+  } else if (aiIsHardenedProfi(prof) && !game.isBreakShot) {
+    aiSetPlanProgress("Final validieren", 6, 6, "Regeln, Scratch, Tasche");
+    await yieldToBrowser();
     const finalShot = aiBuildFinalShotFromGame(bestShot);
-    let finalCheck = aiFinalValidateHardShot(finalShot, _ctx);
-    if (finalCheck.ok && finalShot.isSafety) {
+    let finalCheck = finalShot.hardPlayableEscape
+      ? aiExactLegalEscapeCheck(finalShot, _ctx)
+      : aiFinalValidateHardShot(finalShot, _ctx);
+    if (finalCheck.ok && finalShot.isSafety && !finalShot.hardPlayableEscape) {
       const safetyGuard = aiValidateHardSafetyShot(finalShot, prof, _ctx);
       if (!safetyGuard.ok) {
         finalCheck = { ok: false, reason: safetyGuard.reason, sim: safetyGuard.sim };
@@ -7249,12 +7710,26 @@ async function aiPlanShot() {
       }
     }
     if (!finalCheck.ok) {
-      const fallback = aiFindHardFinalFallback(cue, targets, prof, finalShot);
+      aiSetPlanProgress("Fallback suchen", 6, 6, finalCheck.reason || "Finalcheck");
+      await yieldToBrowser();
+      const fallback = aiFindHardFinalFallback(cue, targets, prof, finalShot, _ctx);
       if (fallback) {
         bestShot = fallback;
         aiApplyHardFallbackShotState(fallback);
         aiApply8BallCallForShot(bestShot, me);
-        finalCheck = aiFinalValidateHardShot(aiBuildFinalShotFromGame(bestShot), _ctx);
+        const fallbackShot = aiBuildFinalShotFromGame(bestShot);
+        finalCheck = fallbackShot.hardPlayableEscape
+          ? aiExactLegalEscapeCheck(fallbackShot, _ctx)
+          : aiFinalValidateHardShot(fallbackShot, _ctx);
+      }
+    }
+    if (!finalCheck.ok && targets.length > 0) {
+      const playableEscape = aiFindHardPlayableEscape(cue, targets, prof, filteredCands, _ctx, "Letzter Legal Escape");
+      if (playableEscape) {
+        bestShot = playableEscape;
+        aiApplyHardFallbackShotState(bestShot);
+        aiApply8BallCallForShot(bestShot, me);
+        finalCheck = aiExactLegalEscapeCheck(bestShot, _ctx);
       }
     }
     if (!finalCheck.ok && targets.length > 0) {
@@ -7269,18 +7744,30 @@ async function aiPlanShot() {
       }
     }
     if (!finalCheck.ok) {
-      game.aiThinking = false;
-      game.aiPlanning = false;
-      game.foulMessage = "KI findet keinen foulsicheren Stoß";
-      game.foulTimer = 180;
-      updateUI();
-      return;
+      const forced = aiBuildForcedContactShot(cue, targets, finalShot);
+      if (forced) {
+        bestShot = forced;
+        aiApplyHardFallbackShotState(bestShot);
+        aiApply8BallCallForShot(bestShot, me);
+        finalCheck = { ok: true, reason: "forced-last-resort", sim: null };
+        game.foulMessage = "KI erzwingt Notstoß statt hängen zu bleiben";
+        game.foulTimer = 120;
+      } else {
+        game.currentPlayer = 1 - game.currentPlayer;
+        game.aiThinking = false;
+        game.aiPlanning = false;
+        aiClearPlanProgress();
+        game.foulMessage = "KI gibt den Stoß ab: kein Zielball erreichbar";
+        game.foulTimer = 180;
+        updateUI();
+        return;
+      }
     }
     if (_aiLastDebugInfo) {
       _aiLastDebugInfo.finalValidation = {
         passed: finalCheck.ok,
         reason: finalCheck.reason,
-        fallbackUsed: bestShot?.type === "hardFinalFallbackPot" || bestShot?.type === "hardFinalFallbackSafety" || bestShot?.type === "hardExactEmergencySafety" || bestShot?.type === "hardDirectPotLock" || bestShot?.type === "hardValidatedKickFallback" || bestShot?.type === "hardRailPotLock" || bestShot?.type === "hardLongPotLock" || bestShot?.isJump
+        fallbackUsed: bestShot?.type === "hardFinalFallbackPot" || bestShot?.type === "hardFinalFallbackSafety" || bestShot?.type === "hardExactEmergencySafety" || bestShot?.type === "hardDirectPotLock" || bestShot?.type === "hardValidatedKickFallback" || bestShot?.type === "hardPlayableKickEscape" || bestShot?.type === "hardPlayableJumpEscape" || bestShot?.type === "hardPlayableEscape" || bestShot?.type === "hardForcedContactLastResort" || bestShot?.type === "hardRailPotLock" || bestShot?.type === "hardLongPotLock" || bestShot?.isJump
       };
       _aiLastDebugInfo.selected = bestShot;
     }
@@ -7871,6 +8358,8 @@ function loop(ts = 0) {
           .finally(() => {
             game.aiThinking = false;
             game.aiPlanning = false;
+            aiClearPlanProgress();
+            updateUI();
           });
       }
     }
@@ -9027,6 +9516,8 @@ function updateUI() {
     ui.statusLine.textContent = `${game.players[game.currentPlayer].name}: Push-Out annehmen oder zurückgeben?`;
   } else if (game.selecting8Pocket) {
     ui.statusLine.textContent = `${game.players[game.currentPlayer].name}: Klicke auf eine Tasche für die Schwarze 8!`;
+  } else if (game.mode === "ai" && game.currentPlayer === 1 && game.aiPlanProgress) {
+    ui.statusLine.textContent = aiProgressText();
   } else if (game.variant === "8ball" && game.mode === "ai" && game.currentPlayer === 1 && (game.aiPlannedTargetNum || game.aiPlannedIsSafety)) {
     if (game.aiPlannedIsSafety) {
       ui.statusLine.textContent = "KI plant: Safe";
@@ -9208,6 +9699,7 @@ function newGame() {
   game.aiPlanning = false;
   game.aiPlanToken++;
   clearAiPlannedShotDisplay();
+  aiClearPlanProgress();
   game.paused = false;
   game.lastSnapshot = null;
   game.breakCushionBalls = new Set();
@@ -9598,6 +10090,7 @@ function applyOnlineSync(msg) {
   game.aiThinking       = false;
   game.aiPlanning       = false;
   game.aiPlanToken++;
+  aiClearPlanProgress();
   online.waitingForSync = false;
   cueDragging = false; lmbDragging = false; rmbDragging = false; rmbStart = null;
   if (typeof stopShotTimer === "function") stopShotTimer();

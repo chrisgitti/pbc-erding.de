@@ -953,7 +953,7 @@
       <tr>
         <td><span class="badge badge-red">Schwer</span></td>
         <td>Profi</td>
-        <td>Gehärteter Modus: Pot-Priorität, Scratch-Veto, finale Validierung vor jedem Stoß. Einfache Pots werden praktisch nie verschossen. Bei Ball-in-Hand wählt er die optimale Platzierung und versenkt die Pflichtkugel garantiert. Nutzt Jump-Shots bei blockierten Lagen.</td>
+        <td>Gehärteter Modus: Pot-Priorität, Scratch-Veto, finale Validierung vor jedem Stoß. Einfache Pots und Bandenbälle werden praktisch nie verschossen. Validiertes Stellungsspiel (Follow/Draw/Stun) für den Anschlussstoß. Bei Ball-in-Hand optimale Weißen-Platzierung. Bei blockierten Lagen: Jump-Shots oder gestufte Kick-Varianten.</td>
         <td>± 0°</td>
         <td>± 0 %</td>
       </tr>
@@ -961,7 +961,15 @@
   </div>
   <div class="tip">
     <strong>💡 Hinweis zum Profi-Level</strong>
-    Der Profi-Modus arbeitet deterministisch: Er simuliert jeden Stoß mehrfach, filtert Kandidaten mit Scratch-Risiko hart aus und prüft den tatsächlich auszuführenden Stoß noch einmal kurz vor dem Auslösen. Bei <strong>Ball-in-Hand</strong> platziert er die Weiße an der für Pot und Folgeposition optimalen Stelle – ein Verfehlen der Pflichtkugel ist in diesem Fall ausgeschlossen. Bei blockierten Bällen prüft er Jump-Shots (je nach Abstand kurze oder normale Sprunglänge) und gestufte Bandenstöße. Die kurze Denkpause ist normal.
+    Der Profi-Modus arbeitet deterministisch: Er simuliert jeden Stoß mehrfach, filtert Kandidaten mit Scratch-Risiko hart aus und prüft den tatsächlich auszuführenden Stoß noch einmal kurz vor dem Auslösen. Wichtige Merkmale:
+    <ul style="margin-top:.5em; padding-left:1.3em; line-height:1.75">
+      <li><strong>Bandenbälle:</strong> Liegt der Objektball an oder nahe einer Bande, ermittelt die KI den geometrisch exakten Schnittwinkel und versenkt zuverlässig – auch dünne Schnitte entlang der Bande (wie ein guter Bezirksligaspieler).</li>
+      <li><strong>Stellungsspiel:</strong> Nach einem sicheren Pot werden Follow-, Draw- und Stun-Varianten simuliert und die Weißen-Stellung für den Anschlussstoß optimiert.</li>
+      <li><strong>Ball-in-Hand:</strong> Die Weiße wird an der für Pot und Folgeposition optimalen Stelle platziert – ein Verfehlen der Pflichtkugel ist ausgeschlossen.</li>
+      <li><strong>Blockierte Lagen:</strong> Jump-Shots (je nach Abstand kurze oder normale Sprunglänge) und gestufte 1-/2-/3-Banden-Kick-Varianten.</li>
+      <li><strong>Fortschrittsanzeige:</strong> Während längerer Planung zeigt <em>„KI denkt nach …"</em> die aktuelle Phase (z.&nbsp;B. <em>„Kandidaten simulieren 8/20"</em>). Sobald die KI den Stoß einstellt, erscheint <em>„KI bereitet den Stoß vor"</em> – dies bleibt mindestens 2&nbsp;Sekunden sichtbar.</li>
+    </ul>
+    Die kurze Denkpause ist normal und zeigt, dass eine vollständige Physik-Simulation läuft.
   </div>
 
   <h3 id="s6-2">6.2 KI-Debug-Modus <span class="badge badge-gray">Entwickler</span></h3>
