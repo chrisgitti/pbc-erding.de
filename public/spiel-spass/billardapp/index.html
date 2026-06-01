@@ -1857,6 +1857,23 @@ const HARD_FALLBACK_TIME_BUDGET_MS = 450;
 // Ausführungsgenauigkeit und verhindert riskante "100%"-Glücks-Combos.
 const AI_EVAL_AIM_NOISE_FLOOR = 0.4;     // Grad
 const AI_EVAL_POWER_NOISE_FLOOR = 0.03;  // relativ (±3 %)
+// Stufe 2.3 — Pocket-Approach-Quality: Anflugwinkel Objektball→Tasche relativ
+// zur nächsten Bande. Bei Mitteltaschen überproportional bestraft (Lippe statt
+// Schlund). Bei Eckpockets schwächer (zwei Akzeptanzrichtungen). Distanzabhängig:
+// kurz am Loch → fast egal, lang → voll wirksam.
+const AI_APPROACH_EXP_CORNER  = 1.2;
+const AI_APPROACH_EXP_SIDE    = 2.6;
+const AI_APPROACH_DIST_EXP    = 0.7;
+const AI_APPROACH_REJECT      = 0.35;  // ≥ raus aus Kandidatenliste
+const AI_APPROACH_SOFT_START  = 0.10;  // ab hier weicher Score-Malus
+// Stufe 2.3 — Fragility (Schnitt × Distanz, ohne Approach). Klein für kurze
+// Schnitte jeder Steilheit (Profi-Standard: 60°-Schnitt aus 50 px = unkritisch),
+// groß für lange Dünnschnitte. Triggert den Noise-Floor in der Robust-Sim.
+const AI_FRAG_REF_DIST        = PLAY_W * 0.45;
+const AI_FRAG_CUT_EXP         = 1.6;
+const AI_FRAG_DIST_EXP        = 1.3;
+const AI_FRAG_NOISE_THRESHOLD = 0.20;  // ab hier Streuung in der Sim aktiv
+const AI_FRAG_SOFT_START      = 0.06;
 // Stufe 2: Geometrische Mehr-Kugel-Vorausschau (Runout-Kette). Die Tiefe wird pro Zug
 // anhand der Spielstärke gesetzt (Profi 3, Fortgeschrittener 2, Anfänger 1). Die Kette
 // ist rein geometrisch (keine zusätzliche Physik-Simulation) und mischt diskontierte
@@ -1865,7 +1882,7 @@ const AI_LOOKAHEAD_DEPTH = 3;
 const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S2.2";
+const AI_BUILD = "S2.3";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -3696,6 +3713,51 @@ function aiCueSpotClear(cue, x, y) {
   return true;
 }
 
+// Approach-Quality (Stufe 2.3): Wie senkrecht trifft der Anflugvektor
+// Objektball→Tasche auf die nächste Bande? aq ∈ [0,1] mit 1 = ideal senkrecht,
+// 0 = parallel zur Bande (Lippe). Bei Mitteltaschen überproportional (Exp 2.6),
+// bei Eckpockets nur leicht (Exp 1.2).
+function aiPocketApproachQuality(target, pocket) {
+  const dxTP = pocket.x - target.x;
+  const dyTP = pocket.y - target.y;
+  const dTP  = Math.hypot(dxTP, dyTP);
+  if (dTP < 1) return { aq: 1, cosA: 1, dTP };
+  const ax = dxTP / dTP, ay = dyTP / dTP;
+  let nx, ny;
+  if (pocket.type === "side") {
+    const isTop = pocket.y < (PLAY_Y1 + PLAY_Y2) / 2;
+    nx = 0; ny = isTop ? 1 : -1;
+  } else {
+    const isLeft = pocket.x < (PLAY_X1 + PLAY_X2) / 2;
+    const isTop  = pocket.y < (PLAY_Y1 + PLAY_Y2) / 2;
+    nx = (isLeft ? 1 : -1) / Math.SQRT2;
+    ny = (isTop  ? 1 : -1) / Math.SQRT2;
+  }
+  // Anflug zeigt zur Tasche, Pocket-Normale zeigt ins Spielfeld → cosA = -(a·n)
+  const cosA = Math.max(0, -(ax * nx + ay * ny));
+  const exp  = pocket.type === "side" ? AI_APPROACH_EXP_SIDE : AI_APPROACH_EXP_CORNER;
+  return { aq: Math.pow(cosA, exp), cosA, dTP };
+}
+
+// Approach-Penalty: (1-aq) × distanzgedämpft. Nahe Tasche → kaum Strafe,
+// weit → voll wirksam.
+function aiPocketApproachPenalty(target, pocket, aq, dTP) {
+  if (aq == null || dTP == null) {
+    const ap = aiPocketApproachQuality(target, pocket);
+    aq = ap.aq; dTP = ap.dTP;
+  }
+  const distDamp = Math.pow(clamp(dTP / AI_FRAG_REF_DIST, 0, 2.0), AI_APPROACH_DIST_EXP);
+  return (1 - aq) * distDamp;
+}
+
+// Fragility (Schnitt × Distanz, OHNE Approach). 60°-Schnitt aus 50 px → 0,011;
+// 75°-Schnitt aus 500 px → 0,412. Schwelle 0,20 aktiviert Noise-Floor.
+function aiShotFragility(dotN, dTP) {
+  const cutFactor  = Math.pow(1 - clamp(dotN ?? 0.75, 0, 1), AI_FRAG_CUT_EXP);
+  const distFactor = Math.pow(clamp((dTP ?? 0) / AI_FRAG_REF_DIST, 0, 2.5), AI_FRAG_DIST_EXP);
+  return cutFactor * distFactor;
+}
+
 function aiGhostBallAngle(cue, target, pocket) {
   const dxTP = pocket.x - target.x, dyTP = pocket.y - target.y;
   const dTP = Math.hypot(dxTP, dyTP);
@@ -3708,17 +3770,26 @@ function aiGhostBallAngle(cue, target, pocket) {
   if (!clearPath(cue, ghostX, ghostY, target)) return null;
   if (!clearPath(target, pocket.x, pocket.y, target)) return null;
   const dotN = tx * (dxCG / dCG) + ty * (dyCG / dCG);
-  return { angle: Math.atan2(dyCG, dxCG), dotN, dCG, dTP, ghostX, ghostY };
+  const ap = aiPocketApproachQuality(target, pocket);
+  return { angle: Math.atan2(dyCG, dxCG), dotN, dCG, dTP, ghostX, ghostY, aq: ap.aq };
 }
 
 function aiEvaluatePotShot(cue, target, pocket) {
   const prof = aiGetProfile();
   const gb = aiGhostBallAngle(cue, target, pocket);
   if (!gb || gb.dotN < prof.minDotN) return null;
-  const { angle, dotN, dCG, dTP } = gb;
+  const { angle, dotN, dCG, dTP, aq } = gb;
+  // Stufe 2.3 — Priorität 0: Anflugwinkel zur Tasche. Bandenkratzer-Mitteltaschen
+  // werden hier hart verworfen, bevor sie ins Scoring kommen.
+  const approachPenalty = aiPocketApproachPenalty(target, pocket, aq, dTP);
+  if (approachPenalty >= AI_APPROACH_REJECT) return null;
   const cutPenalty = Math.pow(1 - dotN, 2.2) * 230;
   const distFactor = clamp((dCG + dTP) / 1650, 0, 1);
-  const score = dotN * dotN * 170 - cutPenalty - dTP * 0.13 - dCG * 0.045 + (pocket.type === "side" ? 5 : 0);
+  const approachMalus = Math.max(0, approachPenalty - AI_APPROACH_SOFT_START) * 320;
+  // Hinweis: Der frühere "+5 für Mitteltasche" wurde entfernt – er war
+  // physikalisch falsch (Mitteltaschen akzeptieren nur senkrechten Anflug),
+  // und ist jetzt durch approachMalus richtig ersetzt.
+  const score = dotN * dotN * 170 - cutPenalty - dTP * 0.13 - dCG * 0.045 - approachMalus;
   const powerPercent = clamp((0.34 + 0.58 * distFactor) * 100, prof.powerMin, prof.powerMax);
   return { score, dotN, dTP, dCG, angle, powerPercent, pocketIdx: POCKETS.indexOf(pocket), targetNum: target.num };
 }
@@ -3730,16 +3801,21 @@ function aiEvaluatePotShot(cue, target, pocket) {
 function aiClassifyTargetsByEasyPot(cue, targets) {
   const easy = new Map();   // targetNum -> bester geometrischer Easy-Score
   const problematic = [];   // Ziele ohne klaren, gut spielbaren Direktpot
-  const EASY_MIN_DOTN = 0.72;            // voller Schnitt (< ~44°)
-  const EASY_MAX_DIST = PLAY_W * 1.15;   // Weiße→Geistball + Ball→Loch
+  // Stufe 2.3 — "Easy" = niedriges Fragilitätsmaß UND niedrige Approach-Penalty.
+  // dotN alleine reicht nicht: ein 38°-Schnitt in eine Mitteltasche entlang der
+  // Bande wirkt "spitz genug", ist aber unspielbar; umgekehrt ist ein 70°-Schnitt
+  // direkt am Loch sehr wohl spielbar.
+  const EASY_MAX_FRAGILITY = 0.10;
+  const EASY_MAX_APPROACH  = 0.18;
   for (const t of targets) {
     let bestEasy = -Infinity;
     for (const p of POCKETS) {
-      const gb = aiGhostBallAngle(cue, t, p); // prüft bereits beide Wege frei
+      const gb = aiGhostBallAngle(cue, t, p);
       if (!gb) continue;
-      const dist = gb.dCG + gb.dTP;
-      if (gb.dotN < EASY_MIN_DOTN || dist > EASY_MAX_DIST) continue;
-      const score = gb.dotN * 200 - dist * 0.05 + (p.type === "corner" ? 8 : 4);
+      const frag = aiShotFragility(gb.dotN, gb.dTP);
+      const appr = aiPocketApproachPenalty(t, p, gb.aq, gb.dTP);
+      if (frag > EASY_MAX_FRAGILITY || appr > EASY_MAX_APPROACH) continue;
+      const score = gb.dotN * 200 - (gb.dCG + gb.dTP) * 0.05 - frag * 280 - appr * 200;
       if (score > bestEasy) bestEasy = score;
     }
     if (bestEasy > -Infinity) easy.set(t.num, bestEasy);
@@ -5418,9 +5494,12 @@ const CommonStrategy = {
   },
 
   // Combined position + cue-control-plan value
+  // Stufe 2.3 — planScore-Gewicht reduziert (0.70 → 0.40 bei Profi): der
+  // cueControlPlan war zu stark im Verhältnis zur Pot-Robustheit; fragile
+  // Stöße durften nicht mehr allein durch hohen Folge-Plan-Wert gewinnen.
   scorePosition(posValue, planScore, prof) {
     const posV  = clamp(posValue ?? 0, -100, 135) * (prof.positionWeight || 0.5);
-    const planV = (planScore ?? 0) * (prof.searchDepth >= 3 ? 0.70 : 0.25);
+    const planV = (planScore ?? 0) * (prof.searchDepth >= 3 ? 0.40 : 0.20);
     return posV + planV;
   },
 
@@ -5446,9 +5525,17 @@ const CommonStrategy = {
     return base + highPenalty;
   },
 
-  // Thin-cut penalty (high-angle cuts are unreliable)
-  scoreCutRisk(dotN, prof) {
-    return -(1 - (dotN ?? 0.75)) * (prof.searchDepth >= 3 ? 18 : 6);
+  // Thin-cut + approach penalty (Stufe 2.3): Fragility (Schnitt × Distanz) und
+  // Approach (Bandenanflug zur Tasche) als weicher Score-Malus. dTP und
+  // approachPenalty werden vom Aufrufer aus der Geometrie gereicht.
+  // Bewusst moderat – Hauptlast tragen Reject in aiEvaluatePotShot und der
+  // Noise-Floor in evaluateShotCandidate.
+  scoreCutRisk(dotN, prof, dTP = 0, approachPenalty = 0) {
+    const fragility   = aiShotFragility(dotN, dTP);
+    const fragExcess  = Math.max(0, fragility - AI_FRAG_SOFT_START);
+    const apprExcess  = Math.max(0, (approachPenalty ?? 0) - AI_APPROACH_SOFT_START);
+    const profiFactor = prof.searchDepth >= 3 ? 1 : 0.35;
+    return -(fragExcess * 90 + apprExcess * 140) * profiFactor;
   },
 
   // Reward confirmed legal first hit; penalise illegal (all difficulty levels)
@@ -6616,12 +6703,34 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   } else {
     samples = aiIsHardenedProfi(prof) ? prof.samplesPerShot : (prof.searchDepth >= 3 ? 8 : 3);
   }
-  // Stufe 1.1 (korrigiert): Die Mindest-Streuung zur Robustheitsbewertung wird NUR auf
-  // Schusstypen angewandt, bei denen die KI-Simulation real unzuverlässig ist – v. a.
-  // COMBOS (zwei Kontakte + Wurf, von der Sim nicht modelliert). Direkte Pots/Schnitte
-  // sind Einzelkontakte: Hier ist die Sim genau und der perfekt zielende Profi trifft sie
-  // auch real. Sie dürfen NICHT künstlich verrauscht und dadurch fälschlich verworfen werden.
-  const useNoiseFloor = (cand.type === "comboShot");
+  // Stufe 2.3: Schuss-Fragility und Approach-Penalty einmal pro Kandidat
+  // berechnen. Beides triggert zusätzlich zum Combo-Fall den Noise-Floor und
+  // fließt in scoreCutRisk ein.
+  let _fragility = 0, _approachPenalty = 0, _dTP = cand.dTP ?? 0;
+  const _isPotLike = !cand.isSafety
+                  && cand.type !== "kickShot" && cand.type !== "multiRailKick"
+                  && cand.type !== "railProbeKick" && cand.type !== "jumpContactSafety"
+                  && Number.isInteger(cand.pocketIdx) && cand.pocketIdx >= 0;
+  if (_isPotLike) {
+    const _pocket = POCKETS[cand.pocketIdx];
+    const _target = game.balls.find(b => b.num === cand.targetNum && !b.isCue);
+    if (_pocket && _target) {
+      if (!Number.isFinite(_dTP) || _dTP <= 0) {
+        _dTP = Math.hypot(_pocket.x - _target.x, _pocket.y - _target.y);
+      }
+      _fragility = aiShotFragility(cand.dotN, _dTP);
+      _approachPenalty = aiPocketApproachPenalty(_target, _pocket);
+    }
+  }
+  // Stufe 1.1 (korrigiert) + Stufe 2.3: Mindest-Streuung wird auf Schusstypen
+  // angewandt, bei denen die deterministische Sim real fragil ist:
+  //  – COMBOS (zwei Kontakte + Wurf, nicht in der Sim modelliert) ODER
+  //  – Schüsse mit hoher Fragility (lange Dünnschnitte) ODER
+  //  – Schüsse mit ungünstigem Bandenanflug (Mitteltaschen-Lippe).
+  // Kurze volle Schnitte bleiben unangetastet (deterministische Sim ist hier exakt).
+  const useNoiseFloor = (cand.type === "comboShot")
+                     || (_fragility >= AI_FRAG_NOISE_THRESHOLD)
+                     || (_approachPenalty >= AI_FRAG_NOISE_THRESHOLD);
   const evalAimNoise = useNoiseFloor ? Math.max(prof.aimErrorDeg || 0, AI_EVAL_AIM_NOISE_FLOOR) : (prof.aimErrorDeg || 0);
   const evalPowerNoise = useNoiseFloor ? Math.max(prof.powerError || 0, AI_EVAL_POWER_NOISE_FLOOR) : (prof.powerError || 0);
   let robust = aiSimulateRobust(cand, samples, evalAimNoise, evalPowerNoise);
@@ -6689,7 +6798,7 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
           + CommonStrategy.scoreFoulRisk(robust.foulRisk)
           + CommonStrategy.scoreSellout(selloutRisk)
           + CommonStrategy.scorePower(cand.powerPercent, prof)
-          + CommonStrategy.scoreCutRisk(cand.dotN, prof);
+          + CommonStrategy.scoreCutRisk(cand.dotN, prof, _dTP, _approachPenalty);
     if (aiIsHardenedProfi(prof) && robust.potProbability >= HARD_OPEN_POT_THRESHOLD && robust.scratchRisk <= HARD_SCRATCH_VETO_THRESHOLD && robust.foulRisk <= HARD_FOUL_VETO_THRESHOLD) score += 200000;
     if (cand.type === "comboShot" && cand.targetNum === 9) score += robust.potProbability * 120;
     if (ctx) {
