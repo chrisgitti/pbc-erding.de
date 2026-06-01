@@ -358,6 +358,7 @@
         <li><a href="#s8-3">Shot-Timer</a></li>
         <li><a href="#s8-4">Sound</a></li>
         <li><a href="#s8-5">KI-Stoßverzögerung</a></li>
+        <li><a href="#s8-6">KI-Rechenzeit</a></li>
       </ol>
     </li>
     <li><a href="#s9">Vollbild &amp; Mobile</a></li>
@@ -946,14 +947,14 @@
       <tr>
         <td><span class="badge badge-gold">Mittel</span></td>
         <td>Fortgeschrittener</td>
-        <td>Vollständige Mehr-Stoß-Simulation, Positionsspiel, Safety-Spiele, Bankstoß-Einsatz. Gelegentliche Fehler bleiben möglich.</td>
+        <td>Vollständige Mehr-Stoß-Simulation, 2-Kugel-Vorausschau, Positionsspiel, Safety-Spiele, Bankstoß-Einsatz. Jump-Shots (kurze) nur bei echter Blockade. Gelegentliche Fehler bleiben möglich.</td>
         <td>± 0,06°</td>
         <td>± 0,6 %</td>
       </tr>
       <tr>
         <td><span class="badge badge-red">Schwer</span></td>
         <td>Profi</td>
-        <td>Gehärteter Modus: Pot-Priorität, Scratch-Veto, finale Validierung vor jedem Stoß. Einfache Pots und Bandenbälle werden praktisch nie verschossen. Validiertes Stellungsspiel (Follow/Draw/Stun) für den Anschlussstoß. Bei Ball-in-Hand optimale Weißen-Platzierung. Bei blockierten Lagen: Jump-Shots oder gestufte Kick-Varianten.</td>
+        <td>Gehärteter Modus: Pot-Priorität, Scratch-Veto, finale Validierung vor jedem Stoß. Einfache Pots und Bandenbälle werden praktisch nie verschossen. 3-Kugel-Runout-Kette für Stellungsspiel und Cluster-Management. Validiertes Stellungsspiel (Follow/Draw/Stun) für den Anschlussstoß. Bei Ball-in-Hand optimale Weißen-Platzierung. Bei tatsächlichem Snooker: Jump-Shots oder Kick-Varianten mit physikvalidierter Suche.</td>
         <td>± 0°</td>
         <td>± 0 %</td>
       </tr>
@@ -966,7 +967,8 @@
       <li><strong>Bandenbälle:</strong> Liegt der Objektball an oder nahe einer Bande, ermittelt die KI den geometrisch exakten Schnittwinkel und versenkt zuverlässig – auch dünne Schnitte entlang der Bande (wie ein guter Bezirksligaspieler).</li>
       <li><strong>Stellungsspiel:</strong> Nach einem sicheren Pot werden Follow-, Draw- und Stun-Varianten simuliert und die Weißen-Stellung für den Anschlussstoß optimiert.</li>
       <li><strong>Ball-in-Hand:</strong> Die Weiße wird an der für Pot und Folgeposition optimalen Stelle platziert – ein Verfehlen der Pflichtkugel ist ausgeschlossen.</li>
-      <li><strong>Blockierte Lagen:</strong> Jump-Shots (je nach Abstand kurze oder normale Sprunglänge) und gestufte 1-/2-/3-Banden-Kick-Varianten.</li>
+      <li><strong>Blockierte Lagen:</strong> Jump-Shots werden nur bei tatsächlich gesnookerten Zielen erwogen (nicht pauschal bei schwierigen Stellungen). Kick-Varianten werden mit echter Spielphysik durch einen 360°-Sweep simuliert, damit immer ein legaler Erstkontakt gefunden wird – kein blindes Foul.</li>
+      <li><strong>Runout-Planung (3-Kugel-Kette):</strong> Der Profi denkt bis zu 3 Kugeln voraus: Stellungen, von denen sich der Tisch durchspielen lässt, werden bevorzugt; Sackgassen (nächste eigene Kugel danach verdeckt) werden gemieden. Fortgeschrittener plant 2 Kugeln voraus; Anfänger greedy wie bisher.</li>
       <li><strong>Fortschrittsanzeige:</strong> Während längerer Planung zeigt <em>„KI denkt nach …"</em> die aktuelle Phase (z.&nbsp;B. <em>„Kandidaten simulieren 8/20"</em>). Sobald die KI den Stoß einstellt, erscheint <em>„KI bereitet den Stoß vor"</em> – dies bleibt mindestens 2&nbsp;Sekunden sichtbar.</li>
     </ul>
     Die kurze Denkpause ist normal und zeigt, dass eine vollständige Physik-Simulation läuft.
@@ -988,7 +990,7 @@
       <tr>
         <td>1</td>
         <td><span class="badge badge-green">Grün</span></td>
-        <td>KI-Profil und Spielvariante · Kandidaten-Trichter (erzeugt → gefiltert → bewertet) · Planungsdauer in ms · Erlaubte Zielkugeln</td>
+        <td>KI-Profil, Spielvariante und Build-Kennung (z.&nbsp;B. <code>AI[Profi/8ball S2.2]</code>) · Kandidaten-Trichter (erzeugt → gefiltert → bewertet) · Planungsdauer in ms · Erlaubte Zielkugeln</td>
       </tr>
       <tr>
         <td>2</td>
@@ -1217,6 +1219,22 @@
     </table>
   </div>
   <p>Während dieser Wartezeit ist die KI-Ansage sichtbar (→ <a href="#s6-3">6.3 KI-Ansage &amp; Vorschau</a>). Bei kurzen Werten ist die Vorschau kaum wahrnehmbar; höhere Werte geben genug Zeit zum Beobachten und für den Debug-Export. Die Wartezeit läuft bei <strong>Pause</strong> nicht weiter.</p>
+
+  <h3 id="s8-6">8.6 KI-Rechenzeit <span class="badge badge-gray">Erweiterte Optionen</span></h3>
+  <p>Im Startmenü unter <strong>Erweiterte Optionen</strong> befindet sich der Schieberegler <em>„KI-Rechenzeit"</em> (direkt unter „Ansage bis Stoß"). Er verändert die <strong>Gewichtung zwischen Geschwindigkeit und Planungstiefe der Profi-KI</strong>: Je mehr Rechenzeit die KI erhält, desto gründlicher sucht sie bei schwierigen Lagen nach dem optimalen Stoß.</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Einstellung</th><th>Bereich</th><th>Standardwert</th><th>Anzeige-Beispiel</th></tr>
+      <tr><td>KI-Rechenzeit</td><td>0,15 s – 1,5 s</td><td>0,6 s</td><td>„0.6s · ausgewogen"</td></tr>
+    </table>
+  </div>
+  <p><strong>Links (Performance / schnell):</strong> Die KI plant zügig und wählt schnell den besten verfügbaren Stoß. Bei einfachen Stellungen (direkter Pot vorhanden) werden aufwendige Spezialsuchen – Banden, Bank, Jump – übersprungen. Reaktivität und Spielfluss haben Vorrang.</p>
+  <p><strong>Rechts (Gründlich / präzise):</strong> Die KI nimmt sich mehr Zeit, um bei schwierigen Lagen (geblockte Bälle, Cluster, Snooker-Situationen) einen wirklich optimalen Stoß zu finden: mehr Kandidaten geprüft, mehr problematische Ziele durchsucht. Bei einfachen offenen Stellungen bleibt die Planung dennoch schnell.</p>
+  <p>Ein internes Hartlimit von <strong>2 s</strong> sorgt dafür, dass die KI nie vollständig einfriert – unabhängig von der Reglerstellung. Dieser Schieberegler betrifft hauptsächlich die <span class="badge badge-red">Profi</span>-KI; bei Anfänger und Fortgeschrittener ist der Effekt gering.</p>
+  <div class="tip">
+    <strong>💡 Unterschied zur KI-Stoßverzögerung</strong>
+    Die <strong>KI-Stoßverzögerung</strong> (→ <a href="#s8-5">8.5</a>) steuert nur die <em>Wartezeit nach dem Aufstellen</em> des Stoßes (sichtbare Ansage-Vorschau). Die <strong>KI-Rechenzeit</strong> steuert dagegen das <em>eigentliche Planungsbudget vor dem Aufstellen</em> – also Geschwindigkeit vs. Präzision der KI-Entscheidung. Beide Parameter sind vollständig unabhängig voneinander.
+  </div>
   <a href="#" class="back">↑ Nach oben</a>
 </section>
 

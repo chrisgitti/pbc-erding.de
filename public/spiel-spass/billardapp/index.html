@@ -1237,6 +1237,17 @@
     </div>
 
     <div class="menu-section">
+      <h3>KI-Rechenzeit</h3>
+      <div class="physics-sliders">
+        <label class="slider-row">
+          <span>Performance ↔ Gründlich</span>
+          <input type="range" id="slAiComputeBudget" min="0.15" max="1.5" step="0.05" value="0.6">
+          <span id="lblAiComputeBudget">0.6s</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="menu-section">
       <h3>Tischprofil</h3>
       <div class="options" id="optTablePreset">
         <div class="opt" data-val="fast">Profiturniertisch</div>
@@ -1784,7 +1795,9 @@ const AI_PROFILES = {
     bankKickUsage: 0.05,
     minDotN: 0.15,       // minimaler cos(Schnittwinkel) für Schussversuche
     powerMin: 40,
-    powerMax: 100
+    powerMax: 100,
+    allowJumps: false,   // Anfänger springt nicht
+    jumpStyle: "none"
   },
   medium: {
     name: "Fortgeschrittener",
@@ -1799,7 +1812,9 @@ const AI_PROFILES = {
     bankKickUsage: 0.72,
     minDotN: 0.32,
     powerMin: 20,
-    powerMax: 72
+    powerMax: 72,
+    allowJumps: true,    // Fortgeschrittener: nur kurze, einfache Jumps gelegentlich
+    jumpStyle: "short"
   },
   hard: {
     name: "Profi",
@@ -1814,7 +1829,9 @@ const AI_PROFILES = {
     bankKickUsage: 0.55,
     minDotN: 0.30,
     powerMin: 26,
-    powerMax: 82
+    powerMax: 82,
+    allowJumps: true,    // Profi: volle Jump-Nutzung
+    jumpStyle: "full"
   }
 };
 function aiGetProfile() { return AI_PROFILES[game.difficulty] ?? AI_PROFILES.medium; }
@@ -1833,7 +1850,41 @@ const HARD_KICK_SPIN_VARIANTS = [0, -0.16, 0.16, -0.26, 0.26];
 const HARD_JUMP_MAX_VALIDATIONS    = 80;
 const HARD_KICK_MAX_VALIDATIONS    = 120;
 const HARD_FALLBACK_TIME_BUDGET_MS = 450;
+// Robustheits-Bewertung (Stufe 1.1): Selbst der perfekt zielende Profi (aimErrorDeg 0)
+// bewertet Stöße mit einer kleinen MINDEST-Streuung. Dadurch erhalten FRAGILE Stöße
+// (Cross-Table-Combos, dünne/lange Schnitte) eine realistisch niedrigere
+// Pot-Wahrscheinlichkeit als ROBUSTE (kurze, gerade Pots). Entkoppelt Bewertungs- von
+// Ausführungsgenauigkeit und verhindert riskante "100%"-Glücks-Combos.
+const AI_EVAL_AIM_NOISE_FLOOR = 0.4;     // Grad
+const AI_EVAL_POWER_NOISE_FLOOR = 0.03;  // relativ (±3 %)
+// Stufe 2: Geometrische Mehr-Kugel-Vorausschau (Runout-Kette). Die Tiefe wird pro Zug
+// anhand der Spielstärke gesetzt (Profi 3, Fortgeschrittener 2, Anfänger 1). Die Kette
+// ist rein geometrisch (keine zusätzliche Physik-Simulation) und mischt diskontierte
+// 1-ahead-Werte → bleibt automatisch im Bewertungsband [-100,135].
+const AI_LOOKAHEAD_DEPTH = 3;
+const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
+let _aiLookaheadDepth = 1;
+// Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
+const AI_BUILD = "S2.2";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
+
+// ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
+// Per Slider steuerbar: niedrig = Performance, hoch = gründlicher. Ein hartes
+// Deckel-Limit verhindert konstruktiv das frühere Einfrieren der Planung.
+let CFG_AI_TIME_BUDGET_MS = 600;          // Default "ausgewogen"
+const AI_TIME_BUDGET_MIN_MS = 150;        // "Performance"
+const AI_TIME_BUDGET_MAX_MS = 1500;       // "Gründlich" (Slider-Ende)
+const AI_TIME_BUDGET_HARD_CEILING_MS = 2000; // absolutes Limit, nie überschritten
+let _aiPlanStart = 0;
+function aiPlanElapsedMs() { return performance.now() - _aiPlanStart; }
+function aiTimeBudgetMs() { return clamp(CFG_AI_TIME_BUDGET_MS, AI_TIME_BUDGET_MIN_MS, AI_TIME_BUDGET_HARD_CEILING_MS); }
+// reserveMs: Sicherheitspuffer, damit nach Budget-Stopp noch Restarbeit/Anzeige passt.
+function aiBudgetExceeded(reserveMs = 0) { return aiPlanElapsedMs() + reserveMs >= aiTimeBudgetMs(); }
+// Anzahl der teuer zu simulierenden "einfachen" Shots, an das Budget gekoppelt (1…4).
+function aiShortlistSize() {
+  const f = clamp((aiTimeBudgetMs() - AI_TIME_BUDGET_MIN_MS) / (AI_TIME_BUDGET_MAX_MS - AI_TIME_BUDGET_MIN_MS), 0, 1);
+  return Math.round(1 + f * 3);
+}
 
 let _score = [0, 0];
 let _scoreUpdated = false;
@@ -3672,6 +3723,31 @@ function aiEvaluatePotShot(cue, target, pocket) {
   return { score, dotN, dTP, dCG, angle, powerPercent, pocketIdx: POCKETS.indexOf(pocket), targetNum: target.num };
 }
 
+// Billiger geometrischer Vorabscan (KEINE Physik-Simulation): welche Ziele haben
+// mindestens einen "einfachen" direkten Pot (voller Schnitt, beide Wege frei,
+// nicht extrem weit)? Liefert die problematischen Ziele für die gezielte
+// Schwersuche (Bande/Bank/Long/Jump) und entscheidet das Gating der Spezial-Locks.
+function aiClassifyTargetsByEasyPot(cue, targets) {
+  const easy = new Map();   // targetNum -> bester geometrischer Easy-Score
+  const problematic = [];   // Ziele ohne klaren, gut spielbaren Direktpot
+  const EASY_MIN_DOTN = 0.72;            // voller Schnitt (< ~44°)
+  const EASY_MAX_DIST = PLAY_W * 1.15;   // Weiße→Geistball + Ball→Loch
+  for (const t of targets) {
+    let bestEasy = -Infinity;
+    for (const p of POCKETS) {
+      const gb = aiGhostBallAngle(cue, t, p); // prüft bereits beide Wege frei
+      if (!gb) continue;
+      const dist = gb.dCG + gb.dTP;
+      if (gb.dotN < EASY_MIN_DOTN || dist > EASY_MAX_DIST) continue;
+      const score = gb.dotN * 200 - dist * 0.05 + (p.type === "corner" ? 8 : 4);
+      if (score > bestEasy) bestEasy = score;
+    }
+    if (bestEasy > -Infinity) easy.set(t.num, bestEasy);
+    else problematic.push(t);
+  }
+  return { easy, problematic, hasEasy: easy.size > 0 };
+}
+
 function aiCloneBallsForSimulation() {
   return game.balls.map(b => ({
     num: b.num,
@@ -4893,6 +4969,7 @@ function aiFindHardDirectPotLockUniversal(cue, targets, prof) {
   if (!cue || !targets?.length || !aiIsHardenedProfi(prof) || game.isBreakShot) return null;
   let best = null;
   for (const target of targets) {
+    if (aiBudgetExceeded()) return best; // Stufe 1: Zeitbudget
     const locked = aiFindHardDirectPotLock(cue, target, prof);
     if (!locked) continue;
     if (!best || (locked.score ?? -Infinity) > (best.score ?? -Infinity)) best = locked;
@@ -4923,6 +5000,7 @@ function aiApplyHardDirectPotGuardUniversal(cue, targets, bestShot, prof) {
   }
 
   for (const target of targets) {
+    if (aiBudgetExceeded()) break; // Stufe 1: Zeitbudget
     const centerVisible = clearPath(cue, target.x, target.y, target);
     if (!centerVisible && !aiHasHardDirectEdgeWindow(cue, target)) continue;
     if (!centerVisible) {
@@ -5219,6 +5297,40 @@ function aiScoreCuePositionForNextShot(cueBall, finalBalls, justPottedNum = null
   return dist < 65 ? -35 : dist > 520 ? Math.max(-70, 45 - (dist - 520) * 0.14) : Math.max(0, 85 - Math.abs(dist - 220) * 0.24);
 }
 
+// Stufe 2: Diskontierte geometrische Runout-Kette über mehrere Kugeln.
+// Bewertet, wie gut die Weiße nicht nur für die NÄCHSTE Kugel steht, sondern – nach
+// idealer Ablage in die jeweils beste Folgezone – auch für die übernächste(n). Rein
+// geometrisch (keine zusätzliche Physik-Simulation).
+// Struktur: v1 (1-ahead der aktuellen Kugel) ist die Basis; der Folge-Runout wirkt als
+// SIGNIERTER Bonus/Malus um einen Neutralwert – ein gut spielbarer Folge-Runout HEBT den
+// Wert, eine verdeckte/blockierte Folgekugel SENKT ihn. So bevorzugt die KI Stellungen,
+// die den Tisch durchspielbar lassen, statt Sackgassen. Ergebnis bleibt im Band [-100,135].
+const AI_RUNOUT_NEUTRAL = 85;     // neutraler Folge-Runout-Wert (kein Bonus/Malus)
+const AI_RUNOUT_BLOCKED = 25;     // Folgekugel verdeckt/nicht anspielbar → Malus
+function aiRunoutChainScore(cuePos, balls, justPottedNum, depth) {
+  const v1 = aiScoreCuePositionForNextShot(cuePos, balls, justPottedNum);
+  if (!depth || depth <= 1) return v1;
+  if (v1 < -90) return v1; // sehr schlechte/lochnahe Ablage – durch Vorausschau nicht zu retten
+  const B = aiFindNextTargetFromState(balls, cuePos, justPottedNum);
+  if (!B) return v1; // Tisch (für diese Gruppe) leer – v1 ist bereits der Endwert
+  const ballsAfter = balls.filter(b => b.num !== B.num); // B gilt als versenkt
+  const C = aiFindNextTargetFromState(ballsAfter, cuePos, B.num);
+  let rest;
+  if (!C) {
+    rest = 135; // nach B ist die Gruppe leer → Tisch durchgespielt: voller Bonus
+  } else {
+    const zonesC = aiBuildCuePositionZones(C, ballsAfter); // wohin die Weiße nach B laufen sollte
+    if (!zonesC.length) {
+      rest = AI_RUNOUT_BLOCKED; // C ist verdeckt → Sackgasse → Malus
+    } else {
+      let bestZoneC = zonesC[0];
+      for (const z of zonesC) if (z.score > bestZoneC.score) bestZoneC = z;
+      rest = aiRunoutChainScore({ x: bestZoneC.x, y: bestZoneC.y }, ballsAfter, B.num, depth - 1);
+    }
+  }
+  return clamp(v1 + AI_LOOKAHEAD_BLEND * (rest - AI_RUNOUT_NEUTRAL), -100, 135);
+}
+
 // ── 09 AI Strategy Modules ────────────────────────────────────────────
 function aiBuildCueControlPlan(shot, cueFinal, finalBalls, prof) {
   if (!shot || !cueFinal || !finalBalls || shot.isSafety) return null;
@@ -5440,8 +5552,13 @@ const EightBallStrategy = {
         bonus += ownAfter.length > 0
           ? Math.round((openAfter / ownAfter.length) * 28)
           : 28;  // all own cleared
-        // Breakout bonus: this shot freed at least one previously blocked own ball
-        if (tableAnalysis.ownBlocked > 0 && blockedAfter < tableAnalysis.ownBlocked) bonus += 28;
+        // Stufe 2 – Breakout: belohnt das Freispielen geblockter eigener Kugeln,
+        // skaliert mit der Anzahl der durch diesen Stoß tatsächlich befreiten Kugeln
+        // (gedeckelt). Bildet das Profi-Vorgehen "diesen Stoß spiele ich Kugel X frei" ab.
+        if (tableAnalysis.ownBlocked > 0 && blockedAfter < tableAnalysis.ownBlocked) {
+          const freed = tableAnalysis.ownBlocked - blockedAfter;
+          bonus += Math.min(70, 26 * freed);
+        }
       }
 
       // Last group ball → value landing with a clear line on the 8
@@ -6044,6 +6161,7 @@ function aiFindHardLongPotLock(cue, targets, prof) {
   let best = null;
 
   for (const t of targets) {
+    if (aiBudgetExceeded()) return best; // Stufe 1: Zeitbudget
     if (!clearPath(cue, t.x, t.y, t) && !aiHasHardDirectEdgeWindow(cue, t)) continue;
     for (let pi = 0; pi < POCKETS.length; pi++) {
       const p = POCKETS[pi];
@@ -6176,12 +6294,14 @@ function aiFindHardRailPotLock(cue, targets, prof) {
   let best = null;
 
   for (const t of targets) {
+    if (aiBudgetExceeded()) return best; // Stufe 1: Zeitbudget
     // Erweiterter Suchradius: Bälle bis ~5,5 Kugelradien von jeder Bande werden erfasst
     const railInfo = aiGetNearestRailInfo(t, HARD_RAIL_POT_SEARCH_DISTANCE);
     if (!railInfo) continue;
     if (!clearPath(cue, t.x, t.y, t) && !aiHasHardDirectEdgeWindow(cue, t)) continue;
 
     for (let pi = 0; pi < POCKETS.length; pi++) {
+      if (aiBudgetExceeded()) return best; // Stufe 1: Zeitbudget
       const p = POCKETS[pi];
       if (!aiPocketMatchesRailSide(p, railInfo.side)) continue;
       for (const aimPocket of aiRailPotAimPoints(p, railInfo.side)) {
@@ -6276,10 +6396,12 @@ function aiFindHardBankShotCandidates(cue, targets, prof) {
   const MIN_DOT_N = 0.28;
 
   for (const t of targets) {
+    if (aiBudgetExceeded()) return best; // Stufe 1: Zeitbudget
     for (const side of SIDES) {
       const railLine = aiRailLine(side);
 
       for (let pi = 0; pi < POCKETS.length; pi++) {
+        if (aiBudgetExceeded()) return best; // Stufe 1: Zeitbudget
         const p = POCKETS[pi];
 
         // Virtuelles Loch: Spiegelung des echten Lochs an der Bande
@@ -6422,7 +6544,7 @@ function normalizeShotCandidate(cand, source) {
   };
 }
 
-function generateShotCandidates(cue, targets, prof) {
+function generateShotCandidates(cue, targets, prof, problematicTargets = null) {
   let candidates = [];
 
   const pots = aiBuildDirectPotCandidates(cue, targets)
@@ -6438,9 +6560,20 @@ function generateShotCandidates(cue, targets, prof) {
     }
   }
 
-  // Jump-Kandidaten nur für Profi und nur bei echter Snooker-Situation
-  if (prof.searchDepth >= 3 && targets.some(t => aiDetectHardSnooker(cue, t).blocked)) {
-    candidates.push(...aiBuildJumpCandidates(cue, targets).slice(0, 6));
+  // Jump-Kandidaten – nach Spielstärke abgestuft:
+  //  • Profi (full):  bei jeder problematischen Lage (kein verlässlicher Direktpot)
+  //  • Fortgeschr. (short): nur bei echter Blockade und nur kurze Jump-Pots
+  //  • Anfänger: über prof.allowJumps=false ausgeschlossen
+  if (prof.allowJumps) {
+    // Korrektur (Quereffekt Stufe 1): Jumps NUR für tatsächlich blockierte (gesnookerte)
+    // Ziele erwägen – nicht mehr pauschal für alle "problematischen". Bei einfachen Lagen
+    // ist ein normaler Pot/Safe immer vorzuziehen; sinnlose Jump-Stöße entfallen damit.
+    const jumpTargets = targets.filter(t => aiDetectHardSnooker(cue, t).blocked);
+    if (jumpTargets.length) {
+      let jumps = aiBuildJumpCandidates(cue, jumpTargets);
+      if (prof.jumpStyle === "short") jumps = jumps.filter(j => j.cueType === "jump_short" && !j.isSafety);
+      candidates.push(...jumps.slice(0, prof.searchDepth >= 4 ? 6 : 3));
+    }
   }
 
   if (prof.safetyWeight > 0.2) {
@@ -6483,7 +6616,15 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   } else {
     samples = aiIsHardenedProfi(prof) ? prof.samplesPerShot : (prof.searchDepth >= 3 ? 8 : 3);
   }
-  let robust = aiSimulateRobust(cand, samples, prof.aimErrorDeg, prof.powerError);
+  // Stufe 1.1 (korrigiert): Die Mindest-Streuung zur Robustheitsbewertung wird NUR auf
+  // Schusstypen angewandt, bei denen die KI-Simulation real unzuverlässig ist – v. a.
+  // COMBOS (zwei Kontakte + Wurf, von der Sim nicht modelliert). Direkte Pots/Schnitte
+  // sind Einzelkontakte: Hier ist die Sim genau und der perfekt zielende Profi trifft sie
+  // auch real. Sie dürfen NICHT künstlich verrauscht und dadurch fälschlich verworfen werden.
+  const useNoiseFloor = (cand.type === "comboShot");
+  const evalAimNoise = useNoiseFloor ? Math.max(prof.aimErrorDeg || 0, AI_EVAL_AIM_NOISE_FLOOR) : (prof.aimErrorDeg || 0);
+  const evalPowerNoise = useNoiseFloor ? Math.max(prof.powerError || 0, AI_EVAL_POWER_NOISE_FLOOR) : (prof.powerError || 0);
+  let robust = aiSimulateRobust(cand, samples, evalAimNoise, evalPowerNoise);
   if (cand.type === "jumpContactSafety") {
     const sim = aiSimulateShotResult({ ...cand, noRandomError: true });
     if (!sim || sim.cuePotted || !aiCheckFirstHitLegal(sim, cand.targetNum) || !aiMeetsPostContactRule(sim)) return null;
@@ -6527,13 +6668,22 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
     if (aiIsHardenedProfi(prof) && (robust.scratchRisk > 0 || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD)) return null;
     score = CommonStrategy.scoreSafety(sim, cand.targetNum, robust, cand, prof);
   } else {
-    if (aiIsHardenedProfi(prof) && (robust.scratchRisk > HARD_SCRATCH_VETO_THRESHOLD || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD || robust.potProbability < HARD_SAFE_POT_THRESHOLD)) return null;
+    // Combos tragen real mehr Unsicherheit (zwei Kontakte + Wurf, von der Sim nicht
+    // modelliert), als die Simulation erfasst → höhere Robustheitsschwelle. Nur klar
+    // sichere Combos (z. B. fast berührende Kugeln) werden gespielt, fragile nicht.
+    const potFloor = (cand.type === "comboShot") ? Math.max(HARD_SAFE_POT_THRESHOLD, 0.96) : HARD_SAFE_POT_THRESHOLD;
+    if (aiIsHardenedProfi(prof) && (robust.scratchRisk > HARD_SCRATCH_VETO_THRESHOLD || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD || robust.potProbability < potFloor)) return null;
     if (prof.searchDepth >= 3 && (robust.scratchRisk > 0.22 || robust.foulRisk > 0.22)) return null;
     const cueFinal = robust.bestSim ? aiSimCueBall(robust.bestSim) : null;
     positionPlan = robust.bestSim ? aiBuildCueControlPlan(cand, cueFinal, robust.bestSim.finalBalls, prof) : null;
+    // Stufe 2: Positionswert über die diskontierte Mehr-Kugel-Runout-Kette statt nur 1-ahead.
+    // (Nur hier, pro Kandidat einmal – die teuren Lock-Schleifen bleiben beim billigen 1-ahead.)
+    const chainPosValue = (robust.bestSim && cueFinal)
+      ? aiRunoutChainScore(cueFinal, robust.bestSim.finalBalls, cand.targetNum, _aiLookaheadDepth)
+      : robust.positionValue;
     const selloutRisk = CommonStrategy.calcSelloutRisk(robust, cand.targetNum);
     score = CommonStrategy.scorePot(robust.potProbability, prof)
-          + CommonStrategy.scorePosition(robust.positionValue, positionPlan?.score, prof)
+          + CommonStrategy.scorePosition(chainPosValue, positionPlan?.score, prof)
           + CommonStrategy.scoreNextShot(robust.bestSim?.finalBalls)
           + CommonStrategy.scoreScratchRisk(robust.scratchRisk)
           + CommonStrategy.scoreFoulRisk(robust.foulRisk)
@@ -6681,7 +6831,7 @@ function aiDrawDebugOverlay(ctx) {
   const tgts = (info.legalTargets ?? []).join(",");
   ctx.fillStyle = "#0f0";
   ctx.fillText(
-    `AI[${info.profile}/${info.variant ?? "?"}] cands:${info.totalCandidates ?? 0}→${info.filteredCandidates ?? 0}→${info.evaluatedCandidates ?? 0}  ${info.durationMs ?? 0}ms  tgt:[${tgts}]`,
+    `AI[${info.profile}/${info.variant ?? "?"} ${AI_BUILD}] cands:${info.totalCandidates ?? 0}→${info.filteredCandidates ?? 0}→${info.evaluatedCandidates ?? 0}  ${info.durationMs ?? 0}ms  tgt:[${tgts}]`,
     PLAY_X1 + 4, PLAY_Y1 + 13
   );
 
@@ -6957,6 +7107,72 @@ function aiExactLegalEscapeCheck(shot, ctx = null) {
   return { ok: true, reason: "exact-legal-contact", sim };
 }
 
+// Robuster, SIMULATIONSVALIDIERTER Kick/Kontakt zur Foulvermeidung (und ggf. Pot).
+// Wird nur im Notfall genutzt (kein normaler Pot/Safety gefunden, Ziel verdeckt).
+// Statt sich auf die verlustbehaftete Spiegelgeometrie zu verlassen, sweept diese
+// Funktion den Anstoßwinkel über 360° und simuliert jeden Stoß mit der ECHTEN Physik.
+// Behalten wird nur, was legalen Erstkontakt auf das Ziel + Bande nach Kontakt
+// (WPA 6.1) erfüllt und nicht scratcht. Ein versenkter Treffer wird stark bevorzugt.
+function aiFindLegalKickEscape(cue, targets, prof, budgetMs = 700) {
+  if (!cue || !targets?.length || (prof?.searchDepth ?? 0) < 3) return null;
+  const tStart = performance.now();
+  const powers = aiIsHardenedProfi(prof) ? [20, 28, 38, 50, 64, 80] : [24, 34, 50, 70];
+  const angleStepDeg = aiIsHardenedProfi(prof) ? 3 : 4.5;
+  let best = null;
+  for (const t of targets) {
+    for (let deg = 0; deg < 360; deg += angleStepDeg) {
+      if (performance.now() - tStart > budgetMs) return best;
+      const angle = deg * Math.PI / 180;
+      for (const pw of powers) {
+        const shot = {
+          type: "legalKickEscape", angle, powerPercent: pw,
+          pocketIdx: -1, targetNum: t.num, isSafety: true,
+          noRandomError: true, spinHint: "none", spinX: 0, spinY: 0,
+          cueType: "playing", cueElevation: 0
+        };
+        const sim = aiSimulateShotResult(shot);
+        if (!sim || sim.cuePotted) continue;
+        if (!aiCheckFirstHitLegal(sim, t.num)) continue;     // legaler Erstkontakt aufs Ziel
+        if (!aiMeetsPostContactRule(sim)) continue;          // WPA 6.1: Bande/Pott nach Kontakt
+        const cueAfter = aiSimCueBall(sim);
+        if (aiCueBallInScratchDanger(cueAfter, 1.6)) continue;
+        const potted = sim.potted.includes(t.num);
+        // Foulsicherheit: Der legale Erstkontakt muss auch unter kleiner Zielabweichung
+        // erhalten bleiben. Ein dünner Randkontakt ist in der Sim "legal", geht real aber
+        // knapp daneben (= "falsche Kugel zuerst"). Solche fragilen Kontakte werden verworfen.
+        let robustHits = 1;
+        for (const dd of [-2, 2]) {
+          const ps = aiSimulateShotResult({ ...shot, angle: angle + dd * Math.PI / 180 });
+          if (ps && !ps.cuePotted && aiCheckFirstHitLegal(ps, t.num)) robustHits++;
+        }
+        if (robustHits < 3 && !potted) continue; // beide ±2°-Störungen müssen legal bleiben
+        const hideScore = aiSafetyVisibilityScore(sim, t.num);
+        const railScore = aiRailDistanceSafetyScore(sim, t.num);
+        const score = (potted ? 1000000 : 0)
+          + robustHits * 4000
+          + Math.max(0, hideScore) * 1.2
+          + Math.max(0, railScore) * 0.6
+          - pw * 1.4;
+        if (!best || score > best.score) {
+          best = {
+            ...shot,
+            type: potted ? "legalKickPot" : "legalKickEscape",
+            hardFinalValidated: true,
+            score,
+            robust: {
+              potProbability: potted ? 1 : 0,
+              scratchRisk: 0, foulRisk: 0,
+              bestSim: sim,
+              positionValue: aiEvaluateCuePosition(cueAfter, sim.finalBalls)
+            }
+          };
+        }
+      }
+    }
+  }
+  return best;
+}
+
 function aiFindHardPlayableEscape(cue, targets, prof, seedCandidates = [], ctx = null, progressLabel = "Notstoß suchen") {
   if (!cue || !targets?.length || !aiIsHardenedProfi(prof)) return null;
   aiSetPlanProgress(progressLabel, 0, 80, "Jump, Kick, Kontakt");
@@ -6983,9 +7199,14 @@ function aiFindHardPlayableEscape(cue, targets, prof, seedCandidates = [], ctx =
   for (const cand of aiBuildKickCandidates(cue, targets)) add(cand, "kick");
   for (const target of targets) {
     const directAngle = Math.atan2(target.y - cue.y, target.x - cue.x);
-    add({ type: "hardPlayableDirectContact", angle: directAngle, powerPercent: 54, pocketIdx: -1, targetNum: target.num, isSafety: true }, "direct");
-    add({ type: "hardPlayableDirectContact", angle: directAngle - 0.055, powerPercent: 62, pocketIdx: -1, targetNum: target.num, isSafety: true }, "direct-edge");
-    add({ type: "hardPlayableDirectContact", angle: directAngle + 0.055, powerPercent: 62, pocketIdx: -1, targetNum: target.num, isSafety: true }, "direct-edge");
+    const pathClear = clearPath(cue, target.x, target.y, target);
+    // Direkter, voller Mittel-Kontakt = zuverlässigster Legal-Kontakt. Mehrere sanfte Stärken;
+    // bei freiem Pfad ist das der bevorzugte Notstoß (kein fragiler Kick/Jump nötig).
+    for (const pw of [20, 28, 38]) {
+      add({ type: "hardPlayableDirectContact", angle: directAngle, powerPercent: pw, pocketIdx: -1, targetNum: target.num, isSafety: true, _pathClear: pathClear }, "direct");
+    }
+    add({ type: "hardPlayableDirectContact", angle: directAngle - 0.04, powerPercent: 34, pocketIdx: -1, targetNum: target.num, isSafety: true, _pathClear: pathClear }, "direct-edge");
+    add({ type: "hardPlayableDirectContact", angle: directAngle + 0.04, powerPercent: 34, pocketIdx: -1, targetNum: target.num, isSafety: true, _pathClear: pathClear }, "direct-edge");
   }
 
   const seen = new Set();
@@ -7003,12 +7224,15 @@ function aiFindHardPlayableEscape(cue, targets, prof, seedCandidates = [], ctx =
     seen.add(key);
     return true;
   }).sort((a, b) => {
-    const pri = (c) => c.isJump ? 0 : (c.kickRails ? 1 : (c.type === "railProbeKick" ? 2 : 3));
+    // Direkter Kontakt zuerst (zuverlässigster Legal-Stoß), dann Jump, Kick, RailProbe.
+    // Wichtig: sonst werden direkte Kontakte bei vielen Kick/Jump-Varianten vor der
+    // Bewertung weggeschnitten (slice) – und ein fragiler Kick gewinnt.
+    const pri = (c) => (!c.isJump && !c.kickRails) ? 0 : (c.isJump ? 1 : (c.kickRails ? 2 : 3));
     const pa = pri(a), pb = pri(b);
     if (pa !== pb) return pa - pb;
     const ra = a.kickRails || 0, rb = b.kickRails || 0;
     if (ra !== rb) return ra - rb;
-    return Math.abs((a.powerPercent || 60) - 62) - Math.abs((b.powerPercent || 60) - 62);
+    return Math.abs((a.powerPercent || 60) - 40) - Math.abs((b.powerPercent || 60) - 40);
   }).slice(0, 96);
 
   let best = null;
@@ -7028,15 +7252,31 @@ function aiFindHardPlayableEscape(cue, targets, prof, seedCandidates = [], ctx =
     const railScore = aiRailDistanceSafetyScore(check.sim, cand.targetNum);
     const hideScore = aiSafetyVisibilityScore(check.sim, cand.targetNum);
     const separation = cueAfter && targetAfter ? Math.hypot(cueAfter.x - targetAfter.x, cueAfter.y - targetAfter.y) : 0;
-    const sourceBonus = cand.isJump ? 1600 : (cand.kickRails ? 2200 - Math.min(3, cand.kickRails) * 260 : 600);
+    const isDirect = !cand.isJump && !cand.kickRails;
+    const tball = targets.find(t => t.num === cand.targetNum);
+    const pathClearForTarget = tball ? clearPath(cue, tball.x, tball.y, tball) : false;
+    // Foulsicherheit: bleibt der legale Erstkontakt unter ±2°-Abweichung erhalten?
+    // Fragile dünne Kontakte (in Sim "legal", real Foul) werden so abgewertet.
+    let robustHits = 0;
+    for (const dd of [-2, 2]) {
+      const ps = aiSimulateShotResult({ ...cand, angle: (cand.angle || 0) + dd * Math.PI / 180 });
+      if (ps && !ps.cuePotted && aiCheckFirstHitLegal(ps, cand.targetNum)) robustHits++;
+    }
+    // Direkter Voll-Kontakt bei freiem Pfad = zuverlässigster Legal-Stoß → höchste Prio.
+    // Kick/Jump bei FREI erreichbarem Ziel ist unsinnig (man trifft direkt) und physikalisch
+    // fragil (Bandenabprall weicht real ab) → stark abwerten, damit Direkt gewinnt.
+    const sourceBonus = isDirect
+      ? (cand._pathClear ? 3200 : 1800)
+      : ((pathClearForTarget ? -8000 : 0) + (cand.isJump ? 1500 : (cand.kickRails ? 2000 - Math.min(3, cand.kickRails) * 260 : 600)));
     const score = 100000
       + sourceBonus
+      + robustHits * 1500
       + (targetPotted ? 7000 : 0)
       + (anyPotted ? 1200 : 0)
       + Math.max(0, hideScore) * 0.25
       + Math.max(0, railScore) * 0.16
       + separation * 0.05
-      - Math.max(0, (cand.powerPercent || 60) - 76) * 45
+      - Math.max(0, (cand.powerPercent || 60) - 50) * 30
       - Math.abs(cand.spinX || 0) * 120
       - scratchDanger;
     const item = {
@@ -7130,6 +7370,11 @@ function aiFindHardFinalFallback(cue, targets, prof, failedShot, ctx = null) {
   const playableEscape = aiFindHardPlayableEscape(cue, orderedTargets, prof, [], ctx, "Legal Escape suchen");
   if (playableEscape) return playableEscape;
 
+  // Stufe-1-Korrektur: robuster, simulationsvalidierter Kick/Kontakt als Foulvermeidung,
+  // bevor auf einen schwächeren Direkt-Fallback zurückgegriffen wird.
+  const legalKick = aiFindLegalKickEscape(cue, orderedTargets, prof);
+  if (legalKick) return legalKick;
+
   for (const target of orderedTargets) {
     const legalFallback = aiFindLegalDirectFallback(cue, target, prof);
     if (!legalFallback) continue;
@@ -7171,6 +7416,7 @@ function aiDecidePushOut() {
 // ── 13 AI Planner ─────────────────────────────────────────────────────
 async function aiPlanShot() {
   const token = ++game.aiPlanToken;
+  _aiPlanStart = performance.now(); // Stufe 1: Zeitbudget-Uhr starten
   if (game.awaitingPushOutDecision) { aiDecidePushOut(); return; }
   aiClearPlanProgress();
   aiSetPlanProgress("Regeln prüfen", 0, 6, "legale Ziele");
@@ -7183,6 +7429,10 @@ async function aiPlanShot() {
   const prof    = _ctx.profile;
   let   targets = [..._ctx.legalTargets];
   let forcedBIHShot = null;
+
+  // Stufe 2: Vorausschau-Tiefe nach Spielstärke – Profi plant 3 Kugeln, Fortgeschrittener 2,
+  // Anfänger weiterhin nur 1 (greedy). Wirkt in der Positionsbewertung der Kandidaten.
+  _aiLookaheadDepth = aiIsHardenedProfi(prof) ? AI_LOOKAHEAD_DEPTH : (prof.searchDepth >= 3 ? 2 : 1);
 
   // Computed once, used by BIH planner and evaluateCandidatesAsync
   const tableAnalysis = game.variant === "8ball" ? EightBallStrategy.analyzeTable(_ctx) : null;
@@ -7397,7 +7647,10 @@ async function aiPlanShot() {
   const t0 = performance.now();
   aiSetPlanProgress("Kandidaten erzeugen", 2, 6, "Pots, Safes, Jumps");
   await yieldToBrowser();
-  const allCands = generateShotCandidates(cue, targets, prof);
+  // Stufe 1: billiger Vorabscan – einfache vs. problematische Ziele (für Shortlist,
+  // Spezial-Lock-Gating und Jump-Zielwahl). Rein geometrisch, vernachlässigbar günstig.
+  const targetClass = aiClassifyTargetsByEasyPot(cue, targets);
+  const allCands = generateShotCandidates(cue, targets, prof, targetClass.problematic);
   aiSetPlanProgress("Kandidaten filtern", 3, 6, `${allCands.length} Kandidaten`);
   await yieldToBrowser();
   const filteredCands = allCands.filter(cand => {
@@ -7499,7 +7752,16 @@ async function aiPlanShot() {
   if (!bestShot) {
     if (targets.length > 0) {
       const t = targets[0];
-      if (aiIsHardenedProfi(prof)) {
+      // Stufe-1-Korrektur (Foulvermeidung): zuerst ein robuster, per Simulation
+      // validierter Kick/Kontakt – findet legale Vorbandenstöße, die die
+      // Spiegelgeometrie verfehlt. Versenkt nach Möglichkeit, sonst legaler Kontakt.
+      if (prof.searchDepth >= 3) {
+        aiSetPlanProgress("Legalen Kick suchen", 4, 6, `Ziel ${t.num}`);
+        await yieldToBrowser();
+        const legalKick = aiFindLegalKickEscape(cue, targets, prof);
+        if (legalKick) bestShot = legalKick;
+      }
+      if (!bestShot && aiIsHardenedProfi(prof)) {
         aiSetPlanProgress("Legal Escape suchen", 4, 6, "Jump oder Bande");
         await yieldToBrowser();
         const playableEscape = aiFindHardPlayableEscape(cue, targets, prof, filteredCands, _ctx, "Legal Escape suchen");
@@ -7546,30 +7808,52 @@ async function aiPlanShot() {
     }
   }
 
+  // Stufe 1: Liegt bereits ein verlässlicher Direktpot vor, werden die teuren
+  // Spezial-Lock-Suchen KOMPLETT übersprungen (Hauptursache des früheren Einfrierens
+  // am offenen Tisch). Andernfalls wird gezielt nur für die problematischen Ziele und
+  // unter Zeitbudget gesucht.
+  const bestIsReliablePot = !!bestShot && !bestShot.isSafety &&
+    (bestShot.robust?.potProbability ?? 0) >= HARD_SAFE_POT_THRESHOLD &&
+    (bestShot.robust?.scratchRisk ?? 1) <= HARD_SCRATCH_VETO_THRESHOLD;
+
   if (aiIsHardenedProfi(prof)) {
-    aiSetPlanProgress("Spezial-Locks prüfen", 5, 6, "Bande, Bank, Long Pot");
-    await yieldToBrowser();
-    const railPotLock = aiFindHardRailPotLock(cue, targets, prof);
-    if (railPotLock && (!bestShot || bestShot.isSafety || (railPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
-      bestShot = railPotLock;
-    }
-    if (!bestShot || bestShot.isSafety) {
-      aiSetPlanProgress("Bank-Shot prüfen", 5, 6, "validierte Bande");
-      await yieldToBrowser();
-      const bankShotLock = aiFindHardBankShotCandidates(cue, targets, prof);
-      if (bankShotLock && (!bestShot || bestShot.isSafety || (bankShotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
-        bestShot = bankShotLock;
+    if (!bestIsReliablePot && !aiBudgetExceeded()) {
+      let lockTargets = targetClass.problematic.length ? targetClass.problematic : targets;
+      // Stufe 1: nur die wenigen relevantesten (cue-nächsten) problematischen Ziele
+      // teuer durchsuchen – Anzahl an das Rechenzeit-Budget gekoppelt (1…4).
+      if (lockTargets.length > aiShortlistSize()) {
+        lockTargets = [...lockTargets]
+          .sort((a, b) => Math.hypot(a.x - cue.x, a.y - cue.y) - Math.hypot(b.x - cue.x, b.y - cue.y))
+          .slice(0, aiShortlistSize());
       }
+      aiSetPlanProgress("Spezial-Locks prüfen", 5, 6, "Bande, Bank, Long Pot");
+      await yieldToBrowser();
+      const railPotLock = aiFindHardRailPotLock(cue, lockTargets, prof);
+      if (railPotLock && (!bestShot || bestShot.isSafety || (railPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
+        bestShot = railPotLock;
+      }
+      if ((!bestShot || bestShot.isSafety) && !aiBudgetExceeded()) {
+        aiSetPlanProgress("Bank-Shot prüfen", 5, 6, "validierte Bande");
+        await yieldToBrowser();
+        const bankShotLock = aiFindHardBankShotCandidates(cue, lockTargets, prof);
+        if (bankShotLock && (!bestShot || bestShot.isSafety || (bankShotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
+          bestShot = bankShotLock;
+        }
+      }
+      if (!aiBudgetExceeded()) {
+        aiSetPlanProgress("Long-Pot prüfen", 5, 6, "gerade lange Pots");
+        await yieldToBrowser();
+        const longPotLock = aiFindHardLongPotLock(cue, lockTargets, prof);
+        if (longPotLock && (!bestShot || bestShot.isSafety || (longPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
+          bestShot = longPotLock;
+        }
+      }
+      // Direkt-Pot-Guard (Schutz gegen "einfachen Ball verschießen") auf alle Ziele,
+      // aber nur wenn noch kein verlässlicher Pot vorliegt.
+      aiSetPlanProgress("Direkt-Pot prüfen", 5, 6, "Guard");
+      await yieldToBrowser();
+      bestShot = aiApplyHardDirectPotGuardUniversal(cue, targets, bestShot, prof);
     }
-    aiSetPlanProgress("Long-Pot prüfen", 5, 6, "gerade lange Pots");
-    await yieldToBrowser();
-    const longPotLock = aiFindHardLongPotLock(cue, targets, prof);
-    if (longPotLock && (!bestShot || bestShot.isSafety || (longPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
-      bestShot = longPotLock;
-    }
-    aiSetPlanProgress("Direkt-Pot prüfen", 5, 6, "Guard");
-    await yieldToBrowser();
-    bestShot = aiApplyHardDirectPotGuardUniversal(cue, targets, bestShot, prof);
   } else if (prof.searchDepth >= 3 && game.variant === "9ball" && targets.length === 1) {
     bestShot = aiApplyHardNineBallDirectGuard(cue, targets[0], bestShot, prof);
   }
@@ -8993,6 +9277,20 @@ function updateAiShotDelayUI() {
 }
 document.getElementById("slAiShotDelay")?.addEventListener("input", updateAiShotDelayUI);
 updateAiShotDelayUI();
+
+function updateAiComputeBudgetUI() {
+  const input = document.getElementById("slAiComputeBudget");
+  const label = document.getElementById("lblAiComputeBudget");
+  if (!input) return;
+  const seconds = clamp(parseFloat(input.value) || 0.6, AI_TIME_BUDGET_MIN_MS / 1000, AI_TIME_BUDGET_MAX_MS / 1000);
+  CFG_AI_TIME_BUDGET_MS = Math.round(seconds * 1000);
+  if (label) {
+    const hint = seconds <= 0.3 ? " · schnell" : seconds >= 1.2 ? " · gründlich" : " · ausgewogen";
+    label.textContent = seconds.toFixed(2).replace(/0$/, "") + "s" + hint;
+  }
+}
+document.getElementById("slAiComputeBudget")?.addEventListener("input", updateAiComputeBudgetUI);
+updateAiComputeBudgetUI();
 
 // ── Tischprofil-Presets ──────────────────────────────────────────────────────
 const TABLE_PRESETS = {
