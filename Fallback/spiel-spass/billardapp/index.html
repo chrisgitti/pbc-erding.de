@@ -1886,7 +1886,7 @@ const AI_LOOKAHEAD_DEPTH = 3;
 const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S2.5";
+const AI_BUILD = "S2.5b";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -7881,12 +7881,20 @@ async function aiPlanShot() {
     if (hardSnooker?.blocked) {
       aiSetPlanProgress("Jump prüfen", 4, 6, `Ziel ${hardSnooker.target?.num ?? ""}`);
       await yieldToBrowser();
-      const hardJump = aiFindHardValidatedJumpFallback(cue, [hardSnooker.target], prof);
-      if (hardJump) {
-        bestShot = hardJump;
-      } else if (!bestShot || bestShot.isSafety || aiIsKickShotType(bestShot)) {
-        const tieredKick = aiFindHardValidatedKickFallback(cue, [hardSnooker.target], prof, "Kick-Fallback");
-        if (tieredKick) bestShot = tieredKick;
+      // Stufe 2.5b: Jump/Kick nur dann übernehmen, wenn der Chooser KEINEN
+      // verlässlichen Direkt-Pot gefunden hat. Sonst überschreibt nach einem
+      // Anstoß (in dem fast immer irgendeine Kugel im Cluster gesnookert ist)
+      // ein „validierter" Jump für die blockierte Kugel den perfekt spielbaren
+      // freien Direkt-Pot einer anderen Kugel → KI springt sinnlos ins Nirgendwo.
+      const blockedFallbackAllowed = !bestShot || bestShot.isSafety || aiIsKickShotType(bestShot);
+      if (blockedFallbackAllowed) {
+        const hardJump = aiFindHardValidatedJumpFallback(cue, [hardSnooker.target], prof);
+        if (hardJump) {
+          bestShot = hardJump;
+        } else {
+          const tieredKick = aiFindHardValidatedKickFallback(cue, [hardSnooker.target], prof, "Kick-Fallback");
+          if (tieredKick) bestShot = tieredKick;
+        }
       }
     }
   }
