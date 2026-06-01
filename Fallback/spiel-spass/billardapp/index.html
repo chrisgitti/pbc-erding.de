@@ -1855,8 +1855,12 @@ const HARD_FALLBACK_TIME_BUDGET_MS = 450;
 // (Cross-Table-Combos, dünne/lange Schnitte) eine realistisch niedrigere
 // Pot-Wahrscheinlichkeit als ROBUSTE (kurze, gerade Pots). Entkoppelt Bewertungs- von
 // Ausführungsgenauigkeit und verhindert riskante "100%"-Glücks-Combos.
-const AI_EVAL_AIM_NOISE_FLOOR = 0.4;     // Grad
-const AI_EVAL_POWER_NOISE_FLOOR = 0.03;  // relativ (±3 %)
+// Stufe 2.5: Noise-Floor deutlich abgesenkt. Vorher (0.4° / 3 %) drückte er
+// freie, eigentlich klare Pots aus 18 Robust-Samples regelmäßig unter
+// HARD_SAFE_POT_THRESHOLD (0.90) → die KI verwarf sie und spielte Quatsch-Safes.
+// Ein realistischer Profi schätzt die eigene Ausführung präziser ein.
+const AI_EVAL_AIM_NOISE_FLOOR = 0.18;    // Grad (vorher 0.4)
+const AI_EVAL_POWER_NOISE_FLOOR = 0.015; // relativ (±1.5 %, vorher 3 %)
 // Stufe 2.3 — Pocket-Approach-Quality: Anflugwinkel Objektball→Tasche relativ
 // zur nächsten Bande. Bei Mitteltaschen überproportional bestraft (Lippe statt
 // Schlund). Bei Eckpockets schwächer (zwei Akzeptanzrichtungen). Distanzabhängig:
@@ -1882,7 +1886,7 @@ const AI_LOOKAHEAD_DEPTH = 3;
 const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S2.4";
+const AI_BUILD = "S2.5";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -6781,11 +6785,23 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
     score = CommonStrategy.scoreSafety(sim, cand.targetNum, robust, cand, prof);
   } else {
     // Combos tragen real mehr Unsicherheit (zwei Kontakte + Wurf, von der Sim nicht
-    // modelliert), als die Simulation erfasst → höhere Robustheitsschwelle. Nur klar
-    // sichere Combos (z. B. fast berührende Kugeln) werden gespielt, fragile nicht.
-    const potFloor = (cand.type === "comboShot") ? Math.max(HARD_SAFE_POT_THRESHOLD, 0.96) : HARD_SAFE_POT_THRESHOLD;
-    if (aiIsHardenedProfi(prof) && (robust.scratchRisk > HARD_SCRATCH_VETO_THRESHOLD || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD || robust.potProbability < potFloor)) return null;
-    if (prof.searchDepth >= 3 && (robust.scratchRisk > 0.22 || robust.foulRisk > 0.22)) return null;
+    // modelliert), als die Simulation erfasst → eigene strikte Robustheitsschwelle.
+    // Stufe 2.5: Reguläre Pots werden hier NICHT mehr stumm zu null verworfen,
+    // sondern landen mit ihrer Score im Chooser, der die harten Profi-Schwellen
+    // plus eine realistische Fallback-Stufe anwendet. Sonst werden bei normaler
+    // Fragility (mittlere Cuts mit Noise-Floor) ALLE Kandidaten verworfen und die
+    // KI fällt auf einen sinnlosen Jump-Carom-Safe zurück.
+    if (aiIsHardenedProfi(prof)) {
+      if (cand.type === "comboShot") {
+        const comboFloor = Math.max(HARD_SAFE_POT_THRESHOLD, 0.96);
+        if (robust.scratchRisk > HARD_SCRATCH_VETO_THRESHOLD || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD || robust.potProbability < comboFloor) return null;
+      } else {
+        // Nur offensichtlich chancenlose Pots herausfiltern.
+        if (robust.potProbability < 0.10) return null;
+      }
+    } else if (prof.searchDepth >= 3 && (robust.scratchRisk > 0.22 || robust.foulRisk > 0.22)) {
+      return null;
+    }
     const cueFinal = robust.bestSim ? aiSimCueBall(robust.bestSim) : null;
     positionPlan = robust.bestSim ? aiBuildCueControlPlan(cand, cueFinal, robust.bestSim.finalBalls, prof) : null;
     // Stufe 2: Positionswert über die diskontierte Mehr-Kugel-Runout-Kette statt nur 1-ahead.
@@ -7804,6 +7820,20 @@ async function aiPlanShot() {
     const hardOpenPots = hardSafePots.filter(c => (c.robust?.potProbability ?? 0) >= HARD_OPEN_POT_THRESHOLD);
     if (hardOpenPots.length > 0) bestShot = hardOpenPots[0];
     else if (hardSafePots.length > 0) bestShot = hardSafePots[0];
+
+    // Stufe 2.5: Wenn kein Pot die harten Schwellen schafft, NICHT direkt zur
+    // Safety fallen, sondern den besten erreichbaren Pot oberhalb realistischer
+    // Grenzen nehmen. Sonst spielt die Profi-KI bei spielbaren Pots Safety, nur
+    // weil ein einzelnes Robust-Sample grenzwertig wurde (Beispiel: 11 in Kopf
+    // rechts → Jump-Carom-Safe). Ein echter Profi locht das.
+    if (!bestShot) {
+      const realisticPots = potCands.filter(c =>
+        (c.robust?.potProbability ?? 0) >= 0.55 &&
+        (c.robust?.scratchRisk ?? 1) <= 0.15 &&
+        (c.robust?.foulRisk ?? 1) <= 0.15
+      );
+      if (realisticPots.length > 0) bestShot = realisticPots[0];
+    }
 
     if (!bestShot) {
       const hardSafeSafeties = safeCands.filter(c =>
