@@ -327,7 +327,7 @@
 
   <!-- Gruppe Website -->
   <details class="group">
-    <summary><span class="group-label">Website – Phasen 1–21</span></summary>
+    <summary><span class="group-label">Website – Phasen 1–22</span></summary>
     <div class="group-body">
 
   <!-- Phase 1 -->
@@ -1282,6 +1282,23 @@
     </div>
   </details>
 
+  <!-- Phase 22 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 22 – Mittwoch-Cup Mai Neuigkeit &amp; Kalender-Bugfix <span class="date">(31. Mai 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Neuer News-Artikel und Chronik-Eintrag für den Mittwoch-Cup Mai 2026 sowie Behebung eines Timezone-Bugs im Veranstaltungskalender.</p>
+
+      <h3>22.1 &nbsp;Mittwoch-Cup Mai 2026 – Neuigkeit und Chronik-Eintrag</h3>
+      <p><strong>Datei:</strong> <code>lib/data.ts</code></p>
+      <p>Neuer Neuigkeiten-Artikel (id <code>'12'</code>) hinzugefügt: „Mittwoch-Cup Mai – Lucki Weidinger holt den Sieg". Ergebnis: Platz 1 Ludwig „Lucki" Weidinger (PBC Erding), Platz 2 Leon Bozbel (PBC Freising), Platz 3 Markus Merz (PBC Erding), Platz 4 John Popitz (PBC Freising). 15 Teilnehmer, 10-Ball auf drei Gewinnsätze. Nächster Termin: 24. Juni 2026.</p>
+      <p>Chronik-Eintrag ergänzt: <code>{ title: 'Mittwoch-Cup Mai – Ludwig „Lucki" Weidinger gewinnt', date: '2026-05-27', ... }</code>.</p>
+
+      <h3>22.2 &nbsp;Timezone-Bug im Veranstaltungskalender behoben</h3>
+      <p><strong>Datei:</strong> <code>app/veranstaltungen/page.tsx</code></p>
+      <p><code>d.toISOString()</code> liefert UTC-Mitternacht, was bei UTC+2 auf das Vortags-Datum zeigt. Die <code>data-cal-date</code>-Attribute werden nun mit lokalen Datumskomponenten gebildet (<code>getFullYear()</code>, <code>getMonth()+1</code>, <code>getDate()</code>), sodass heutige Termine nicht mehr fälschlich als vergangen ausgeblendet werden. Commit: <code>a4f4c5b</code>.</p>
+    </div>
+  </details>
+
   <hr>
 
   <!-- Architektur -->
@@ -1457,7 +1474,7 @@
 
   <!-- Gruppe Billard App -->
   <details class="group">
-    <summary><span class="group-label">Billard App – Phasen 1–14</span></summary>
+    <summary><span class="group-label">Billard App – Phasen 1–16</span></summary>
     <div class="group-body">
 
   <!-- Phase 1 -->
@@ -2401,6 +2418,70 @@
       <h3>14.11 &nbsp;Zufällige Rack-Aufstellung in Hilfe dokumentiert</h3>
       <p><strong>Datei:</strong> <code>public/spiel-spass/billardapp/hilfe.html</code></p>
       <p>Abschnitt 5.3.1 ergänzt: Zufällige Kugelverteilung bei jedem neuen Spiel sowie Break-Streuung. 8-Ball: Ball 1 und 8 fix; Ecken der letzten Reihe je eine Volle/Halbe; Rest zufällig. 9-Ball: Ball 1 und 9 fix; Rest zufällig.</p>
+    </div>
+  </details>
+
+  <!-- Phase 15 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 15 – Vollbild-Buttons &amp; Bandenball-Optimierungen der Profi-KI <span class="date">(1. Juni 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Höhenreduzierung der Vollbild-Steuer-Buttons auf dem Handy sowie zwei gezielte Erweiterungen der Profi-KI für Bälle nahe oder an der Bande.</p>
+
+      <h3>15.1 &nbsp;Vollbild: Steuer-Buttons in der Höhe reduziert</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Die Höhe der Vollbild-Buttons (<code>fsQuickControls</code>, <code>fullscreenPlayControls</code>, <code>fsPower</code>, <code>fsShoot</code>) wurde in drei Schritten um je 20 % reduziert (kumulativ ca. 49 % gegenüber dem Ausgangswert). <code>min-height</code> von 42–44 px auf 22 px gesenkt, Padding entsprechend angepasst. Damit sind die untere Bande und die linke Kopftasche im Vollbildmodus auf dem Handy wieder vollständig sichtbar.</p>
+
+      <h3>15.2 &nbsp;Profi-KI: Bank-Shot-Funktion</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Neue Funktion <code>aiFindHardBankShotCandidates()</code>: Für jeden Zielball wird jedes Loch an jeder Bande gespiegelt (Reflexionsprinzip). Der resultierende virtuelle Zielpunkt ergibt per Geistball-Methode den exakten Abspielwinkel. Nach Geometrie-Vorfilterung (Bandenschnittpunkt außerhalb der Ecktaschen, freie Bahn) validiert <code>aiFinalValidateHardShot()</code> per Physik-Simulation. Score: 400 000+; wird nur aktiviert wenn kein direkter Pot verfügbar ist.</p>
+
+      <h3>15.3 &nbsp;Profi-KI: aiFindHardRailPotLock überarbeitet</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Die Funktion für Bandenbälle wurde grundlegend korrigiert – sie schlug zuvor für die meisten Praxislagen fehl:</p>
+      <table>
+        <tr><th>Parameter</th><th>Alt</th><th>Neu</th></tr>
+        <tr><td>Erkennungsradius</td><td><code>BALL_R * 2.0</code> (19 px)</td><td><code>BALL_R * 5.5</code> (52 px)</td></tr>
+        <tr><td>dotN-Mindestanforderung</td><td><code>0.48</code></td><td><code>0.22</code></td></tr>
+        <tr><td>Schuss-Berechnung</td><td><code>aiEvaluatePotShot</code> (filtert intern mit <code>prof.minDotN</code>)</td><td><code>aiGhostBallAngle</code> direkt (kein Doppelfilter)</td></tr>
+        <tr><td>Suchwinkel bei dünnen Schnitten</td><td>±0,020 rad</td><td>±0,032 rad</td></tr>
+      </table>
+      <p>Ergebnis: Bälle bis ~3 Kugeldurchmesser von jeder Bande werden erkannt; auch dünne Schnitte entlang der Bande werden jetzt sicher versenkt.</p>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 16 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 16 – JGPT-Codex-Gesamtoptimierung &amp; Hilfe-Update <span class="date">(1. Juni 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Umfangreiche Optimierungsrunde durch JGPT-Codex (dokumentiert in <code>SESSION_CHANGES_2026-06-01.md</code>) sowie Erweiterung der Spielanleitung.</p>
+
+      <h3>16.1 &nbsp;KI-Verbesserungen (Profi-Modus)</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <ul>
+        <li><strong>Ball-in-Hand:</strong> Robustere Validierung; gerade oder Eckloch-Lösungen bevorzugt; spitze Mitteltaschen abgewertet; Follow-/Draw-Varianten für Stellungsspiel und Scratch-Vermeidung geprüft</li>
+        <li><strong>Stellungsspiel:</strong> Validierte Positionskontrolle nach sicherem Pot; Follow-, Draw- und Stun-Varianten werden per Simulation verglichen</li>
+        <li><strong>Deadlock-Schutz:</strong> Push-Outs als eigener Stoßtyp; finale Validierung mit mehreren Fallback-Stufen; kein endloses „KI denkt nach…" mehr</li>
+        <li><strong>Effekt-Simulation:</strong> KI-Simulation berücksichtigt Längsdrall (Rückläufer/Nachläufer) realistischer</li>
+        <li><strong>8-Ball:</strong> Stärkere Nutzung der validierten Profi-Pipeline; Stellung auf die 8 nach letzter Gruppenkugel höher gewichtet</li>
+      </ul>
+
+      <h3>16.2 &nbsp;Taschenphysik</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Kugeln, die die vorderen Taschenbacken (Corner-/Side-Pocket-Noses) passiert haben, werden jetzt korrekt als Taschenbereich erkannt und fallen ein. Bisher konnten Kugeln unrealistisch hinter den Backen stehen bleiben. Korrektur in <code>shouldPocketBall()</code> und <code>isBallInPocketEntryZone()</code>.</p>
+
+      <h3>16.3 &nbsp;Fortschrittsanzeige während KI-Planung</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Während längerer KI-Planung zeigt die Statuszeile jetzt die aktuelle Phase mit Fortschrittsstand (z. B. „Kandidaten simulieren 8/20"). Phasen: Regeln prüfen → Ball-in-Hand planen → Kandidaten erzeugen → Kandidaten simulieren → Besten Stoß wählen → Blockaden / Jump / Kick prüfen → Stellung prüfen → Final validieren → Fallback suchen. Sobald die KI ausführt: „KI bereitet den Stoß vor" (mind. 2 s sichtbar).</p>
+
+      <h3>16.4 &nbsp;Spielanleitung erweitert</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/hilfe.html</code></p>
+      <p>Abschnitt 6.1 (KI-Schwierigkeitsgrade) aktualisiert:</p>
+      <ul>
+        <li>Profi-Tabellenzeile: Bandenbälle, Stellungsspiel (Follow/Draw/Stun) und Kick-Varianten ergänzt</li>
+        <li>Profi-Tipp-Kasten: Fünf strukturierte Punkte (Bandenbälle, Stellungsspiel, Ball-in-Hand, Blockaden, Fortschrittsanzeige)</li>
+      </ul>
     </div>
   </details>
 
