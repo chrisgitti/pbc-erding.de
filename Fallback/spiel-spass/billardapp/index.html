@@ -1861,11 +1861,11 @@ const AI_EVAL_POWER_NOISE_FLOOR = 0.03;  // relativ (±3 %)
 // zur nächsten Bande. Bei Mitteltaschen überproportional bestraft (Lippe statt
 // Schlund). Bei Eckpockets schwächer (zwei Akzeptanzrichtungen). Distanzabhängig:
 // kurz am Loch → fast egal, lang → voll wirksam.
-const AI_APPROACH_EXP_CORNER  = 1.2;
-const AI_APPROACH_EXP_SIDE    = 2.6;
+const AI_APPROACH_EXP_CORNER  = 1.0;
+const AI_APPROACH_EXP_SIDE    = 1.9;   // 2.6 war zu aggressiv (45°-Anflüge fälschlich verworfen)
 const AI_APPROACH_DIST_EXP    = 0.7;
-const AI_APPROACH_REJECT      = 0.35;  // ≥ raus aus Kandidatenliste
-const AI_APPROACH_SOFT_START  = 0.10;  // ab hier weicher Score-Malus
+const AI_APPROACH_REJECT      = 0.40;  // leicht angehoben (war 0.35)
+const AI_APPROACH_SOFT_START  = 0.12;  // ab hier weicher Score-Malus
 // Stufe 2.3 — Fragility (Schnitt × Distanz, ohne Approach). Klein für kurze
 // Schnitte jeder Steilheit (Profi-Standard: 60°-Schnitt aus 50 px = unkritisch),
 // groß für lange Dünnschnitte. Triggert den Noise-Floor in der Robust-Sim.
@@ -1882,7 +1882,7 @@ const AI_LOOKAHEAD_DEPTH = 3;
 const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S2.3";
+const AI_BUILD = "S2.4";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -3746,7 +3746,10 @@ function aiPocketApproachPenalty(target, pocket, aq, dTP) {
     const ap = aiPocketApproachQuality(target, pocket);
     aq = ap.aq; dTP = ap.dTP;
   }
-  const distDamp = Math.pow(clamp(dTP / AI_FRAG_REF_DIST, 0, 2.0), AI_APPROACH_DIST_EXP);
+  // Stufe 2.4 — distDamp ist ein DÄMPFUNGSfaktor in [0,1]. Frühere Version
+  // erlaubte > 1 (clamp(0, 2.0)) → Strafe wurde bei langen Distanzen verstärkt
+  // statt gedämpft, was im Endgame zu fälschlichen Safety-Wahlen führte.
+  const distDamp = Math.pow(clamp(dTP / AI_FRAG_REF_DIST, 0, 1.0), AI_APPROACH_DIST_EXP);
   return (1 - aq) * distDamp;
 }
 
@@ -3805,8 +3808,8 @@ function aiClassifyTargetsByEasyPot(cue, targets) {
   // dotN alleine reicht nicht: ein 38°-Schnitt in eine Mitteltasche entlang der
   // Bande wirkt "spitz genug", ist aber unspielbar; umgekehrt ist ein 70°-Schnitt
   // direkt am Loch sehr wohl spielbar.
-  const EASY_MAX_FRAGILITY = 0.10;
-  const EASY_MAX_APPROACH  = 0.18;
+  const EASY_MAX_FRAGILITY = 0.14;
+  const EASY_MAX_APPROACH  = 0.22;
   for (const t of targets) {
     let bestEasy = -Infinity;
     for (const p of POCKETS) {
