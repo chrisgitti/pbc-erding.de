@@ -1418,7 +1418,7 @@ ohne Build-Prozess, für Pflege ohne Next.js-Kenntnisse.
 ---
 
 <details>
-<summary><strong>Billard App – Phasen 1–16</strong></summary>
+<summary><strong>Billard App – Phasen 1–18</strong></summary>
 
 ## Phase 1 – Proof of Concept einer PBC Erding Billard-App integriert (1. Mai 2026)
 
@@ -2840,6 +2840,89 @@ Abschnitt 6.1 (KI-Schwierigkeitsgrade) aktualisiert:
 
 - Profi-Tabellenzeile: Bandenbälle, Stellungsspiel (Follow/Draw/Stun) und Kick-Varianten ergänzt
 - Profi-Tipp-Kasten: Fünf strukturierte Punkte (Bandenbälle, Stellungsspiel, Ball-in-Hand, Blockaden, Fortschrittsanzeige)
+
+---
+
+## Phase 17 – KI-Optimierung Stufe 1: Zeitbudget, Zielauswahl, Kick-Escape (1. Juni 2026)
+
+Reaktivität und Robustheit der Profi-KI erheblich verbessert. Dokumentiert in `AENDERUNGEN_KI_Stufe1.md`.
+
+### 17.1  Zeitbudget-System (Einfrieren der KI behoben)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Das bis zu >1 min dauernde Einfrieren in Phase „Spezial-Locks prüfen 5/6" – besonders am offenen 8-Ball-Tisch – wurde behoben durch:
+
+- Neues Zeitbudget-System (`CFG_AI_TIME_BUDGET_MS` Default 600 ms, hartes Limit 2 s)
+- Zweistufige Zielauswahl: billiger geometrischer Scan trennt „einfache" von „problematischen" Zielen; teure Spezialsuchen laufen nur noch für problematische Bälle
+- Spezial-Lock-Block wird vollständig übersprungen, wenn bereits ein verlässlicher Direktpot vorliegt
+- Budget-Abbrüche innerhalb aller Lock-Suchfunktionen
+
+### 17.2  Neuer KI-Rechenzeit-Regler
+
+**Datei:** `pbc-pool-app/index.html`
+
+Neuer Schieberegler „KI-Rechenzeit" im Startmenü (Erweiterte Optionen): steuert das Zeitbudget zwischen Performance (0,15 s, schnell) und Gründlich (1,5 s, rechenintensiv). Beeinflusst Geschwindigkeit vs. Planungstiefe der Profi-KI. Unabhängig von der KI-Stoßverzögerung.
+
+### 17.3  Jump-Shots nach Spielstärke abgestuft
+
+**Datei:** `pbc-pool-app/index.html`
+
+| Stärke | Verhalten |
+| --- | --- |
+| Anfänger | springt nie |
+| Fortgeschrittener | kurze Jumps nur bei echter Blockade |
+| Profi | volle Jump-Nutzung (in Stufe 2 weiter präzisiert) |
+
+### 17.4  Physikvalidierte Kick-Suche (`aiFindLegalKickEscape`)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Neue Funktion: 360°-Sweep mit echter Spielphysik, um bei verdeckten Bällen einen garantiert legalen Erstkontakt zu finden. Verhindert sinnlose Fouls durch fragile Spiegelgeometrie-Kicks. Eigenes Zeitbudget (~700 ms), unabhängig vom Rechenzeit-Regler.
+
+### 17.5  Spielanleitung erweitert
+
+**Datei:** `pbc-pool-app/hilfe.html`
+
+- Neue Section 8.6 „KI-Rechenzeit": Erläuterung des Schiebereglers (Geschwindigkeit vs. Präzision), Unterschied zur Stoßverzögerung
+- Tabelle 6.1: Fortgeschrittener und Profi um Jump-Verhalten und Vorausschau ergänzt
+- Profi-Tipp-Kasten: Kick-Suche mit Physik-Sweep, Jump nur bei Snooker
+- Debug-Panel: Build-Kennung (z. B. `S2.2`) im Overlay dokumentiert
+
+---
+
+## Phase 18 – KI-Optimierung Stufe 2: Runout-Kette & Cluster-Management (1. Juni 2026)
+
+Profi-KI denkt mehrere Kugeln voraus. Dokumentiert in `AENDERUNGEN_KI_Stufe2.md`.
+
+### 18.1  Geometrische 3-Kugel-Runout-Kette (`aiRunoutChainScore`)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Neue Funktion berechnet einen diskontierten Positionswert über die nächsten 1–3 Kugeln (je nach Spielstärke). Stellungen, von denen sich der Tisch durchspielen lässt, werden bevorzugt; Sackgassen (nächste eigene Kugel danach verdeckt) werden bestraft.
+
+| Stärke | Tiefe | Verhalten |
+| --- | --- | --- |
+| Anfänger | 1 | greedy 1-ahead, unverändert |
+| Fortgeschrittener | 2 | 2-Kugel-Vorausschau |
+| Profi | 3 | volle 3-Kugel-Runout-Kette |
+
+Implementierung als Bonus/Malus relativ zu einem Neutralwert (nicht als konvexe Mischung – das hätte Sackgassen bevorzugt).
+
+### 18.2  Skalierter Breakout-Bonus
+
+**Datei:** `pbc-pool-app/index.html`
+
+Der Bonus für das Freispielen blockierter eigener Kugeln skaliert jetzt mit der Anzahl der befreiten Kugeln (`min(70, 26 × freed)` statt flacher +28). Ein Stoß, der einen Cluster öffnet und mehrere Kugeln befreit, wird stärker belohnt.
+
+### 18.3  Jump-Trigger präzisiert & Direktkontakt bevorzugt
+
+**Datei:** `pbc-pool-app/index.html`
+
+- Profi springt nur noch bei tatsächlich gesnookerten Zielen (`aiDetectHardSnooker().blocked`), nicht pauschal bei allen „problematischen" Bällen
+- Direkter Voll-Kontakt in `aiFindHardPlayableEscape` erhält höchsten Quell-Bonus (3200); Kick/Jump bei freiem Pfad stark abgewertet (−8000)
+- Notstoß-Stärken reduziert (20–38 % statt 54–62 %) für robustere Ausführung
+- Build-Marker `S2.2` im Debug-Overlay
 
 ---
 

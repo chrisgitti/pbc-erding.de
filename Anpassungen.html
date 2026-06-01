@@ -1474,7 +1474,7 @@
 
   <!-- Gruppe Billard App -->
   <details class="group">
-    <summary><span class="group-label">Billard App – Phasen 1–16</span></summary>
+    <summary><span class="group-label">Billard App – Phasen 1–18</span></summary>
     <div class="group-body">
 
   <!-- Phase 1 -->
@@ -2481,6 +2481,90 @@
       <ul>
         <li>Profi-Tabellenzeile: Bandenbälle, Stellungsspiel (Follow/Draw/Stun) und Kick-Varianten ergänzt</li>
         <li>Profi-Tipp-Kasten: Fünf strukturierte Punkte (Bandenbälle, Stellungsspiel, Ball-in-Hand, Blockaden, Fortschrittsanzeige)</li>
+      </ul>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 17 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 17 – KI-Optimierung Stufe 1: Zeitbudget, Zielauswahl, Kick-Escape <span class="date">(1. Juni 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Reaktivität und Robustheit der Profi-KI erheblich verbessert. Dokumentiert in <code>AENDERUNGEN_KI_Stufe1.md</code>.</p>
+
+      <h3>17.1 &nbsp;Zeitbudget-System (Einfrieren der KI behoben)</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Das bis zu &gt;1 min dauernde Einfrieren in Phase „Spezial-Locks prüfen 5/6" wurde behoben durch:</p>
+      <ul>
+        <li>Neues Zeitbudget-System (<code>CFG_AI_TIME_BUDGET_MS</code> Default 600 ms, hartes Limit 2 s)</li>
+        <li>Zweistufige Zielauswahl: billiger geometrischer Scan trennt „einfache" von „problematischen" Zielen; teure Spezialsuchen laufen nur noch für problematische Bälle</li>
+        <li>Spezial-Lock-Block wird vollständig übersprungen, wenn bereits ein verlässlicher Direktpot vorliegt</li>
+        <li>Budget-Abbrüche innerhalb aller Lock-Suchfunktionen</li>
+      </ul>
+
+      <h3>17.2 &nbsp;Neuer KI-Rechenzeit-Regler</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Neuer Schieberegler „KI-Rechenzeit" im Startmenü (Erweiterte Optionen): steuert das Zeitbudget zwischen Performance (0,15 s) und Gründlich (1,5 s). Beeinflusst Geschwindigkeit vs. Planungstiefe der Profi-KI. Unabhängig von der KI-Stoßverzögerung.</p>
+
+      <h3>17.3 &nbsp;Jump-Shots nach Spielstärke abgestuft</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <table>
+        <thead><tr><th>Stärke</th><th>Verhalten</th></tr></thead>
+        <tbody>
+          <tr><td>Anfänger</td><td>springt nie</td></tr>
+          <tr><td>Fortgeschrittener</td><td>kurze Jumps nur bei echter Blockade</td></tr>
+          <tr><td>Profi</td><td>volle Jump-Nutzung (in Stufe 2 weiter präzisiert)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>17.4 &nbsp;Physikvalidierte Kick-Suche (<code>aiFindLegalKickEscape</code>)</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Neue Funktion: 360°-Sweep mit echter Spielphysik, um bei verdeckten Bällen einen garantiert legalen Erstkontakt zu finden. Verhindert sinnlose Fouls durch fragile Spiegelgeometrie-Kicks. Eigenes Zeitbudget (~700 ms), unabhängig vom Rechenzeit-Regler.</p>
+
+      <h3>17.5 &nbsp;Spielanleitung erweitert</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/hilfe.html</code></p>
+      <ul>
+        <li>Neue Section 8.6 „KI-Rechenzeit": Erläuterung des Schiebereglers (Geschwindigkeit vs. Präzision), Unterschied zur Stoßverzögerung</li>
+        <li>Tabelle 6.1: Fortgeschrittener und Profi um Jump-Verhalten und Vorausschau ergänzt</li>
+        <li>Profi-Tipp-Kasten: Kick-Suche mit Physik-Sweep, Jump nur bei Snooker, Runout-Kette</li>
+        <li>Debug-Panel: Build-Kennung (<code>S2.2</code>) im Overlay dokumentiert</li>
+      </ul>
+    </div>
+  </details>
+
+  <hr>
+
+  <!-- Phase 18 -->
+  <details class="phase">
+    <summary><span class="summary-text">Phase 18 – KI-Optimierung Stufe 2: Runout-Kette &amp; Cluster-Management <span class="date">(1. Juni 2026)</span></span></summary>
+    <div class="phase-body">
+      <p>Profi-KI denkt mehrere Kugeln voraus. Dokumentiert in <code>AENDERUNGEN_KI_Stufe2.md</code>.</p>
+
+      <h3>18.1 &nbsp;Geometrische 3-Kugel-Runout-Kette (<code>aiRunoutChainScore</code>)</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Neue Funktion berechnet einen diskontierten Positionswert über die nächsten 1–3 Kugeln. Stellungen, von denen sich der Tisch durchspielen lässt, werden bevorzugt; Sackgassen (nächste eigene Kugel danach verdeckt) werden bestraft.</p>
+      <table>
+        <thead><tr><th>Stärke</th><th>Tiefe</th><th>Verhalten</th></tr></thead>
+        <tbody>
+          <tr><td>Anfänger</td><td>1</td><td>greedy 1-ahead, unverändert</td></tr>
+          <tr><td>Fortgeschrittener</td><td>2</td><td>2-Kugel-Vorausschau</td></tr>
+          <tr><td>Profi</td><td>3</td><td>volle 3-Kugel-Runout-Kette</td></tr>
+        </tbody>
+      </table>
+      <p>Implementierung als Bonus/Malus relativ zu einem Neutralwert (nicht als konvexe Mischung – das hätte Sackgassen bevorzugt).</p>
+
+      <h3>18.2 &nbsp;Skalierter Breakout-Bonus</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <p>Der Bonus für das Freispielen blockierter eigener Kugeln skaliert jetzt mit der Anzahl der befreiten Kugeln (<code>min(70, 26 × freed)</code> statt flacher +28). Ein Stoß, der einen Cluster öffnet und mehrere Kugeln befreit, wird stärker belohnt.</p>
+
+      <h3>18.3 &nbsp;Jump-Trigger präzisiert &amp; Direktkontakt bevorzugt</h3>
+      <p><strong>Datei:</strong> <code>pbc-pool-app/index.html</code></p>
+      <ul>
+        <li>Profi springt nur noch bei tatsächlich gesnookerten Zielen (<code>aiDetectHardSnooker().blocked</code>), nicht pauschal bei allen „problematischen" Bällen</li>
+        <li>Direkter Voll-Kontakt in <code>aiFindHardPlayableEscape</code> erhält höchsten Quell-Bonus (3200); Kick/Jump bei freiem Pfad stark abgewertet (−8000)</li>
+        <li>Notstoß-Stärken reduziert (20–38 % statt 54–62 %) für robustere Ausführung</li>
+        <li>Build-Marker <code>S2.2</code> im Debug-Overlay</li>
       </ul>
     </div>
   </details>
