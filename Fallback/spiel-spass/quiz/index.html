@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billard-Quiz – PBC Erding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090909;
+            --card: #111111;
+            --panel: rgba(255, 255, 255, 0.055);
+            --panel-strong: rgba(255, 255, 255, 0.10);
+            --ink: #f0ead8;
+            --ink-dim: rgba(240, 234, 216, 0.65);
+            --muted: #7a7060;
+            --line: rgba(212, 160, 23, 0.22);
+            --gold: #c8960e;
+            --gold-mid: #d4a017;
+            --gold-light: #edb82a;
+            --gold-bright: #f5cc50;
+            --green: #28a85e;
+            --red: #cc3040;
+            --amber: #edb82a;
+            --shadow-card: 0 40px 100px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(212, 160, 23, 0.14) inset;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--ink);
+            font-family: "Open Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background:
+                radial-gradient(ellipse 60% 40% at 70% 0%, rgba(180, 130, 10, 0.10), transparent),
+                var(--bg);
+        }
+
+        button,
+        select {
+            font: inherit;
+        }
+
+        .app_shell {
+            width: min(100%, 1000px);
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: 22px 20px;
+            display: grid;
+            grid-template-rows: auto auto 1fr auto;
+            gap: 16px;
+            position: relative;
+        }
+
+        .top_bar {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .app_logo {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(212, 160, 23, 0.50);
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.08), 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .app_title_group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .app_title_text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .app_eyebrow {
+            margin: 0;
+            font-family: "Oswald", sans-serif;
+            font-size: 0.66rem;
+            font-weight: 400;
+            letter-spacing: 0.20em;
+            text-transform: uppercase;
+            color: var(--gold-mid);
+            line-height: 1;
+        }
+
+        .app_title {
+            margin: 0;
+            font-family: "Oswald", sans-serif;
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #ffffff;
+        }
+
+        .topic_line {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .score_pill {
+            min-width: 96px;
+            border: 1px solid rgba(212, 160, 23, 0.35);
+            border-radius: 12px;
+            background: rgba(212, 160, 23, 0.06);
+            padding: 9px 16px;
+            text-align: center;
+        }
+
+        .score_value {
+            font-family: "Oswald", sans-serif;
+            font-size: 1.55rem;
+            font-weight: 600;
+            line-height: 1;
+            color: #ffffff;
+        }
+
+        .score_label {
+            color: var(--muted);
+            font-size: 0.58rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-top: 3px;
+        }
+
+        .mobile_settings_button {
+            display: none;
+            width: 42px;
+            height: 42px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: rgba(212, 160, 23, 0.06);
+            color: var(--gold-mid);
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+            place-items: center;
+        }
+
+        .hero_quiz {
+            min-height: 400px;
+            border: 1px solid rgba(212, 160, 23, 0.55);
+            border-radius: 20px;
+            background: linear-gradient(175deg, #181818 0%, #101010 60%, #090909 100%);
+            box-shadow:
+                0 0 0 1px rgba(212, 160, 23, 0.12) inset,
+                0 6px 20px rgba(0, 0, 0, 0.60),
+                0 0 60px rgba(212, 160, 23, 0.08);
+            padding: clamp(24px, 5vw, 52px);
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 24px;
+            overflow: hidden;
+            position: relative;
+            transition: border-color 350ms ease, box-shadow 350ms ease;
+        }
+
+        .hero_quiz::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 12%; right: 12%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212, 160, 23, 0.70), transparent);
+            pointer-events: none;
+        }
+
+        .hero_quiz > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .progress_row {
+            display: grid;
+            gap: 8px;
+        }
+
+        .progress_meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 0.72rem;
+            font-family: "Oswald", sans-serif;
+            font-weight: 400;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+        }
+
+        .progress_track {
+            height: 3px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .progress_fill {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+            transition: width 300ms ease;
+        }
+
+        .question_area {
+            display: grid;
+            align-content: center;
+            gap: 16px;
+        }
+
+        .stage_label {
+            width: fit-content;
+            border: 1px solid rgba(212, 160, 23, 0.30);
+            border-radius: 4px;
+            background: rgba(212, 160, 23, 0.08);
+            color: var(--gold-mid);
+            padding: 4px 10px;
+            font-size: 0.65rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            font-family: "Oswald", sans-serif;
+            letter-spacing: 0.14em;
+        }
+
+        .question_text {
+            margin: 0;
+            max-width: 100%;
+            font-family: "Open Sans", "Segoe UI", sans-serif;
+            font-size: clamp(1.4rem, 3.2vw, 2.5rem);
+            font-weight: 700;
+            line-height: 1.30;
+            text-wrap: pretty;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+        }
+
+        .question_text.entering {
+            animation: question_in 240ms ease both;
+        }
+
+        @keyframes question_in {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback_row {
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-top: 1px solid rgba(212, 160, 23, 0.12);
+            padding-top: 16px;
+        }
+
+        .feedback_mark {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(212, 160, 23, 0.10);
+            border: 1px solid rgba(212, 160, 23, 0.25);
+            color: var(--gold-mid);
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .feedback_row.is-right { color: #a8f0c8; }
+        .feedback_row.is-wrong { color: #f0a8b0; }
+
+        .feedback_row.is-right .feedback_mark {
+            background: rgba(40, 168, 94, 0.20);
+            border-color: rgba(40, 168, 94, 0.50);
+            color: #4de89a;
+        }
+
+        .feedback_row.is-wrong .feedback_mark {
+            background: rgba(204, 48, 64, 0.20);
+            border-color: rgba(204, 48, 64, 0.50);
+            color: #f07080;
+        }
+
+        .hero_quiz.is-right {
+            border-color: rgba(40, 168, 94, 0.50);
+            box-shadow: 0 0 0 1px rgba(40, 168, 94, 0.10) inset, 0 6px 20px rgba(0, 0, 0, 0.60), 0 0 60px rgba(40, 168, 94, 0.12);
+        }
+
+        .hero_quiz.is-wrong {
+            border-color: rgba(204, 48, 64, 0.50);
+            box-shadow: 0 0 0 1px rgba(204, 48, 64, 0.10) inset, 0 6px 20px rgba(0, 0, 0, 0.60), 0 0 60px rgba(204, 48, 64, 0.12);
+        }
+
+        .answer_grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .answer_grid.is-quattro {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .play_stack {
+            min-height: 0;
+            display: grid;
+            grid-template-rows: minmax(0, 1fr) auto;
+            gap: 12px;
+            isolation: isolate;
+        }
+
+        .answer_button {
+            min-height: 90px;
+            border: 1px solid transparent;
+            border-radius: 14px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 13px;
+            font-family: "Oswald", sans-serif;
+            font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 200ms ease;
+        }
+
+        .answer_button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .answer_button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .answer_button:disabled {
+            cursor: default;
+            opacity: 1;
+            -webkit-text-fill-color: inherit;
+        }
+
+        .answer_button.is-muted {
+            opacity: 0.30;
+        }
+
+        .btn_true {
+            background: linear-gradient(160deg, #177038 0%, #1d8f48 100%);
+            border-color: rgba(40, 168, 94, 0.45);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+        }
+
+        .btn_true:hover:not(:disabled) {
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.60), 0 0 20px rgba(40, 168, 94, 0.18);
+        }
+
+        .btn_quattro {
+            background: linear-gradient(175deg, #181818 0%, #101010 60%, #090909 100%);
+            border-color: rgba(212, 160, 23, 0.55);
+            color: #ffffff;
+            box-shadow: 0 0 0 1px rgba(212, 160, 23, 0.10) inset, 0 4px 16px rgba(0, 0, 0, 0.55);
+        }
+
+        .btn_quattro:hover:not(:disabled) {
+            background: linear-gradient(175deg, #242424 0%, #181818 60%, #111111 100%);
+            border-color: var(--gold-bright);
+            box-shadow: 0 0 0 1px rgba(212, 160, 23, 0.20) inset, 0 8px 28px rgba(0, 0, 0, 0.60), 0 0 22px rgba(212, 160, 23, 0.28);
+            transform: translateY(-2px);
+        }
+
+        .btn_false {
+            background: linear-gradient(160deg, #6e1320 0%, #922030 100%);
+            border-color: rgba(204, 48, 64, 0.45);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+        }
+
+        .btn_false:hover:not(:disabled) {
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.60), 0 0 20px rgba(204, 48, 64, 0.18);
+        }
+
+        .answer_button.is-hidden {
+            display: none;
+        }
+
+        .answer_text {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .answer_icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: grid;
+            place-items: center;
+            line-height: 1;
+            flex-shrink: 0;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+
+        .btn_quattro .answer_icon {
+            background: rgba(212, 160, 23, 0.12);
+            border-color: var(--gold-mid);
+            color: var(--gold-light);
+        }
+
+        .btn_quattro .answer_text {
+            text-transform: none;
+            font-family: "Open Sans", sans-serif;
+            font-size: clamp(0.92rem, 2vw, 1.18rem);
+            font-weight: 700;
+            letter-spacing: 0;
+            text-align: left;
+            line-height: 1.35;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        .answer_button.selected-right,
+        .answer_button.selected-wrong {
+            opacity: 1;
+            filter: brightness(1.16);
+            transform: translateY(-2px) scale(1.01);
+        }
+
+
+        .answer_button.is-correct-choice {
+            animation: correct_pulse 520ms ease both;
+        }
+
+        .answer_button.btn_false.is-correct-choice {
+            animation: false_is_correct_pulse 720ms ease both;
+        }
+
+        .answer_button.is-wrong-choice {
+            animation: wrong_shake 520ms ease both;
+        }
+
+        .answer_button.btn_true.is-wrong-choice {
+            animation: true_is_wrong_shake 720ms ease both;
+        }
+
+        .answer_button.is-actual-correct {
+            opacity: 1;
+            animation: reveal_correct 640ms ease both;
+        }
+
+        @keyframes correct_pulse {
+            0%   { box-shadow: 0 12px 32px rgba(0,0,0,0.55); }
+            45%  { box-shadow: 0 0 0 3px rgba(40,168,94,0.40), 0 0 28px rgba(40,168,94,0.45); }
+            100% { box-shadow: 0 0 0 2px rgba(40,168,94,0.22), 0 12px 32px rgba(0,0,0,0.55); }
+        }
+
+        @keyframes false_is_correct_pulse {
+            0%   { background: linear-gradient(160deg,#6e1320,#922030); }
+            30%  { background: linear-gradient(160deg,#177038,#1d8f48); box-shadow: 0 0 0 3px rgba(40,168,94,0.40), 0 0 28px rgba(40,168,94,0.45); }
+            100% { background: linear-gradient(160deg,#177038,#1d8f48); box-shadow: 0 0 0 2px rgba(40,168,94,0.22), 0 12px 32px rgba(0,0,0,0.55); }
+        }
+
+        @keyframes wrong_shake {
+            0%,100% { transform: translateX(0); }
+            20%  { transform: translateX(-6px); box-shadow: 0 0 0 3px rgba(204,48,64,0.35); }
+            40%  { transform: translateX(6px); }
+            60%  { transform: translateX(-4px); }
+            80%  { transform: translateX(4px); }
+        }
+
+        @keyframes true_is_wrong_shake {
+            0%   { background: linear-gradient(160deg,#177038,#1d8f48); }
+            20%  { transform: translateX(-7px); background: linear-gradient(160deg,#6e1320,#922030); box-shadow: 0 0 0 3px rgba(204,48,64,0.40); }
+            40%  { transform: translateX(7px); background: linear-gradient(160deg,#6e1320,#922030); }
+            60%  { transform: translateX(-4px); }
+            80%  { transform: translateX(4px); }
+            100% { transform: translateX(0); background: linear-gradient(160deg,#6e1320,#922030); }
+        }
+
+        @keyframes reveal_correct {
+            0%   { box-shadow: 0 12px 32px rgba(0,0,0,0.55); }
+            45%  { box-shadow: 0 0 0 3px rgba(40,168,94,0.40), 0 0 24px rgba(40,168,94,0.38); }
+            100% { box-shadow: 0 0 0 2px rgba(40,168,94,0.20), 0 12px 32px rgba(0,0,0,0.55); }
+        }
+
+        .mode-quattro .answer_button.selected-right {
+            background: linear-gradient(160deg, #177038, #1d8f48) !important;
+            border-color: rgba(40,168,94,0.60) !important;
+            color: white;
+        }
+
+        .mode-quattro .answer_button.selected-wrong {
+            background: linear-gradient(160deg, #6e1320, #922030) !important;
+            border-color: rgba(204,48,64,0.60) !important;
+            color: white;
+        }
+
+        .mode-quattro .answer_button.is-actual-correct {
+            border-color: var(--gold-light) !important;
+            border-width: 2px !important;
+            box-shadow: 0 0 0 3px rgba(237, 184, 42, 0.35), 0 0 28px rgba(237, 184, 42, 0.30) !important;
+            animation: reveal_correct_quattro 500ms ease both !important;
+        }
+
+        @keyframes reveal_correct_quattro {
+            0%   { border-color: rgba(237,184,42,0.40); border-width: 1px; box-shadow: none; }
+            50%  { border-color: #edb82a; border-width: 2px; box-shadow: 0 0 0 5px rgba(237,184,42,0.40), 0 0 36px rgba(237,184,42,0.45); }
+            100% { border-color: #edb82a; border-width: 2px; box-shadow: 0 0 0 3px rgba(237,184,42,0.35), 0 0 28px rgba(237,184,42,0.30); }
+        }
+
+        .control_dock {
+            border: 1px solid rgba(212, 160, 23, 0.18);
+            border-radius: 16px;
+            background: #111111;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(90px, 1fr)) minmax(130px, 1.5fr) repeat(2, minmax(90px, 1fr)) auto;
+            gap: 8px;
+            align-items: end;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.50);
+        }
+
+        .field {
+            min-width: 0;
+            display: grid;
+            gap: 5px;
+        }
+
+        .label {
+            color: rgba(212, 160, 23, 0.55);
+            font-family: "Oswald", sans-serif;
+            font-size: 0.60rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            padding-left: 2px;
+        }
+
+        select {
+            width: 100%;
+            height: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 8px;
+            background: #1a1a1a;
+            color: var(--ink);
+            padding: 0 8px;
+            outline: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 150ms ease;
+        }
+
+        select:focus, select:hover {
+            border-color: rgba(212, 160, 23, 0.45);
+        }
+
+        option {
+            background: #1a1a1a;
+            color: #f0ead8;
+        }
+
+        .start_button {
+            height: 44px;
+            min-width: 120px;
+            border: 1px solid rgba(212, 160, 23, 0.60);
+            border-radius: 10px;
+            background: var(--gold-mid);
+            color: #0a0800;
+            cursor: pointer;
+            font-family: "Oswald", sans-serif;
+            font-size: 0.92rem;
+            font-weight: 600;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            box-shadow: 0 8px 24px rgba(212, 160, 23, 0.22);
+            transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
+        }
+
+        .start_button:hover {
+            transform: translateY(-1px);
+            background: var(--gold-light);
+            box-shadow: 0 10px 28px rgba(212, 160, 23, 0.32);
+        }
+
+        .start_button:active {
+            transform: translateY(1px);
+            box-shadow: 0 4px 12px rgba(212, 160, 23, 0.20);
+        }
+
+        .apply_settings_button {
+            display: none;
+            height: 34px;
+            border: 1px solid rgba(212, 160, 23, 0.35);
+            border-radius: 8px;
+            background: rgba(212, 160, 23, 0.10);
+            color: var(--gold-mid);
+            cursor: pointer;
+            font-family: "Oswald", sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 760px) {
+            .app_shell {
+                padding: 14px;
+                min-height: 100dvh;
+                grid-template-rows: auto minmax(0, 1fr);
+                gap: 10px;
+            }
+
+            .top_bar { gap: 8px; }
+
+            .mobile_settings_button { display: grid; }
+
+            .hero_quiz {
+                min-height: 0;
+                border-radius: 16px;
+                padding: 18px;
+                gap: 14px;
+            }
+
+            .play_stack {
+                min-height: 0;
+                grid-template-rows: minmax(0, 1fr) auto;
+                gap: 10px;
+            }
+
+            .answer_grid { gap: 8px; }
+
+            .answer_button {
+                min-height: 0;
+                height: clamp(52px, 10dvh, 72px);
+                border-radius: 12px;
+                font-size: clamp(1rem, 4.2vw, 1.25rem);
+            }
+
+            .answer_icon { width: 30px; height: 30px; font-size: 0.75rem; }
+
+            .control_dock {
+                grid-template-columns: 1.2fr 0.8fr;
+                position: absolute;
+                z-index: 20;
+                top: 66px;
+                left: 14px;
+                right: 14px;
+                display: none;
+            }
+
+            .control_dock.is-open { display: grid; }
+
+            .apply_settings_button {
+                display: block;
+                grid-column: 1 / -1;
+            }
+        }
+
+        /* === TIMER BAR === */
+        .timer_row { margin: 0; }
+        .timer_track { height: 3px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+        .timer_fill { width: 100%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--red), var(--gold-light)); transition: width 1s linear; }
+        .timer_scale { display: flex; justify-content: space-between; font-size: 0.60rem; font-family: "Oswald", sans-serif; font-weight: 400; color: var(--muted); padding: 4px 2px 0; letter-spacing: 0.06em; }
+
+        /* === LIVE SCORE PANEL === */
+        .live_score_panel {
+            border: 1px solid rgba(212,160,23,0.18); border-radius: 14px;
+            background: #111111;
+            padding: 12px 16px;
+        }
+        .live_score_title { color: rgba(212,160,23,0.55); font-family: "Oswald",sans-serif; font-size: 0.62rem; font-weight: 400; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; }
+        .live_score_items { display: flex; flex-direction: column; gap: 4px; }
+        .live_score_item {
+            display: grid; grid-template-columns: 1fr auto; gap: 8px;
+            padding: 5px 10px; border-radius: 6px; background: rgba(255,255,255,0.04);
+            font-size: 0.84rem; font-weight: 600; color: var(--ink);
+        }
+        .online_verlassen_bar {
+            display: none; justify-content: space-between; align-items: center; padding-top: 4px;
+        }
+        .online_bar_score {
+            display: flex; align-items: baseline; gap: 5px;
+            font-family: "Oswald", sans-serif; font-weight: 600; color: var(--gold-light);
+            font-size: 1.2rem; letter-spacing: 0.04em;
+        }
+        .online_bar_score_lbl {
+            font-size: 0.60rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.10em; font-weight: 400;
+        }
+        .btn_online_verlassen {
+            background: none; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px;
+            color: var(--muted); font-size: 0.75rem; font-weight: 600; padding: 5px 12px;
+            cursor: pointer; transition: color .15s, border-color .15s;
+        }
+        .btn_online_verlassen:hover { color: var(--red); border-color: rgba(204,48,64,0.50); }
+
+        /* === ONLINE OVERLAY === */
+        .online_overlay {
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(5,5,5,0.90); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 20px; overflow-y: auto;
+        }
+        .online_panel { max-height: calc(100dvh - 40px); overflow-y: auto; margin: auto; }
+        .op_fehler {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 40px); max-width: 460px; z-index: 101;
+            color: #f07080; font-size: 0.85rem; font-weight: 600;
+            padding: 10px 14px; border-radius: 8px;
+            background: rgba(204,48,64,0.12); border: 1px solid rgba(204,48,64,0.30);
+        }
+        .online_panel {
+            width: min(100%, 440px);
+            border: 1px solid rgba(212,160,23,0.30); border-radius: 20px;
+            background: #111111; box-shadow: 0 40px 100px rgba(0,0,0,0.90);
+            padding: 32px 28px; display: flex; flex-direction: column; gap: 16px;
+        }
+        .op_title { margin: 0; font-family: "Oswald",sans-serif; font-size: 1.5rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; }
+        .op_sub { margin: 0; color: var(--muted); font-size: 0.88rem; font-weight: 400; }
+        .op_code_box {
+            text-align: center; padding: 20px 12px;
+            border: 1px solid rgba(212,160,23,0.22); border-radius: 12px; background: rgba(212,160,23,0.04);
+            cursor: pointer; transition: background 0.15s, border-color 0.15s; -webkit-user-select: none; user-select: none;
+        }
+        .op_code_box:hover { background: rgba(212,160,23,0.09); border-color: rgba(212,160,23,0.45); }
+        .op_code_box:active { background: rgba(212,160,23,0.14); }
+        .op_code_label { color: rgba(212,160,23,0.55); font-family:"Oswald",sans-serif; font-size: 0.60rem; font-weight:400; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 8px; transition: color 0.2s; }
+        .op_code { font-family:"Oswald",sans-serif; font-size: 2.8rem; font-weight: 600; letter-spacing: 0.20em; color: var(--gold-light); }
+        .op_label { display: block; color: rgba(212,160,23,0.55); font-family:"Oswald",sans-serif; font-size: 0.60rem; font-weight:400; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; }
+        .op_input {
+            display: block; width: 100%; height: 42px;
+            border: 1px solid rgba(255,255,255,0.10); border-radius: 8px;
+            background: #1a1a1a; color: var(--ink);
+            padding: 0 12px; font: inherit; font-size: 0.95rem; outline: none;
+            transition: border-color 150ms ease;
+        }
+        .op_input_code { font-family:"Oswald",sans-serif; font-size: 1.5rem; font-weight:600; letter-spacing: 0.18em; text-align: center; text-transform: uppercase; }
+        .op_input:focus { border-color: rgba(212,160,23,0.50); box-shadow: 0 0 0 3px rgba(212,160,23,0.12); }
+        .op_btn_group { display: flex; flex-direction: column; gap: 8px; }
+        .op_btn {
+            width: 100%; height: 44px; border: 1px solid transparent; border-radius: 10px;
+            font: inherit; font-family: "Oswald",sans-serif; font-size: 0.88rem; font-weight: 600;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            cursor: pointer; transition: transform 130ms ease, background 130ms ease, border-color 130ms ease;
+        }
+        .op_btn:hover:not(:disabled) { transform: translateY(-1px); }
+        .op_btn:active:not(:disabled) { transform: translateY(1px); }
+        .op_btn:disabled { opacity: 0.35; cursor: default; }
+        .op_btn_primary { background: var(--gold-mid); color: #0a0800; border-color: rgba(212,160,23,0.60); }
+        .op_btn_primary:hover:not(:disabled) { background: var(--gold-light); }
+        .op_btn_secondary { background: #1a1a1a; color: var(--ink); border-color: rgba(255,255,255,0.12); }
+        .op_btn_ghost { background: transparent; color: var(--muted); font-size: 0.78rem; height: 34px; border-color: transparent; }
+        .op_spieler_liste { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+        .spieler_item { padding: 8px 13px; border-radius: 7px; background: rgba(255,255,255,0.05); font-weight: 600; font-size: 0.88rem; color: var(--ink); }
+        .spieler_item.ist-host { border: 1px solid rgba(212,160,23,0.35); color: var(--gold-light); }
+        .op_rangliste { display: flex; flex-direction: column; gap: 6px; }
+        .rangliste_item { display: grid; grid-template-columns: 36px 1fr auto; align-items: center; gap: 10px; padding: 8px 13px; border-radius: 7px; background: rgba(255,255,255,0.05); }
+        .rangliste_rang { font-family:"Oswald",sans-serif; font-size: 1.1rem; font-weight: 600; text-align: center; color: var(--muted); }
+        .rangliste_name { font-weight: 600; color: var(--ink); }
+        .rangliste_score { font-family:"Oswald",sans-serif; font-weight: 600; color: var(--gold-light); font-size: 0.95rem; }
+
+        @media (max-width: 520px) {
+            .score_pill { display: none; }
+
+            .hero_quiz { padding: 14px; gap: 10px; }
+
+            .question_text { font-size: clamp(1.25rem, 6vw, 1.8rem); }
+
+            .answer_grid,
+            .answer_grid.is-quattro {
+                grid-template-columns: 1fr;
+                gap: 7px;
+            }
+
+            .answer_button {
+                height: clamp(46px, 8dvh, 60px);
+                border-radius: 10px;
+            }
+
+            .feedback_row { min-height: 32px; font-size: 0.82rem; }
+
+            .control_dock { grid-template-columns: 1fr; }
+        }
+
+        .op_reconnect_overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+        }
+        .op_reconnect_box {
+            background: var(--card); border: 1px solid var(--gold-mid);
+            border-radius: 1rem; padding: 2rem 2.5rem; text-align: center;
+            display: flex; flex-direction: column; gap: 0.75rem; max-width: 320px;
+        }
+        .op_reconnect_spinner {
+            width: 36px; height: 36px; border: 3px solid var(--muted);
+            border-top-color: var(--gold); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto;
+            will-change: transform;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .op_reconnect_text { color: var(--ink); font-weight: 600; font-size: 1rem; }
+        .op_reconnect_hint { color: var(--ink-dim); font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<main class="app_shell">
+    <header class="top_bar">
+        <div class="app_title_group">
+            <img src="logo_pbced.png" alt="PBC Erding" class="app_logo">
+            <div class="app_title_text">
+                <p class="app_eyebrow">PBC Erding</p>
+                <h1 class="app_title">Billard-Quiz</h1>
+                <div class="topic_line" id="anzeige_titel">Thema wird geladen</div>
+            </div>
+        </div>
+        <div class="score_pill" aria-live="polite">
+            <div class="score_value" id="score_wert">0</div>
+            <div class="score_label" id="score_label">Richtig</div>
+        </div>
+        <button id="btn_start" class="start_button" onclick="starte_quiz()">Starten</button>
+        <button class="mobile_settings_button" id="btn_settings_toggle" onclick="toggle_einstellungen()" aria-controls="control_dock" aria-expanded="false" title="Einstellungen">⚙</button>
+    </header>
+
+    <section class="control_dock" id="control_dock">
+        <label class="field">
+            <span class="label">Quelle</span>
+            <select id="sel_quelle" onchange="quelle_geaendert()">
+                <option value="lokal">Lokal</option>
+                <option value="online">Online</option>
+            </select>
+        </label>
+        <label class="field">
+            <span class="label">Modus</span>
+            <select id="sel_modus" onchange="modus_geaendert()">
+                <option value="duo">Duo</option>
+                <option value="quattro">Quattro</option>
+            </select>
+        </label>
+        <label class="field" id="feld_thema">
+            <span class="label">Thema</span>
+            <select id="sel_thema" onchange="auswahl_geaendert()">
+                <option value="">Themen werden geladen...</option>
+            </select>
+        </label>
+        <label class="field" id="feld_kategorie" style="display:none">
+            <span class="label">Kategorie</span>
+            <select id="sel_kategorie">
+                <option value="">Alle Kategorien</option>
+            </select>
+        </label>
+        <label class="field">
+            <span class="label">Level</span>
+            <select id="sel_grad" onchange="aktualisiere_vorschau()">
+                <option value="ohne">Gemischt</option>
+                <option value="leicht">Leicht</option>
+                <option value="mittel">Mittel</option>
+                <option value="schwer">Schwer</option>
+            </select>
+        </label>
+        <label class="field">
+            <span class="label">Fragen</span>
+            <select id="sel_anzahl" onchange="aktualisiere_vorschau()">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+            </select>
+        </label>
+        <label class="field">
+            <span class="label">Audio</span>
+            <select id="sel_audio">
+                <option value="beides" selected>Sprache + Ton</option>
+                <option value="sprache">Sprache</option>
+                <option value="ton">Ton</option>
+                <option value="ohne">Aus</option>
+            </select>
+        </label>
+        <button class="apply_settings_button" onclick="uebernehme_einstellungen()">Übernehmen</button>
+    </section>
+
+    <div class="play_stack">
+    <section class="hero_quiz" id="frage_stage">
+        <div class="progress_row" aria-label="Fortschritt">
+            <div class="progress_meta">
+                <span id="info_frage">Frage 0 / 0</span>
+                <span id="info_punkte">Richtig: 0</span>
+            </div>
+            <div class="progress_track">
+                <div class="progress_fill" id="progress_fill"></div>
+            </div>
+        </div>
+
+        <div class="timer_row" id="timer_row" style="display:none">
+            <div class="timer_track">
+                <div class="timer_fill" id="timer_fill"></div>
+            </div>
+            <div class="timer_scale" id="timer_scale" style="display:none">
+                <span>1.000 Pkt.</span>
+                <span>1.250 Pkt.</span>
+                <span>1.500 Pkt.</span>
+            </div>
+        </div>
+
+        <div class="question_area">
+            <div class="stage_label" id="stage_label">Bereit</div>
+            <p class="question_text" id="display_aussage">Bereit?</p>
+        </div>
+
+        <div class="feedback_row" id="display_status">
+            <span class="feedback_mark" id="feedback_mark">i</span>
+            <span id="feedback_text">Bereit zum Start.</span>
+        </div>
+
+    </section>
+
+    <section class="answer_grid" id="answer_grid" aria-label="Antworten">
+        <button id="btn_answer_0" class="answer_button btn_true" onclick="pruefe_user_antwort(0)" disabled>
+            <span class="answer_icon">A</span>
+            <span class="answer_text">Richtig</span>
+        </button>
+        <button id="btn_answer_1" class="answer_button btn_false" onclick="pruefe_user_antwort(1)" disabled>
+            <span class="answer_icon">B</span>
+            <span class="answer_text">Falsch</span>
+        </button>
+        <button id="btn_answer_2" class="answer_button btn_quattro is-hidden" onclick="pruefe_user_antwort(2)" disabled>
+            <span class="answer_icon">C</span>
+            <span class="answer_text">Antwort C</span>
+        </button>
+        <button id="btn_answer_3" class="answer_button btn_quattro is-hidden" onclick="pruefe_user_antwort(3)" disabled>
+            <span class="answer_icon">D</span>
+            <span class="answer_text">Antwort D</span>
+        </button>
+    </section>
+
+    <div class="live_score_panel" id="live_score_panel" style="display:none">
+        <div class="live_score_title">Zwischenstand</div>
+        <div class="live_score_items" id="live_score_inhalt"></div>
+    </div>
+    <div class="online_verlassen_bar" id="online_verlassen_bar">
+        <div class="online_bar_score">
+            <span id="online_bar_score_val">0</span>
+            <span class="online_bar_score_lbl">Pkt.</span>
+        </div>
+        <button class="btn_online_verlassen" onclick="online_beenden()">✕ Verlassen</button>
+    </div>
+    </div>
+</main>
+
+<div id="online_overlay" class="online_overlay" style="display:none">
+    <div class="op_fehler" id="op_fehler_global" style="display:none"></div>
+
+    <div class="online_panel" id="op_start">
+        <h2 class="op_title">Online spielen</h2>
+        <p class="op_sub">Eröffne einen Raum oder tritt einem bestehenden bei.</p>
+        <div class="op_btn_group">
+            <button class="op_btn op_btn_primary" onclick="op_host_ansicht()">Raum erstellen</button>
+            <button class="op_btn op_btn_secondary" onclick="op_gast_ansicht()">Raum beitreten</button>
+        </div>
+        <button class="op_btn op_btn_ghost" onclick="online_beenden()">Abbrechen</button>
+    </div>
+
+    <div class="online_panel" id="op_host_erstellen" style="display:none">
+        <h2 class="op_title">Raum erstellen</h2>
+        <p class="op_sub">Thema: <strong id="op_host_thema">–</strong></p>
+        <label class="op_label">Dein Name
+            <input id="op_host_name" class="op_input" type="text" maxlength="24" placeholder="Host" value="Host">
+        </label>
+        <div class="op_btn_group">
+            <button class="op_btn op_btn_primary" onclick="op_host_erstellen()">Erstellen &amp; warten</button>
+            <button class="op_btn op_btn_ghost" onclick="op_zeige('op_start')">Zurück</button>
+        </div>
+    </div>
+
+    <div class="online_panel" id="op_host_warten" style="display:none">
+        <h2 class="op_title">Warteraum</h2>
+        <div class="op_code_box" onclick="raum_code_kopieren()">
+            <div class="op_code_label" id="op_code_label">Raumcode – Tippen zum Kopieren</div>
+            <div class="op_code" id="op_raum_code">------</div>
+        </div>
+        <div class="op_spieler_liste" id="op_spieler_liste_host"></div>
+        <div class="op_btn_group">
+            <button class="op_btn op_btn_primary" id="op_start_btn" onclick="op_spiel_starten()" disabled>Spiel starten</button>
+            <button class="op_btn op_btn_ghost" onclick="online_beenden()">Abbrechen</button>
+        </div>
+    </div>
+
+    <div class="online_panel" id="op_gast_beitreten" style="display:none">
+        <h2 class="op_title">Raum beitreten</h2>
+        <label class="op_label">Raumcode
+            <input id="op_gast_code" class="op_input op_input_code" type="text" maxlength="6" placeholder="ABC123" oninput="this.value=this.value.toUpperCase()">
+        </label>
+        <label class="op_label">Dein Name
+            <input id="op_gast_name" class="op_input" type="text" maxlength="24" placeholder="Spieler">
+        </label>
+        <div class="op_btn_group">
+            <button class="op_btn op_btn_primary" onclick="op_gast_beitreten()">Beitreten</button>
+            <button class="op_btn op_btn_ghost" onclick="op_zeige('op_start')">Zurück</button>
+        </div>
+    </div>
+
+    <div class="online_panel" id="op_gast_warten" style="display:none">
+        <h2 class="op_title">Warte auf Spielstart…</h2>
+        <div class="op_spieler_liste" id="op_spieler_liste_gast"></div>
+        <button class="op_btn op_btn_ghost" onclick="online_beenden()">Verlassen</button>
+    </div>
+
+    <div class="online_panel" id="op_rangliste" style="display:none">
+        <h2 class="op_title">Endergebnis</h2>
+        <div class="op_rangliste" id="op_rangliste_inhalt"></div>
+        <p style="color:var(--muted);font-size:0.75rem;text-align:center;margin-top:4px">Punkte: 1.000 Basis + bis zu 500 Schnelligkeitsbonus pro richtiger Antwort</p>
+        <div class="op_btn_group">
+            <button class="op_btn op_btn_primary" onclick="op_neustart()">Nochmal</button>
+            <button class="op_btn op_btn_primary" onclick="online_beenden()">Beenden</button>
+        </div>
+    </div>
+</div>
+
+<div class="op_reconnect_overlay" id="op_reconnect_overlay" style="display:none">
+    <div class="op_reconnect_box">
+        <div class="op_reconnect_spinner"></div>
+        <div class="op_reconnect_text" id="op_reconnect_text">Verbindung unterbrochen…</div>
+        <div class="op_reconnect_hint" id="op_reconnect_hint"></div>
+    </div>
+</div>
+
+<script>
+    let pool_alle = [];
+    let pool_aktiv = [];
+    let index_aktuell = 0;
+    let score = 0;
+    let ist_gesperrt = false;
+    let wurde_bereits_gestartet = false;
+    let aktueller_titel = "Quiz";
+    let aktueller_modus = "duo";
+    let otdb_token = null;
+
+    const sound_richtig = new Audio('media/freesound_community-correct-6033.mp3');
+    const sound_falsch = new Audio('media/falsch.mp3');
+    sound_richtig.volume = 1;
+    sound_falsch.volume = 1;
+
+    const verein_themen = {
+        duo: [
+            { datei: 'td_poolbillard.htm', titel: 'Poolbillard' }
+        ],
+        quattro: [
+            { datei: 'tq_poolbillard.htm', titel: 'Poolbillard' }
+        ]
+    };
+
+    function alle_antwort_buttons() {
+        return [0, 1, 2, 3].map(i => document.getElementById(`btn_answer_${i}`));
+    }
+
+    function ermittle_themen_titel(datei_name) {
+        let name = datei_name.replace(/^.*\//, '').replace(/^t[qd]_/i, '').replace(/\.htm$/i, '');
+        name = name.replace(/[-_]+/g, ' ').trim();
+        if (!name) return datei_name;
+        return name.replace(/\b\p{L}/gu, zeichen => zeichen.toUpperCase());
+    }
+
+    function sortiere_themen(themen) {
+        return themen.sort((a, b) => a.titel.localeCompare(b.titel, 'de', { sensitivity: 'base' }));
+    }
+
+    function ist_mobile_ansicht() { return window.matchMedia('(max-width: 760px)').matches; }
+
+    function setze_einstellungen_offen(offen) {
+        const dock = document.getElementById('control_dock');
+        const button = document.getElementById('btn_settings_toggle');
+        dock.classList.toggle('is-open', offen);
+        if (button) button.setAttribute('aria-expanded', offen ? 'true' : 'false');
+    }
+
+    function toggle_einstellungen() {
+        const dock = document.getElementById('control_dock');
+        setze_einstellungen_offen(!dock.classList.contains('is-open'));
+    }
+
+    function uebernehme_einstellungen() {
+        if (ist_mobile_ansicht()) {
+            setze_einstellungen_offen(false);
+            document.getElementById('frage_stage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    async function ermittle_themen_dateien() {
+        return [...(verein_themen[aktueller_modus] || [])];
+    }
+
+    async function initialisiere_themen_auswahl() {
+        const sel_thema = document.getElementById('sel_thema');
+        sel_thema.innerHTML = '';
+        const themen = await ermittle_themen_dateien();
+        themen.forEach(thema => {
+            const option = document.createElement('option');
+            option.value = thema.datei;
+            option.textContent = thema.titel;
+            sel_thema.appendChild(option);
+        });
+        if (themen.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'Keine Themen gefunden';
+            sel_thema.appendChild(option);
+            sel_thema.disabled = true;
+        } else sel_thema.disabled = false;
+    }
+
+    async function modus_geaendert() {
+        aktueller_modus = document.getElementById('sel_modus').value;
+        wurde_bereits_gestartet = false;
+        document.getElementById('btn_start').innerText = 'Starten';
+        const quelle = document.getElementById('sel_quelle').value;
+        if (quelle === 'lokal') {
+            await initialisiere_themen_auswahl();
+            konfiguriere_antwort_buttons();
+            auswahl_geaendert();
+        } else {
+            pool_alle = []; pool_aktiv = []; index_aktuell = 0; score = 0;
+            konfiguriere_antwort_buttons();
+            setze_button_status(true); entferne_rahmen(); setze_stage_status();
+            aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+            setze_frage_text('Bereit?', 'Bereit');
+            setze_status('Modus geändert.');
+        }
+    }
+
+    function setze_status(text, typ = 'info', mark = 'i') {
+        const status = document.getElementById('display_status');
+        status.classList.remove('is-right', 'is-wrong');
+        if (typ === 'right') status.classList.add('is-right');
+        if (typ === 'wrong') status.classList.add('is-wrong');
+        document.getElementById('feedback_mark').innerText = mark;
+        document.getElementById('feedback_text').innerText = text;
+    }
+
+    function setze_stage_status(typ = '') {
+        const stage = document.getElementById('frage_stage');
+        stage.classList.remove('is-right', 'is-wrong');
+        if (typ) stage.classList.add(typ);
+    }
+
+    function setze_frage_text(text, label = 'Frage') {
+        const element = document.getElementById('display_aussage');
+        document.getElementById('stage_label').innerText = label;
+        element.classList.remove('entering');
+        element.innerText = text;
+        requestAnimationFrame(() => element.classList.add('entering'));
+    }
+
+    function aktualisiere_kopf(frage_text, richtig_text, progress = 0) {
+        document.getElementById('info_frage').innerText = frage_text;
+        document.getElementById('info_punkte').innerText = richtig_text;
+        document.getElementById('score_wert').innerText = score;
+        document.getElementById('progress_fill').style.width = `${Math.max(0, Math.min(100, progress))}%`;
+    }
+
+    function konfiguriere_antwort_buttons(frage = null) {
+        const grid = document.getElementById('answer_grid');
+        grid.classList.toggle('is-quattro', aktueller_modus === 'quattro');
+        grid.classList.toggle('mode-quattro', aktueller_modus === 'quattro');
+        alle_antwort_buttons().forEach((btn, i) => {
+            btn.classList.remove('btn_true', 'btn_false', 'btn_quattro', 'is-hidden');
+            btn.querySelector('.answer_icon').innerText = ['A', 'B', 'C', 'D'][i];
+            btn.querySelector('.answer_text').innerText = '';
+            if (aktueller_modus === 'duo') {
+                if (i > 1) btn.classList.add('is-hidden');
+                btn.classList.add(i === 0 ? 'btn_true' : 'btn_false');
+                btn.querySelector('.answer_icon').innerText = i === 0 ? '✓' : '×';
+                btn.querySelector('.answer_text').innerText = i === 0 ? 'Richtig' : 'Falsch';
+            } else {
+                btn.classList.add('btn_quattro');
+                btn.querySelector('.answer_text').innerText = frage?.antworten?.[i] || `Antwort ${['A','B','C','D'][i]}`;
+            }
+        });
+    }
+
+    async function lade_quiz_daten(nach_dem_laden_starten = false) {
+        const sel_thema = document.getElementById('sel_thema');
+        const datei_name = sel_thema.value;
+        aktueller_titel = sel_thema.options[sel_thema.selectedIndex]?.text || 'Quiz';
+        if (!datei_name) {
+            pool_alle = []; pool_aktiv = []; index_aktuell = 0; score = 0;
+            document.getElementById('anzeige_titel').innerText = 'Kein Thema gewählt';
+            setze_frage_text('Kein Thema ausgewählt.', 'Hinweis');
+            setze_status('Bitte eine Themen-Datei auswählen.');
+            aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+            setze_button_status(true);
+            return;
+        }
+        document.getElementById('anzeige_titel').innerText = `${aktueller_titel}-Quiz · ${aktueller_modus === 'duo' ? 'Duo' : 'Quattro'}`;
+        try {
+            const antwort = await fetch(datei_name, { cache: 'no-store' });
+            const html_text = await antwort.text();
+            const match = html_text.match(/<div[^>]+id="question_data"[^>]*>([\s\S]*?)<\/div>/);
+            if (!match) throw new Error('question_data nicht gefunden');
+            pool_alle = JSON.parse(match[1].trim());
+            if (nach_dem_laden_starten) { score = 0; filtere_und_starte(); }
+            else aktualisiere_vorschau();
+        } catch (f) {
+            pool_alle = []; pool_aktiv = []; index_aktuell = 0; score = 0;
+            setze_frage_text('Fehler beim Laden!', 'Fehler');
+            setze_status('Die Fragen konnten nicht geladen werden.', 'wrong', '!');
+            aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+            setze_button_status(true);
+        }
+    }
+
+    function starte_quiz() {
+        const quelle = document.getElementById('sel_quelle').value;
+        if (quelle === 'online') { online_oeffne_overlay(); return; }
+        wurde_bereits_gestartet = true;
+        document.getElementById('btn_start').innerText = 'Neu starten';
+        if (quelle === 'otdb') lade_otdb_fragen();
+        else lade_quiz_daten(true);
+    }
+
+    function mische_fragen_zufaellig(liste) {
+        for (let i = liste.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [liste[i], liste[j]] = [liste[j], liste[i]];
+        }
+        return liste;
+    }
+
+    function ermittle_gefilterte_fragen() {
+        const grad = document.getElementById('sel_grad').value;
+        const max_fragen = parseInt(document.getElementById('sel_anzahl').value, 10);
+        const gefiltert = (grad === 'ohne') ? [...pool_alle] : pool_alle.filter(item => item.grad === grad);
+        return { gefiltert, verfuegbar: Math.min(gefiltert.length, max_fragen), max_fragen };
+    }
+
+    function aktualisiere_vorschau() {
+        if (document.getElementById('sel_quelle').value === 'otdb') return;
+        const info = ermittle_gefilterte_fragen();
+        pool_aktiv = []; index_aktuell = 0; score = 0;
+        setze_button_status(true); entferne_rahmen(); setze_stage_status(); konfiguriere_antwort_buttons();
+        aktualisiere_kopf(`Frage 0 / ${info.verfuegbar}`, 'Richtig: 0', 0);
+        if (info.verfuegbar === 0) { setze_frage_text('Keine Fragen für diese Auswahl.', 'Keine Fragen'); setze_status('Bitte Auswahl oder Filter ändern.', 'wrong', '!'); }
+        else if (wurde_bereits_gestartet) { setze_frage_text('Auswahl geändert. Neu starten.', 'Aktualisiert'); setze_status(`${info.verfuegbar} Frage(n) stehen bereit.`); }
+        else { setze_frage_text('Bereit?', 'Bereit'); setze_status(`${info.verfuegbar} Frage(n) stehen bereit.`); }
+    }
+
+    function auswahl_geaendert() {
+        pool_alle = []; pool_aktiv = []; index_aktuell = 0; score = 0;
+        setze_button_status(true); entferne_rahmen(); setze_stage_status();
+        aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+        setze_frage_text('Lade Fragen...', 'Laden');
+        setze_status('Bitte kurz warten.');
+        lade_quiz_daten(false);
+    }
+
+    function filtere_und_starte() {
+        const info = ermittle_gefilterte_fragen();
+        pool_aktiv = mische_fragen_zufaellig(info.gefiltert).slice(0, info.max_fragen);
+        score = 0; index_aktuell = 0;
+        if (pool_aktiv.length === 0) {
+            setze_button_status(true);
+            setze_frage_text('Keine Fragen für diese Auswahl.', 'Keine Fragen');
+            setze_status('Bitte Auswahl oder Filter ändern.', 'wrong', '!');
+            aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+            return;
+        }
+        gebe_frage_aus();
+    }
+
+    function entferne_rahmen() {
+        alle_antwort_buttons().forEach(btn => btn?.classList.remove('selected-right', 'selected-wrong', 'is-muted', 'is-correct-choice', 'is-wrong-choice', 'is-actual-correct'));
+    }
+
+    function setze_button_status(status) {
+        alle_antwort_buttons().forEach(btn => { if (btn) btn.disabled = status; });
+        ist_gesperrt = status;
+    }
+
+    function richtige_antwort_index(frage) { return aktueller_modus === 'duo' ? (frage.antwort ? 0 : 1) : frage.richtig; }
+    function frage_text(frage) { return aktueller_modus === 'duo' ? frage.aussage : frage.frage; }
+
+    function gebe_frage_aus() {
+        entferne_rahmen(); setze_stage_status();
+        if (index_aktuell < pool_aktiv.length) {
+            setze_button_status(false);
+            const d = pool_aktiv[index_aktuell];
+            konfiguriere_antwort_buttons(d);
+            const progress = (index_aktuell / pool_aktiv.length) * 100;
+            const text = frage_text(d);
+            setze_frage_text(text, `Frage ${index_aktuell + 1}`);
+            aktualisiere_kopf(`Frage ${index_aktuell + 1} / ${pool_aktiv.length}`, `Richtig: ${score}`, progress);
+            setze_status('Bereit.');
+            verarbeite_audio_feedback(text, 'frage');
+        } else {
+            setze_button_status(true);
+            const prozent = pool_aktiv.length ? Math.round((score / pool_aktiv.length) * 100) : 0;
+            const text = `${score} von ${pool_aktiv.length} richtig. ${prozent} Prozent.`;
+            setze_frage_text(text, 'Ergebnis');
+            setze_status('Noch eine Runde?', 'right', '✓');
+            aktualisiere_kopf(`Frage ${pool_aktiv.length} / ${pool_aktiv.length}`, `Richtig: ${score}`, 100);
+            verarbeite_audio_feedback(text + ' Toll gemacht!', 'frage');
+        }
+    }
+
+    async function pruefe_user_antwort(wahl_index) {
+        if (ist_gesperrt) return;
+        if (document.getElementById('sel_quelle').value === 'online') {
+            setze_button_status(true);
+            if (socket_online?.connected) socket_online.emit('antwort_senden', { antwort_index: wahl_index });
+            return;
+        }
+        if (index_aktuell >= pool_aktiv.length) return;
+        setze_button_status(true);
+        const ziel = pool_aktiv[index_aktuell];
+        const richtig_index = richtige_antwort_index(ziel);
+        const korrekt = (wahl_index === richtig_index);
+        const feedback = korrekt ? 'Richtig!' : 'Falsch!';
+        const aktiver_button = document.getElementById(`btn_answer_${wahl_index}`);
+        const korrekter_button = document.getElementById(`btn_answer_${richtig_index}`);
+        aktiver_button.classList.add(korrekt ? 'selected-right' : 'selected-wrong');
+        aktiver_button.classList.add(korrekt ? 'is-correct-choice' : 'is-wrong-choice');
+        if (korrekt) alle_antwort_buttons().forEach((btn, idx) => { if (idx !== wahl_index) btn.classList.add('is-muted'); });
+        else korrekter_button.classList.add('is-actual-correct');
+        setze_stage_status(korrekt ? 'is-right' : 'is-wrong');
+        setze_status(feedback, korrekt ? 'right' : 'wrong', korrekt ? '✓' : '×');
+        if (korrekt) score++;
+        index_aktuell++;
+        aktualisiere_kopf(`Frage ${Math.min(index_aktuell, pool_aktiv.length)} / ${pool_aktiv.length}`, `Richtig: ${score}`, (index_aktuell / pool_aktiv.length) * 100);
+        await verarbeite_audio_feedback(feedback, korrekt ? 'correct' : 'wrong');
+        setTimeout(gebe_frage_aus, 650);
+    }
+
+    function verarbeite_audio_feedback(text, typ) {
+        return new Promise((resolve) => {
+            const wahl = document.getElementById('sel_audio').value;
+            const lang = (typ === 'frage' && document.getElementById('sel_quelle').value === 'otdb') ? 'en-US' : 'de-DE';
+            if (typ === 'frage') { if (wahl === 'sprache' || wahl === 'beides') sprich(text, null, lang); resolve(); return; }
+            if (wahl === 'ohne') { resolve(); return; }
+            if (wahl === 'ton' || wahl === 'beides') {
+                const audio_obj = (typ === 'correct') ? sound_richtig : sound_falsch;
+                let aufgeloest = false;
+                function sicher_aufloesen() {
+                    if (aufgeloest) return;
+                    aufgeloest = true;
+                    if (wahl === 'beides') sprich(text, resolve); else resolve();
+                }
+                audio_obj.volume = 1;
+                audio_obj.currentTime = 0;
+                audio_obj.onended = () => setTimeout(sicher_aufloesen, 200);
+                audio_obj.onerror = sicher_aufloesen;
+                audio_obj.play().catch(sicher_aufloesen);
+            } else if (wahl === 'sprache') sprich(text, resolve);
+        });
+    }
+
+    function sprich(text, callback, lang = 'de-DE') {
+        window.speechSynthesis.cancel();
+        const s = new SpeechSynthesisUtterance(text);
+        s.lang = lang;
+        if (callback) s.onend = callback;
+        window.speechSynthesis.speak(s);
+    }
+
+    function htmlDecode(str) {
+        return new DOMParser().parseFromString(str, 'text/html').documentElement.textContent;
+    }
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    async function quelle_geaendert() {
+        const quelle = document.getElementById('sel_quelle').value;
+        const feld_thema = document.getElementById('feld_thema');
+        const feld_kategorie = document.getElementById('feld_kategorie');
+        wurde_bereits_gestartet = false;
+        document.getElementById('btn_start').innerText = 'Starten';
+        pool_alle = []; pool_aktiv = []; index_aktuell = 0; score = 0;
+        setze_button_status(true); entferne_rahmen(); setze_stage_status();
+        aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+        if (quelle === 'otdb') {
+            feld_thema.style.display = 'none';
+            feld_kategorie.style.display = '';
+            setze_frage_text('Bereit?', 'Bereit');
+            setze_status('Open Trivia DB – Starten zum Laden der Fragen.');
+            lade_otdb_kategorien();
+        } else if (quelle === 'online') {
+            feld_thema.style.display = '';
+            feld_kategorie.style.display = 'none';
+            setze_frage_text('Online-Modus', 'Online');
+            setze_status('Raum erstellen oder beitreten.');
+            lade_quiz_daten(false);
+            online_oeffne_overlay();
+        } else {
+            if (socket_online) { socket_online.disconnect(); socket_online = null; }
+            document.getElementById('online_overlay').style.display = 'none';
+            document.getElementById('live_score_panel').style.display = 'none';
+            document.getElementById('timer_row').style.display = 'none';
+            feld_thema.style.display = '';
+            feld_kategorie.style.display = 'none';
+            setze_frage_text('Lade Fragen...', 'Laden');
+            setze_status('Bitte kurz warten.');
+            lade_quiz_daten(false);
+        }
+    }
+
+    async function otdb_token_holen() {
+        const gecacht = sessionStorage.getItem('otdb_token');
+        if (gecacht) { otdb_token = gecacht; return gecacht; }
+        try {
+            const res = await fetch('https://opentdb.com/api_token.php?command=request');
+            const data = await res.json();
+            if (data.token) { otdb_token = data.token; sessionStorage.setItem('otdb_token', data.token); }
+        } catch (e) {}
+        return otdb_token;
+    }
+
+    async function lade_otdb_kategorien() {
+        const sel = document.getElementById('sel_kategorie');
+        if (sel.options.length > 1) return;
+        try {
+            const res = await fetch('https://opentdb.com/api_category.php');
+            const data = await res.json();
+            data.trivia_categories.forEach(kat => {
+                const opt = document.createElement('option');
+                opt.value = kat.id;
+                opt.textContent = kat.name;
+                sel.appendChild(opt);
+            });
+        } catch (e) {}
+    }
+
+    async function lade_otdb_fragen() {
+        const modus = aktueller_modus;
+        const type = modus === 'duo' ? 'boolean' : 'multiple';
+        const grad = document.getElementById('sel_grad').value;
+        const schwierigkeit_map = { leicht: 'easy', mittel: 'medium', schwer: 'hard' };
+        const difficulty = grad === 'ohne' ? '' : (schwierigkeit_map[grad] || '');
+        const anzahl = Math.min(parseInt(document.getElementById('sel_anzahl').value, 10), 50);
+        const kategorie_id = document.getElementById('sel_kategorie').value;
+
+        setze_frage_text('Lade Fragen...', 'Laden');
+        setze_status('Verbindung zu Open Trivia DB...');
+        setze_button_status(true);
+
+        await otdb_token_holen();
+
+        const bau_url = () => {
+            let u = `https://opentdb.com/api.php?amount=${anzahl}&type=${type}`;
+            if (kategorie_id) u += `&category=${kategorie_id}`;
+            if (difficulty) u += `&difficulty=${difficulty}`;
+            if (otdb_token) u += `&token=${otdb_token}`;
+            return u;
+        };
+
+        try {
+            let res = await fetch(bau_url());
+            let data = await res.json();
+
+            if (data.response_code === 4) {
+                sessionStorage.removeItem('otdb_token');
+                otdb_token = null;
+                await otdb_token_holen();
+                res = await fetch(bau_url());
+                data = await res.json();
+            }
+
+            verarbeite_otdb_antwort(data, modus);
+        } catch (e) {
+            setze_frage_text('Keine Verbindung.', 'Fehler');
+            setze_status('Open Trivia DB nicht erreichbar – Internetverbindung prüfen.', 'wrong', '!');
+            aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+            setze_button_status(true);
+        }
+    }
+
+    function verarbeite_otdb_antwort(data, modus) {
+        const grad_map = { easy: 'leicht', medium: 'mittel', hard: 'schwer' };
+
+        if (data.response_code === 1) {
+            setze_frage_text('Nicht genug Fragen.', 'Hinweis');
+            setze_status('Nicht genug Fragen für diese Auswahl – bitte Filter anpassen.', 'wrong', '!');
+            aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+            setze_button_status(true);
+            return;
+        }
+
+        if (data.response_code !== 0 || !data.results?.length) {
+            setze_frage_text('Fehler bei OTDB.', 'Fehler');
+            setze_status(`Fehler von Open Trivia DB (Code ${data.response_code}).`, 'wrong', '!');
+            aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+            setze_button_status(true);
+            return;
+        }
+
+        if (modus === 'duo') {
+            pool_alle = data.results.map(q => ({
+                aussage: htmlDecode(q.question),
+                antwort: q.correct_answer === 'True',
+                grad: grad_map[q.difficulty] || 'mittel'
+            }));
+        } else {
+            pool_alle = data.results.map(q => {
+                const richtig_text = htmlDecode(q.correct_answer);
+                const alle = shuffle([richtig_text, ...q.incorrect_answers.map(htmlDecode)]);
+                return {
+                    frage: htmlDecode(q.question),
+                    antworten: alle,
+                    richtig: alle.indexOf(richtig_text),
+                    grad: grad_map[q.difficulty] || 'mittel'
+                };
+            });
+        }
+
+        aktueller_titel = 'Open Trivia DB';
+        document.getElementById('anzeige_titel').innerText = `OTDB-Quiz · ${modus === 'duo' ? 'Duo' : 'Quattro'}`;
+        score = 0;
+        pool_aktiv = pool_alle;
+        index_aktuell = 0;
+        gebe_frage_aus();
+    }
+
+    window.onload = async function() {
+        aktueller_modus = document.getElementById('sel_modus').value;
+        setze_button_status(true);
+        setze_einstellungen_offen(!ist_mobile_ansicht());
+        aktualisiere_kopf('Frage 0 / 0', 'Richtig: 0', 0);
+        setze_frage_text('Lade...', 'Laden');
+        setze_status('Bitte kurz warten.');
+        await initialisiere_themen_auswahl();
+        konfiguriere_antwort_buttons();
+        setze_frage_text('Bereit?', 'Bereit');
+        lade_quiz_daten(false);
+    };
+
+    window.addEventListener('resize', () => setze_einstellungen_offen(!ist_mobile_ansicht()));
+
+    // === ONLINE MODUS ===
+    const ONLINE_SERVER_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? 'http://localhost:3010'
+        : 'https://quiz-server-rjv7.onrender.com';
+
+    let socket_online = null;
+    let online_ist_host = false;
+    let online_eigene_punkte = 0;
+    let quiz_session_name = '';
+    let quiz_session_code = '';
+
+    function op_zeige(panel_id) {
+        ['op_start','op_host_erstellen','op_host_warten','op_gast_beitreten','op_gast_warten','op_rangliste']
+            .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+        const el = document.getElementById(panel_id);
+        if (el) el.style.display = 'flex';
+        document.getElementById('op_fehler_global').style.display = 'none';
+    }
+
+    function online_oeffne_overlay() {
+        if (document.getElementById('sel_quelle').value !== 'online') return;
+        document.getElementById('online_overlay').style.display = 'flex';
+        op_zeige('op_start');
+    }
+
+    function op_host_ansicht() {
+        const sel = document.getElementById('sel_thema');
+        document.getElementById('op_host_thema').textContent = sel?.options[sel?.selectedIndex]?.text || '–';
+        op_zeige('op_host_erstellen');
+        setTimeout(() => document.getElementById('op_host_name').select(), 60);
+    }
+
+    function op_gast_ansicht() {
+        op_zeige('op_gast_beitreten');
+        setTimeout(() => document.getElementById('op_gast_code').focus(), 60);
+    }
+
+    async function online_verbinden() {
+        if (socket_online?.connected) return;
+        if (socket_online) { socket_online.disconnect(); socket_online = null; }
+        if (!window.io) {
+            await new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
+                s.onload = resolve;
+                s.onerror = () => reject(new Error('Socket.IO laden fehlgeschlagen'));
+                document.head.appendChild(s);
+            });
+        }
+        await new Promise((resolve, reject) => {
+            socket_online = window.io(ONLINE_SERVER_URL, { transports: ['websocket'], reconnectionAttempts: 10, reconnectionDelay: 1000, reconnectionDelayMax: 5000, timeout: 10000 });
+            registriere_socket_events();
+            socket_online.once('connect', resolve);
+            socket_online.once('connect_error', (err) => {
+                online_zeige_fehler('Server nicht erreichbar: ' + (err.message || 'Timeout'));
+                reject(err);
+            });
+        });
+    }
+
+    function registriere_socket_events() {
+        socket_online.on('raum_erstellt', ({ code }) => {
+            quiz_session_code = code;
+            localStorage.setItem('quiz_session_code', code);
+            localStorage.setItem('quiz_session_name', quiz_session_name);
+            document.getElementById('op_raum_code').textContent = code;
+            op_zeige('op_host_warten');
+        });
+        socket_online.on('raum_beigetreten', ({ code, modus }) => {
+            quiz_session_code = code;
+            localStorage.setItem('quiz_session_code', code);
+            localStorage.setItem('quiz_session_name', quiz_session_name);
+            aktueller_modus = modus;
+            document.getElementById('sel_modus').value = modus;
+            konfiguriere_antwort_buttons();
+            op_zeige('op_gast_warten');
+        });
+        socket_online.on('spieler_liste', (liste) => {
+            const html = liste.map(s =>
+                `<div class="spieler_item${s.host ? ' ist-host' : ''}">${s.host ? '⭐ ' : ''}${s.name}</div>`
+            ).join('');
+            ['op_spieler_liste_host','op_spieler_liste_gast'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = html;
+            });
+            const btn = document.getElementById('op_start_btn');
+            if (btn) btn.disabled = (liste.length < 1);
+        });
+        socket_online.on('frage', ({ index, total, text, antworten, modus }) => {
+            document.getElementById('online_overlay').style.display = 'none';
+            document.getElementById('live_score_panel').style.display = 'none';
+            document.getElementById('online_verlassen_bar').style.display = 'flex';
+            document.getElementById('timer_scale').style.display = '';
+            document.getElementById('btn_start').style.display = 'none';
+            if (index === 0) {
+                online_eigene_punkte = 0;
+                document.getElementById('score_wert').textContent = '0';
+                document.getElementById('online_bar_score_val').textContent = '0';
+                document.getElementById('score_label').textContent = 'Punkte';
+            }
+            aktueller_modus = modus;
+            document.getElementById('sel_modus').value = modus;
+            const grid = document.getElementById('answer_grid');
+            grid.classList.toggle('is-quattro', modus === 'quattro');
+            grid.classList.toggle('mode-quattro', modus === 'quattro');
+            alle_antwort_buttons().forEach((btn, i) => {
+                btn.classList.remove('btn_true','btn_false','btn_quattro','is-hidden',
+                    'selected-right','selected-wrong','is-muted','is-correct-choice','is-wrong-choice','is-actual-correct');
+                if (modus === 'duo') {
+                    if (i > 1) { btn.classList.add('is-hidden'); return; }
+                    btn.classList.add(i === 0 ? 'btn_true' : 'btn_false');
+                    btn.querySelector('.answer_icon').textContent = i === 0 ? '✓' : '×';
+                    btn.querySelector('.answer_text').textContent = antworten[i] || (i === 0 ? 'Richtig' : 'Falsch');
+                } else {
+                    btn.classList.add('btn_quattro');
+                    btn.querySelector('.answer_icon').textContent = ['A','B','C','D'][i];
+                    btn.querySelector('.answer_text').textContent = antworten[i] || '';
+                }
+            });
+            entferne_rahmen(); setze_stage_status();
+            setze_frage_text(text, `Frage ${index + 1} / ${total}`);
+            aktualisiere_kopf(`Frage ${index + 1} / ${total}`, '', (index / total) * 100);
+            setze_button_status(false);
+            setze_status('Antworte jetzt!');
+            starte_online_timer(15);
+        });
+        socket_online.on('countdown', ({ sekunden }) => {
+            const fill = document.getElementById('timer_fill');
+            if (fill) { fill.style.transition = 'width 1s linear'; fill.style.width = `${(sekunden / 15) * 100}%`; }
+        });
+        socket_online.on('antwort_bestaetigt', ({ korrekt, antwort_index, punkte }) => {
+            setze_button_status(true);
+            if (korrekt) {
+                online_eigene_punkte += punkte;
+                document.getElementById('score_wert').textContent = online_eigene_punkte.toLocaleString('de-DE');
+                document.getElementById('online_bar_score_val').textContent = online_eigene_punkte.toLocaleString('de-DE');
+            }
+            const status_text = korrekt
+                ? `Richtig! +${punkte.toLocaleString('de-DE')} Pkt.`
+                : 'Falsch!';
+            setze_status(status_text, korrekt ? 'right' : 'wrong', korrekt ? '✓' : '×');
+            setze_stage_status(korrekt ? 'is-right' : 'is-wrong');
+            const aktiver_button = document.getElementById(`btn_answer_${antwort_index}`);
+            if (aktiver_button) {
+                aktiver_button.classList.add(korrekt ? 'selected-right' : 'selected-wrong');
+                aktiver_button.classList.add(korrekt ? 'is-correct-choice' : 'is-wrong-choice');
+            }
+            const wahl = document.getElementById('sel_audio').value;
+            if (wahl === 'ton' || wahl === 'beides') {
+                const a = korrekt ? sound_richtig : sound_falsch;
+                a.currentTime = 0; a.play().catch(() => {});
+            }
+        });
+        socket_online.on('aufloesung', ({ richtig_index, scores }) => {
+            stoppe_online_timer(); setze_button_status(true);
+            alle_antwort_buttons().forEach((btn, i) => {
+                if (btn.classList.contains('is-hidden')) return;
+                if (i === richtig_index) btn.classList.add('is-actual-correct');
+                else btn.classList.add('is-muted');
+            });
+            const panel = document.getElementById('live_score_panel');
+            const inhalt = document.getElementById('live_score_inhalt');
+            if (scores?.length) {
+                const sorted = [...scores].sort((a, b) => b.score - a.score);
+                inhalt.innerHTML = sorted.map((s, i) =>
+                    `<div class="live_score_item"><span>${i + 1}. ${s.name}</span><span>${s.score}</span></div>`
+                ).join('');
+                panel.style.display = '';
+            }
+        });
+        socket_online.on('spiel_ende', ({ rangliste }) => {
+            stoppe_online_timer(); setze_button_status(true);
+            document.getElementById('live_score_panel').style.display = 'none';
+            const inhalt = document.getElementById('op_rangliste_inhalt');
+            const medaillen = ['🥇','🥈','🥉'];
+            inhalt.innerHTML = rangliste.map(item =>
+                `<div class="rangliste_item">
+                    <div class="rangliste_rang">${medaillen[item.rang - 1] || item.rang}</div>
+                    <div class="rangliste_name">${item.name}</div>
+                    <div class="rangliste_score">${item.score}</div>
+                </div>`
+            ).join('');
+            document.getElementById('online_overlay').style.display = 'flex';
+            op_zeige('op_rangliste');
+        });
+        socket_online.on('raum_geschlossen', ({ meldung }) => {
+            stoppe_online_timer();
+            online_beenden_still();
+            setze_frage_text(meldung, 'Online');
+            setze_status('Raum geschlossen.', 'wrong', '!');
+        });
+        socket_online.on('fehler', ({ meldung }) => {
+            online_zeige_fehler(meldung);
+            const btn = document.getElementById('op_start_btn');
+            if (btn && btn.disabled && btn.textContent.includes('lädt')) {
+                btn.disabled = false; btn.textContent = 'Spiel starten';
+            }
+        });
+        socket_online.on('disconnect', (reason) => {
+            if (reason === 'io client disconnect') return;
+            document.getElementById('op_reconnect_overlay').style.display = 'flex';
+            document.getElementById('op_reconnect_text').textContent = 'Verbindung unterbrochen…';
+            document.getElementById('op_reconnect_hint').textContent = 'Versuche neu zu verbinden…';
+        });
+        socket_online.on('reconnect_attempt', (attempt) => {
+            document.getElementById('op_reconnect_hint').textContent = `Versuch ${attempt} von 10…`;
+        });
+        socket_online.on('reconnect', () => {
+            document.getElementById('op_reconnect_overlay').style.display = 'none';
+        });
+        socket_online.on('reconnect_failed', () => {
+            document.getElementById('op_reconnect_overlay').style.display = 'none';
+            const savedCode = localStorage.getItem('quiz_session_code');
+            const savedName = localStorage.getItem('quiz_session_name');
+            if (savedCode && savedName) {
+                online_zeige_fehler(`Verbindung fehlgeschlagen. Raum-Code: ${savedCode} – Seite neu laden und Raum beitreten.`);
+            } else {
+                online_zeige_fehler('Verbindung fehlgeschlagen. Bitte Seite neu laden.');
+            }
+            online_beenden_still();
+        });
+    }
+
+    async function op_host_erstellen() {
+        const name = document.getElementById('op_host_name').value.trim() || 'Host';
+        quiz_session_name = name;
+        online_ist_host = true;
+        try {
+            await online_verbinden();
+            socket_online.emit('raum_erstellen', { modus: aktueller_modus, name });
+        } catch (_) {}
+    }
+
+    async function op_gast_beitreten() {
+        const code = document.getElementById('op_gast_code').value.trim().toUpperCase();
+        const name = document.getElementById('op_gast_name').value.trim() || 'Gast';
+        if (code.length !== 6) { online_zeige_fehler('Bitte einen 6-stelligen Code eingeben.'); return; }
+        quiz_session_name = name;
+        online_ist_host = false;
+        try {
+            await online_verbinden();
+            socket_online.emit('raum_beitreten', { code, name });
+        } catch (_) {}
+    }
+
+    async function op_spiel_starten() {
+        const btn = document.getElementById('op_start_btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Lädt…'; }
+        try {
+            const sel = document.getElementById('sel_thema');
+            if (!sel?.value) { online_zeige_fehler('Kein Thema gewählt.'); return; }
+            const antwort = await fetch(sel.value, { cache: 'no-store' });
+            const html_text = await antwort.text();
+            const match = html_text.match(/<div[^>]+id="question_data"[^>]*>([\s\S]*?)<\/div>/);
+            if (!match) { online_zeige_fehler('Thema konnte nicht geladen werden.'); return; }
+            let alle = JSON.parse(match[1].trim());
+            const grad = document.getElementById('sel_grad').value;
+            if (grad !== 'ohne') alle = alle.filter(f => f.grad === grad);
+            const max = parseInt(document.getElementById('sel_anzahl').value, 10) || 20;
+            for (let i = alle.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [alle[i], alle[j]] = [alle[j], alle[i]];
+            }
+            alle = alle.slice(0, max);
+            if (!alle.length) { online_zeige_fehler('Keine Fragen für diese Auswahl.'); return; }
+            const fragen = alle.map(f => aktueller_modus === 'duo'
+                ? { text: f.aussage, antworten: ['Richtig', 'Falsch'], richtig: f.antwort ? 0 : 1 }
+                : { text: f.frage, antworten: f.antworten, richtig: f.richtig }
+            );
+            socket_online.emit('spiel_starten', { fragen });
+        } catch (e) {
+            online_zeige_fehler('Fehler: ' + e.message);
+            if (btn) { btn.disabled = false; btn.textContent = 'Spiel starten'; }
+        }
+    }
+
+    function starte_online_timer(sekunden) {
+        const row = document.getElementById('timer_row');
+        const fill = document.getElementById('timer_fill');
+        if (!row || !fill) return;
+        row.style.display = '';
+        fill.style.transition = 'none';
+        fill.style.width = '100%';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            fill.style.transition = `width ${sekunden}s linear`;
+            fill.style.width = '0%';
+        }));
+    }
+
+    function stoppe_online_timer() {
+        const fill = document.getElementById('timer_fill');
+        if (!fill) return;
+        const w = getComputedStyle(fill).width;
+        const pw = getComputedStyle(fill.parentElement).width;
+        fill.style.transition = 'none';
+        fill.style.width = pw ? `${(parseFloat(w) / parseFloat(pw)) * 100}%` : '0%';
+    }
+
+    function online_zeige_fehler(text) {
+        const el = document.getElementById('op_fehler_global');
+        if (!el) return;
+        el.textContent = text;
+        el.style.display = '';
+        clearTimeout(el._t);
+        el._t = setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    function op_neustart() {
+        online_eigene_punkte = 0;
+        document.getElementById('score_wert').textContent = '0';
+        document.getElementById('online_bar_score_val').textContent = '0';
+        document.getElementById('online_overlay').style.display = 'flex';
+        op_zeige(online_ist_host ? 'op_host_warten' : 'op_gast_warten');
+    }
+
+    function raum_code_kopieren() {
+        const code = document.getElementById('op_raum_code').textContent.trim();
+        if (!code || code === '------') return;
+        const label = document.getElementById('op_code_label');
+        navigator.clipboard.writeText(code).then(() => {
+            label.textContent = '✓ Kopiert!';
+            label.style.color = 'var(--green)';
+            clearTimeout(label._t);
+            label._t = setTimeout(() => {
+                label.textContent = 'Raumcode – Tippen zum Kopieren';
+                label.style.color = '';
+            }, 2000);
+        }).catch(() => {
+            label.textContent = 'Kopieren fehlgeschlagen';
+            clearTimeout(label._t);
+            label._t = setTimeout(() => { label.textContent = 'Raumcode – Tippen zum Kopieren'; label.style.color = ''; }, 2000);
+        });
+    }
+
+    function online_beenden_still() {
+        if (socket_online) { socket_online.disconnect(); socket_online = null; }
+        localStorage.removeItem('quiz_session_code');
+        localStorage.removeItem('quiz_session_name');
+        quiz_session_code = '';
+        quiz_session_name = '';
+        document.getElementById('op_reconnect_overlay').style.display = 'none';
+        document.getElementById('btn_start').style.display = '';
+        document.getElementById('online_overlay').style.display = 'none';
+        document.getElementById('live_score_panel').style.display = 'none';
+        document.getElementById('timer_row').style.display = 'none';
+        document.getElementById('timer_scale').style.display = 'none';
+        document.getElementById('online_verlassen_bar').style.display = 'none';
+        document.getElementById('sel_quelle').value = 'lokal';
+        online_eigene_punkte = 0;
+        document.getElementById('score_wert').textContent = '0';
+        document.getElementById('online_bar_score_val').textContent = '0';
+        document.getElementById('score_label').textContent = 'Richtig';
+    }
+
+    function online_beenden() {
+        online_beenden_still();
+        quelle_geaendert();
+    }
+</script>
+
+</body>
+</html>
