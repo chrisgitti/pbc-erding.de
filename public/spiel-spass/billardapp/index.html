@@ -1889,7 +1889,7 @@ const AI_LOOKAHEAD_DEPTH = 3;
 const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S2.9d";
+const AI_BUILD = "S2.10";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -5936,6 +5936,84 @@ function aiBuildDirectPotCandidates(cue, targets) {
   return candidates;
 }
 
+// S2.10: Bank-Shots als reguläre Profi-Kandidaten.
+// Spiegelt jedes Loch an jeder Bande → liefert Geistball-Winkel + Power.
+// Robustheits-/Pot-Wahrscheinlichkeits-Validierung passiert anschließend im
+// normalen evaluateCandidatesAsync-Pfad (gleiche Pipeline wie Direkt-Pots).
+function aiBuildBankShotCandidates(cue, targets, prof) {
+  if (!aiIsHardenedProfi(prof) || !cue || !targets?.length || game.isBreakShot) return [];
+  const candidates = [];
+  const SIDES = ["top", "bottom", "left", "right"];
+  // Etwas großzügiger als der Hard-Lock (0.28), damit auch klare Bank-Cuts
+  // den Vorfilter passieren. Endgültige Pot-Wahrscheinlichkeit kommt aus der Sim.
+  const MIN_DOT_N = Math.max(0.20, prof.minDotN * 0.70);
+
+  for (const t of targets) {
+    for (const side of SIDES) {
+      const railLine = aiRailLine(side);
+      for (let pi = 0; pi < POCKETS.length; pi++) {
+        const p = POCKETS[pi];
+        const vp = aiReflectPointAcrossRail(p, side);
+        const dvx = vp.x - t.x, dvy = vp.y - t.y;
+        const dvDist = Math.hypot(dvx, dvy);
+        if (dvDist < 1) continue;
+        const tnx = dvx / dvDist, tny = dvy / dvDist;
+
+        let s, xInt, yInt;
+        if (railLine.axis === "x") {
+          if (Math.abs(dvx) < 0.5) continue;
+          s = (railLine.value - t.x) / dvx;
+          xInt = railLine.value;
+          yInt = t.y + s * dvy;
+          if (yInt < PLAY_Y1 + CORNER_CUT * 2.2 || yInt > PLAY_Y2 - CORNER_CUT * 2.2) continue;
+        } else {
+          if (Math.abs(dvy) < 0.5) continue;
+          s = (railLine.value - t.y) / dvy;
+          xInt = t.x + s * dvx;
+          yInt = railLine.value;
+          if (xInt < PLAY_X1 + CORNER_CUT * 2.2 || xInt > PLAY_X2 - CORNER_CUT * 2.2) continue;
+        }
+        if (s <= 0.02 || s >= 1.0) continue;
+
+        const gx = t.x - tnx * BALL_R * 2;
+        const gy = t.y - tny * BALL_R * 2;
+        const dxCG = gx - cue.x, dyCG = gy - cue.y;
+        const dCG = Math.hypot(dxCG, dyCG);
+        if (dCG < 1) continue;
+
+        const dotN = tnx * (dxCG / dCG) + tny * (dyCG / dCG);
+        if (dotN < MIN_DOT_N) continue;
+
+        if (!clearPath(cue, gx, gy, t)) continue;
+        if (!clearPath(t, xInt, yInt, t)) continue;
+
+        const dTR = Math.hypot(xInt - t.x, yInt - t.y);
+        const dRP = Math.hypot(p.x - xInt, p.y - yInt);
+        const basePower = clamp(
+          44 + (dCG + dTR + dRP) * 0.036 + Math.max(0, 1 - dotN) * 16,
+          54, 90
+        );
+        const powerPercent = clamp(basePower, prof.powerMin, Math.max(prof.powerMax, 92));
+        candidates.push({
+          type: "bankShot",
+          angle: Math.atan2(dyCG, dxCG),
+          powerPercent,
+          pocketIdx: pi,
+          targetNum: t.num,
+          dotN,
+          dCG,
+          dTP: dTR + dRP,
+          bankSide: side,
+          spinHint: "none",
+          cueType: "playing",
+          cueElevation: 0
+        });
+      }
+    }
+  }
+  return candidates;
+}
+
 function aiBuildSafetyCandidates(cue, targets) {
   const candidates = [];
   const powers = [14, 18, 22, 27, 33, 40, 48, 58];
@@ -6967,6 +7045,15 @@ function generateShotCandidates(cue, targets, prof, problematicTargets = null) {
     .slice(0, prof.searchDepth >= 3 ? 12 : 8);
   candidates.push(...pots);
 
+  // S2.10: Bank-Shots als reguläre Profi-Erstklass-Kandidaten (8- und 9-Ball).
+  // Top 10 nach dotN; Robust-Bewertung übernimmt evaluateCandidatesAsync.
+  if (aiIsHardenedProfi(prof)) {
+    const banks = aiBuildBankShotCandidates(cue, targets, prof)
+      .sort((a, b) => (b.dotN ?? 0) - (a.dotN ?? 0))
+      .slice(0, 10);
+    candidates.push(...banks);
+  }
+
   if (game.variant === "9ball" && prof.searchDepth >= 2 && targets.length > 0) {
     const nine = game.balls.find(b => b.num === 9 && b.inPlay);
     const lowest = targets[0];
@@ -7227,6 +7314,10 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
           + CommonStrategy.scoreCutRisk(cand.dotN, prof, _dTP, _approachPenalty);
     if (aiIsHardenedProfi(prof) && robust.potProbability >= HARD_OPEN_POT_THRESHOLD && robust.scratchRisk <= HARD_SCRATCH_VETO_THRESHOLD && robust.foulRisk <= HARD_FOUL_VETO_THRESHOLD) score += 200000;
     if (cand.type === "comboShot" && cand.targetNum === 9) score += robust.potProbability * 120;
+    // S2.10: Solide validierende Bank-Shots sollen Safeties schlagen.
+    // +120 deckt die Lücke zur distanceSafety9 (+220) und zur hideScore-Safety,
+    // ohne unsichere Banks (potProb < 0.55) zu pushen.
+    if (cand.type === "bankShot" && (robust.potProbability ?? 0) >= 0.55) score += 120;
     if (ctx) {
       score += CommonStrategy.scoreLegality(robust.bestSim?.firstHit, ctx.firstHitRequirement);
       if (tableAnalysis) score += EightBallStrategy.scoreCandidate(ctx, cand, robust, tableAnalysis, prof);
