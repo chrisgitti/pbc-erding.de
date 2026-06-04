@@ -1131,6 +1131,7 @@
       <div class="opt" data-val="9ball">9-Ball</div>
       <div class="opt" data-val="drill15">15-Kugeln Drill</div>
       <div class="opt" data-val="basis">Basisübung</div>
+      <div class="opt" data-val="training">Training</div>
     </div>
   </div>
 
@@ -1462,6 +1463,7 @@
     <button id="btnPushOut" style="display:none; border-color: #4cc9f0; color: #4cc9f0;">Push-Out ansagen</button>
     <button id="btnRotateTable" style="display:none; border-color: #4cc9f0; color: #4cc9f0;">⟳ Tisch drehen</button>
     <button id="btnBasisRepeat" style="display:none;">↺ Wiederholen</button>
+    <button id="btnTrainingReset" style="display:none;">↺ Reset Tableau</button>
     <button id="btnTimerExtend" style="display:none;">⏱ +30s</button>
     <button id="btnPhysics" style="display:none;">⚙ Physik</button>
     <button id="btnOnlineSync" style="display:none" title="Spielzustand synchronisieren – bei eingefrorenem Spiel">⟳ Sync</button>
@@ -1731,6 +1733,7 @@ const game = {
   nextBreakPlayer: 0,
   paused: false,
   lastSnapshot: null,
+  trainingRepeatSnapshot: null,
 };
 
 const online = {
@@ -1886,7 +1889,7 @@ const AI_LOOKAHEAD_DEPTH = 3;
 const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S2.7";
+const AI_BUILD = "S2.9b";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -2733,8 +2736,18 @@ function ballDistance3Sq(a, b) {
   return dx * dx + dy * dy + dz * dz;
 }
 
+// Stufe 2.9: Training-Vorrat-Bälle liegen absichtlich oberhalb der oberen Bande
+// (y + r < PLAY_Y1). Sie dürfen weder von Bandenphysik noch vom Safety-Clamp
+// angefasst werden, sonst werden sie beim ersten Stoß alle an die obere Bande
+// gedrückt. Pragmatischste Lösung: aus dem aktiven Physik-Array von step()
+// herausfiltern — Kollision, Bande, Pocket-Test laufen dann nur für die Bälle,
+// die der Spieler tatsächlich aufs Tableau gezogen hat.
+function isTrainingVorratBall(b) {
+  return game.variant === "training" && b.inPlay && b.y + b.r < PLAY_Y1;
+}
+
 function step() {
-  const balls = game.balls.filter(b => b.inPlay);
+  const balls = game.balls.filter(b => b.inPlay && !isTrainingVorratBall(b));
   let maxSpeed = 0;
   for (const b of balls) { const s = b.speed(); if (s > maxSpeed) maxSpeed = s; }
   const SUBSTEPS = clamp(Math.ceil(maxSpeed / 4) + 2, 4, 16);
@@ -3024,8 +3037,11 @@ async function aiPreviewThenShoot(shot, token, delayMs = null) {
 }
 
 // ── 14 Shot Execution ─────────────────────────────────────────────────
-function saveSnapshot() {
-  game.lastSnapshot = {
+// Stufe 2.9: Snapshot-Logik refaktoriert auf Builder/Applier-Paar. Dadurch
+// nutzbar für den klassischen ZURÜCK-Snapshot (game.lastSnapshot) UND für den
+// Training-Wiederholen-Snapshot (game.trainingRepeatSnapshot) ohne Code-Duplikat.
+function buildSnapshot() {
+  return {
     balls: game.balls.map(b => ({
       num: b.num, x: b.x, y: b.y,
       vx: b.vx, vy: b.vy,
@@ -3063,10 +3079,8 @@ function saveSnapshot() {
   };
 }
 
-function restoreSnapshot() {
-  const s = game.lastSnapshot;
-  if (!s) return;
-
+function applySnapshot(s) {
+  if (!s) return false;
   for (const saved of s.balls) {
     const b = game.balls.find(b => b.num === saved.num);
     if (!b) continue;
@@ -3077,7 +3091,6 @@ function restoreSnapshot() {
     b.inPlay = saved.inPlay; b.motionState = saved.motionState;
   }
   game.cueBall = game.balls.find(b => b.isCue) || null;
-
   game.currentPlayer    = s.currentPlayer;
   game.open8ball        = s.open8ball;
   game.ballInHand       = s.ballInHand;
@@ -3099,14 +3112,12 @@ function restoreSnapshot() {
   game.lowestAtShotStart = s.lowestAtShotStart;
   game.wasKitchenShot    = !!s.wasKitchenShot;
   game.wasBreakFoulKitchenShot = !!s.wasBreakFoulKitchenShot;
-
   for (let i = 0; i < s.players.length; i++) {
     game.players[i].group          = s.players[i].group;
     game.players[i].potted         = [...s.players[i].potted];
     game.players[i].consecutiveFouls = s.players[i].consecutiveFouls;
     game.players[i].name           = s.players[i].name;
   }
-
   game.state                = "aiming";
   game.shotInProgress       = false;
   game.aiThinking           = false;
@@ -3121,7 +3132,26 @@ function restoreSnapshot() {
   game.pottedPocketByNum    = {};
   game.placingCue           = false;
   game.paused               = false;
-  game.lastSnapshot         = null;
+  return true;
+}
+
+function saveSnapshot() {
+  game.lastSnapshot = buildSnapshot();
+}
+
+function saveTrainingRepeatSnapshot() {
+  game.trainingRepeatSnapshot = buildSnapshot();
+}
+
+function restoreTrainingRepeatSnapshot() {
+  // Snapshot bleibt erhalten — der Spieler kann beliebig oft wiederholen,
+  // ohne dass die gespeicherte Stellung verbraucht wird.
+  return applySnapshot(game.trainingRepeatSnapshot);
+}
+
+function restoreSnapshot() {
+  if (!applySnapshot(game.lastSnapshot)) return;
+  game.lastSnapshot = null;
 
   const btnPause = document.getElementById("btnPause");
   if (btnPause) btnPause.textContent = "⏸ Pause";
@@ -3191,7 +3221,7 @@ function startShot() {
   }
   // 8-Ball: Tasche für die 8 muss vor dem Stoß angesagt werden
   if (needs8PocketCall()) { game.selecting8Pocket = true; updateUI(); return; }
-  if (game.variant === "basis") {
+  if (game.variant === "basis" || game.variant === "training") {
     game.basisCueSaveX         = game.cueBall.x;
     game.basisCueSaveY         = game.cueBall.y;
     game.basisSaveAimAngle     = game.aimAngle;
@@ -3204,6 +3234,14 @@ function startShot() {
   if (game.variant === "drill15") {
     const headX = PLAY_X1 + PLAY_W * 0.25;
     game.drill15FromKitchen = game.cueBall.x <= headX;
+  }
+  // Stufe 2.9: Im Trainingsmodus mit aktivem Wiederholen-Modus zusätzlich einen
+  // dedizierten Snapshot der vollständigen Pre-Shot-Stellung anlegen. Damit kann
+  // handleTrainingShot nach dem Stoß die komplette Lage wiederherstellen (nicht
+  // nur die Weiße). Bei jedem Stoß neu gespeichert — wenn der Spieler zwischen
+  // Stößen Kugeln verschiebt, wird die neue Stellung der nächste Wiederholen-Anker.
+  if (game.variant === "training" && game.basisRepeatMode) {
+    saveTrainingRepeatSnapshot();
   }
   saveSnapshot();
   const power = (game.powerPercent / 100) * MAX_POWER;
@@ -3263,6 +3301,7 @@ function onShotComplete() {
   else if (game.variant === "9ball") handle9BallShot();
   else if (game.variant === "drill15") handleDrill15Shot();
   else if (game.variant === "basis") handleBasisShot();
+  else if (game.variant === "training") handleTrainingShot();
   else handleSoloShot();
   if (game.state === "ended") { if (game.mode === "online") sendOnlineSync(); showEndScreen(); return; }
   if (game.cuePotted) respawnCueBall();
@@ -3695,6 +3734,99 @@ function setupBasis() {
   // Startet sofort mit Ball-in-Hand: Spieler platziert die Weiße frei
   game.placingCue = true;
   game.ballInHand = true;
+}
+
+// ── Spielvariante „Training" (Stufe 2.9) ──────────────────────────────
+// Freies Üben: Tableau leer, alle 16 Bälle (Cue + 1..15) liegen in einer
+// Reihe oberhalb der Spielfläche als „Vorrat". Drag-Drop und Stoßen sind
+// gleichzeitig verfügbar (kein Phasen-Toggle).
+const TRAINING_VORRAT_SLOTS = 16;
+const TRAINING_VORRAT_Y = PLAY_Y1 / 2;
+const TRAINING_VORRAT_STEP_X = (PLAY_X2 - PLAY_X1) / TRAINING_VORRAT_SLOTS;
+const TRAINING_VORRAT_X0 = PLAY_X1 + TRAINING_VORRAT_STEP_X / 2;
+
+function trainingVorratPosition(num) {
+  // num: 0 = Cue (weiß, ganz links), 1..15 = farbige Kugeln nach Nummer aufsteigend.
+  return {
+    x: TRAINING_VORRAT_X0 + num * TRAINING_VORRAT_STEP_X,
+    y: TRAINING_VORRAT_Y
+  };
+}
+
+function setupTraining() {
+  game.balls = [];
+  // Cue + 15 farbige Kugeln nach Vorrat-Position erzeugen.
+  const cuePos = trainingVorratPosition(0);
+  const cue = new Ball(0, cuePos.x, cuePos.y);
+  game.cueBall = cue;
+  game.balls.push(cue);
+  for (let num = 1; num <= 15; num++) {
+    const pos = trainingVorratPosition(num);
+    game.balls.push(new Ball(num, pos.x, pos.y));
+  }
+  game.variant = "training";
+  game.mode = "solo";
+  game.currentPlayer = 0;
+  game.isBreakShot = false;
+  game.open8ball = false;
+  game.placingCue = false;
+  game.ballInHand = false;
+  game.kitchenOnly = false;
+  game.pushOutAvailable = false;
+  game.awaitingPushOutDecision = false;
+  game.inPushOut = false;
+  game.foulMessage = ""; game.foulTimer = 0;
+  game.ballsPottedThisShot = [];
+}
+
+function trainingReset() {
+  // Alle Kugeln zurück in ihre Vorrat-Slots.
+  for (const b of game.balls) {
+    const num = b.isCue ? 0 : b.num;
+    const pos = trainingVorratPosition(num);
+    b.x = pos.x; b.y = pos.y;
+    b.vx = 0; b.vy = 0; b.vz = 0; b.z = 0;
+    b.wx = 0; b.wy = 0; b.wz = 0;
+    b.inPlay = true;
+    b.motionState = "resting";
+  }
+  game.cuePotted = false;
+  game.aimActive = false;
+  game.state = "aiming";
+  game.foulMessage = ""; game.foulTimer = 0;
+  game.ballsPottedThisShot = [];
+  updateUI();
+}
+
+function handleTrainingShot() {
+  if (game.basisRepeatMode && restoreTrainingRepeatSnapshot()) {
+    // Stufe 2.9 (Update): Vollständige Pre-Shot-Stellung aller Bälle aus dem
+    // Snapshot wiederherstellen — nicht nur die Weiße. Plus Stoßparameter zurück.
+    // Die Snapshot-Anwendung setzt cuePotted=false und räumt auch sonst auf.
+    game.aimAngle     = game.basisSaveAimAngle     ?? game.aimAngle;
+    game.powerPercent = game.basisSavePowerPercent  ?? game.powerPercent;
+    game.spinX        = game.basisSaveSpinX         ?? 0;
+    game.spinY        = game.basisSaveSpinY         ?? 0;
+    game.cueElevation = game.basisSaveCueElevation  ?? 0;
+    game.cueType      = game.basisSaveCueType       ?? "playing";
+    drawSpinCanvas(); updateSpinLabel();
+    drawElevCanvas(); updateElevLabel();
+    if (typeof updateCueTypeHint === "function") updateCueTypeHint();
+    return;
+  }
+  if (game.cuePotted) {
+    // Weiße versenkt → an ihren Vorrat-Slot zurückstellen, kein Ball-in-Hand.
+    const cue = game.cueBall;
+    const cuePos = trainingVorratPosition(0);
+    cue.x = cuePos.x; cue.y = cuePos.y;
+    cue.vx = 0; cue.vy = 0; cue.vz = 0; cue.z = 0;
+    cue.wx = 0; cue.wy = 0; cue.wz = 0;
+    cue.inPlay = true;
+    cue.motionState = "resting";
+    game.cuePotted = false;
+  }
+  // Kein Foul, kein Spielerwechsel, keine Punkte. Versenkte farbige Kugeln
+  // bleiben (inPlay=false) — Reset oder ZURÜCK holt sie zurück.
 }
 
 function handleBasisShot() {
@@ -5673,7 +5805,14 @@ const CommonStrategy = {
       if (oppAccess > 0.82) score -= 180;   // Gegner hat sicheren Pot
       if (oppAccess > 0.92) score -= 320;   // praktisch Geschenk
       if (oppAccess < 0.20 && hideScore > 0) score += 180; // echte Snooker-Safety
-      if (oppAccess < 0.35 && railScore > 0) score += 90;  // gute Distance-Safety
+      // Stufe 2.9b: Distance-Safety-Bonus von +90 auf +180 erhöht — damit
+      // gewinnt eine echte Cue+Target-an-gegenüberliegenden-Banden-Lage
+      // sicher gegen schwache Pot-Versuche.
+      if (oppAccess < 0.35 && railScore > 0) score += 180;
+      // Stufe 2.9b: Zusätzlicher Endspiel-Bonus für gezielt generierte
+      // distanceSafety9-Kandidaten (Cue + lowestBall auf gegenüberliegenden
+      // Banden). Hebt diese Stufe deutlich über schwache Pot-Versuche.
+      if (cand.type === "distanceSafety9" && oppAccess < 0.45) score += 220;
     }
 
     if (prof.searchDepth >= 3 && !(cand.type === "multiRailKick" || cand.type === "railProbeKick" || cand.type === "kickShot")) score -= 28;
@@ -5825,7 +5964,10 @@ function aiBuildNineBallSnookerSafetyCandidates(cue, lowestBall) {
   if (!cue || !lowestBall) return [];
   const candidates = [];
   const hiders = game.balls.filter(b =>
-    b.inPlay && !b.isCue && b.num !== lowestBall.num && b.num !== 8 &&
+    // Stufe 2.9b: Die 8 ist im 9-Ball eine reguläre Kugel und darf als Hider
+    // dienen, solange sie nicht selbst lowestBall ist. Vorher `b.num !== 8` —
+    // das war 8-Ball-Denke und blockierte die 8 generell als Hider.
+    b.inPlay && !b.isCue && b.num !== lowestBall.num &&
     Math.hypot(b.x - lowestBall.x, b.y - lowestBall.y) > BALL_R * 2.5
   ).slice(0, 6);
 
@@ -5850,6 +5992,55 @@ function aiBuildNineBallSnookerSafetyCandidates(cue, lowestBall) {
           isSafety: true,
           spinHint: "none",
           hiderNum: h.num
+        });
+      }
+    }
+  }
+  return candidates;
+}
+
+// Stufe 2.9b: Distance-Safety für 9-Ball-Endspiele ohne natürlichen Hider.
+// Generiert Stoßvarianten, die die niedrigste Kugel zu einer Bande und die
+// Weiße zur gegenüberliegenden Bande lenken — der Gegner hat dann maximale
+// Distanz und beidseitige Bandennähe, kein direkter Pot.
+function aiBuildNineBallDistanceSafetyCandidates(cue, lowestBall) {
+  if (!cue || !lowestBall) return [];
+  const candidates = [];
+  const baseAngle = Math.atan2(lowestBall.y - cue.y, lowestBall.x - cue.x);
+
+  const rails = [
+    { name: "top",    targetX: (PLAY_X1+PLAY_X2)/2, targetY: PLAY_Y1 + BALL_R * 1.4 },
+    { name: "bottom", targetX: (PLAY_X1+PLAY_X2)/2, targetY: PLAY_Y2 - BALL_R * 1.4 },
+    { name: "left",   targetX: PLAY_X1 + BALL_R * 1.4, targetY: (PLAY_Y1+PLAY_Y2)/2 },
+    { name: "right",  targetX: PLAY_X2 - BALL_R * 1.4, targetY: (PLAY_Y1+PLAY_Y2)/2 }
+  ];
+  const oppositeOf = { top: "bottom", bottom: "top", left: "right", right: "left" };
+  const powers = [22, 30, 38, 46];
+
+  for (const targetRail of rails) {
+    const cueGoalRail = rails.find(r => r.name === oppositeOf[targetRail.name]);
+    if (!cueGoalRail) continue;
+
+    // Heuristik: gewünschte Roll-Richtung der lowestBall = Richtung
+    // (lowestBall → targetRail-Zone). Stoßwinkel leicht aus baseAngle dahin
+    // verschieben (analog zum Snooker-Generator).
+    const dirAfter = Math.atan2(targetRail.targetY - lowestBall.y, targetRail.targetX - lowestBall.x);
+    const raw = dirAfter - baseAngle;
+    const norm = ((raw + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+    const offsets = [norm * 0.10, norm * 0.16, norm * 0.22, norm * 0.28];
+
+    for (const off of offsets) {
+      for (const pw of powers) {
+        candidates.push({
+          type: "distanceSafety9",
+          angle: baseAngle + off,
+          powerPercent: pw,
+          pocketIdx: -1,
+          targetNum: lowestBall.num,
+          isSafety: true,
+          spinHint: "none",
+          railGoal: targetRail.name,
+          cueGoalRail: cueGoalRail.name
         });
       }
     }
@@ -6812,6 +7003,11 @@ function generateShotCandidates(cue, targets, prof, problematicTargets = null) {
       const snookerCands = aiBuildNineBallSnookerSafetyCandidates(cue, targets[0])
         .slice(0, 24);
       candidates.push(...snookerCands);
+      // Stufe 2.9b: zusätzlich Distance-Safety-Kandidaten — wichtig im
+      // Endspiel ohne natürliche Hider.
+      const distanceCands = aiBuildNineBallDistanceSafetyCandidates(cue, targets[0])
+        .slice(0, 24);
+      candidates.push(...distanceCands);
     }
   }
 
@@ -6980,7 +7176,15 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
         // entspricht "deterministisch trifft die Sim das Ziel überhaupt nicht").
         // Vorher 0.10 — das tötete legale 7 %-Jumps, obwohl die immer noch
         // besser sind als ein garantiertes Foul aus dem Forced-Contact-Pfad.
-        if (robust.potProbability < 0.02) return null;
+        //
+        // Stufe 2.9b: Im 9-Ball-Endspiel (nur 2 Kugeln + Cue am Tisch) wird ein
+        // schwacher Pot zur taktischen Gefahr — Foul oder Geschenk-Stellung für
+        // den Gegner sind oft Spielverlust-relevant. Floor wird hier deutlich
+        // angehoben, damit der Profi statt einer 30-%-Hoffnungspott eine echte
+        // Distance-Safety bevorzugt.
+        const inPlayCount = game.balls.filter(b => b.inPlay && !b.isCue).length;
+        const endgameFloor = (game.variant === "9ball" && inPlayCount <= 2) ? 0.55 : 0.02;
+        if (robust.potProbability < endgameFloor) return null;
       }
     } else if (prof.searchDepth >= 3 && (robust.scratchRisk > 0.22 || robust.foulRisk > 0.22)) {
       return null;
@@ -8702,6 +8906,8 @@ function drawBall(b) {
 function drawAimingHelp() {
   if (game.state !== "aiming" || game.shotInProgress) return;
   if (cueDragging) return;
+  // Stufe 2.9: Während eines Training-Drags weder Aim-Linie noch Cue-Stick zeichnen.
+  if (_trainingDragBall) return;
   const cue = game.cueBall;
   if (!cue.inPlay) return;
   if (game.mode === "ai" && game.currentPlayer === 1) return;
@@ -9072,7 +9278,54 @@ let cueDragStartX = 0, cueDragStartY = 0;
 let cueDragMoved = false;
 let _lastTouchTimestamp = 0;
 let _cueDragStartTime = 0;
+// Stufe 2.9: Generischer Ball-Drag im Trainingsmodus — jede in-play Kugel ist ziehbar.
+let _trainingDragBall = null;
+let _trainingDragOffsetX = 0;
+let _trainingDragOffsetY = 0;
 const POWER_DRAG_SCALE = 0.55;
+
+function trainingBallOverlapsOthers(ball, x, y) {
+  for (const o of game.balls) {
+    if (o === ball || !o.inPlay) continue;
+    if (Math.hypot(x - o.x, y - o.y) < (ball.r + o.r) * 0.99) return true;
+  }
+  return false;
+}
+
+function tryStartTrainingDrag(p, hitMultiplier = 1.8) {
+  // hitMultiplier = 1.8 deckt Maus (genau) und Touch (etwas ungenauer) ab.
+  if (game.variant !== "training") return false;
+  if (game.shotInProgress) return false;
+  for (const b of game.balls) {
+    if (!b.inPlay) continue;
+    if (Math.hypot(p.x - b.x, p.y - b.y) < b.r * hitMultiplier) {
+      _trainingDragBall = b;
+      _trainingDragOffsetX = b.x - p.x;
+      _trainingDragOffsetY = b.y - p.y;
+      return true;
+    }
+  }
+  return false;
+}
+
+function moveTrainingDrag(p) {
+  if (!_trainingDragBall) return;
+  const b = _trainingDragBall;
+  const r = b.r;
+  // X auf Spielfläche begrenzt, Y darf in den Vorrat-Bereich oberhalb der Bande hochwandern.
+  const nx = clamp(p.x + _trainingDragOffsetX, PLAY_X1 + r, PLAY_X2 - r);
+  const ny = clamp(p.y + _trainingDragOffsetY, r, PLAY_Y2 - r);
+  if (!trainingBallOverlapsOthers(b, nx, ny)) {
+    b.x = nx; b.y = ny;
+    b.vx = 0; b.vy = 0; b.vz = 0;
+    b.wx = 0; b.wy = 0; b.wz = 0;
+    b.motionState = "resting";
+  }
+}
+
+function endTrainingDrag() {
+  _trainingDragBall = null;
+}
 
 function isAutoPortrait() {
   return window.innerWidth < 768 && window.innerHeight > window.innerWidth;
@@ -9208,6 +9461,13 @@ function handleCanvasDown(e) {
   if (isFullscreenControlGuardEvent(e)) return;
   const p = mousePos(e);
 
+  // Stufe 2.9: Training-Drag — LMB auf einer Kugel startet generischen Ball-Drag,
+  // bevor irgendein Aim-/Selecting-Pfad anspringt. Funktioniert für Cue und
+  // farbige Kugeln, im Vorrat und auf dem Tableau.
+  if (game.variant === "training" && e.button === 0 && tryStartTrainingDrag(p)) {
+    return;
+  }
+
   // 8-Ball Taschenauswahl: Spieler klickt auf eine Tasche
   if (game.selecting8Pocket && e.button === 0) {
     for (let pi = 0; pi < POCKETS.length; pi++) {
@@ -9216,6 +9476,14 @@ function handleCanvasDown(e) {
         game.called8Pocket = pi;
         game.selecting8Pocket = false;
         updateUI();
+        // Stufe 2.8: Wenn der Spieler im Open Table die Tasche für seine
+        // Gruppen-Kugel wählt (calledBall ist eine 1–7 oder 9–15), wurde
+        // der Stoß bis hier verschoben. Jetzt automatisch ausführen, damit
+        // es sich anfühlt wie der bisherige Banner-Bestätigen-Flow.
+        if (_pendingGroupCallShot) {
+          _pendingGroupCallShot = false;
+          startShot();
+        }
         return;
       }
     }
@@ -9280,6 +9548,11 @@ function handleCanvasDown(e) {
 function handleCanvasMove(e) {
   if (game.mode === "online" && game.currentPlayer !== online.myPlayer) return;
   const p = mousePos(e);
+  // Stufe 2.9: Training-Drag — wenn ein Ball ergriffen ist, mit dem Cursor mitbewegen.
+  if (_trainingDragBall) {
+    moveTrainingDrag(p);
+    return;
+  }
   if (game.placingCue) {
     if (cueDragging) {
       const cue = game.cueBall;
@@ -9317,6 +9590,11 @@ function handleCanvasMove(e) {
   }
 }
 function handleCanvasUp(e) {
+  // Stufe 2.9: Training-Drag freigeben.
+  if (_trainingDragBall) {
+    endTrainingDrag();
+    return;
+  }
   const _wasPlaingCue = game.placingCue;
   if (cueDragging && game.placingCue) {
     const heldLong = game.ballInHand && (Date.now() - _cueDragStartTime) >= 150;
@@ -9489,6 +9767,7 @@ const ui = {
   btnPushOut: document.getElementById("btnPushOut"),
   btnRotateTable: document.getElementById("btnRotateTable"),
   btnBasisRepeat: document.getElementById("btnBasisRepeat"),
+  btnTrainingReset: document.getElementById("btnTrainingReset"),
   btnTimerExtend: document.getElementById("btnTimerExtend"),
   btnPause: document.getElementById("btnPause"),
   btnUndo: document.getElementById("btnUndo"),
@@ -9501,8 +9780,18 @@ let _pendingGroupCallShot = false;
 function handleCallChoice(num) {
   game.calledBall = num;
   ui.callShotBanner.classList.remove("show");
+  // Stufe 2.8: Im Open Table reicht es nicht, nur die Kugel anzusagen — auch
+  // die Tasche muss explizit gewählt werden. Vorher fiel die Kugel in eine
+  // beliebige Tasche und der Open-Table-Pfad in handle8BallShot ließ den
+  // Spieler weiterspielen (calledPocket===null → calledShotMade=true bei
+  // jedem Pott). Wir öffnen die Pocket-Auswahl analog zum 8-Endspiel und
+  // verschieben den eigentlichen Stoß bis nach der Pocket-Bestätigung.
+  if (_pendingGroupCallShot) {
+    game.selecting8Pocket = true;
+    updateUI();
+    return;
+  }
   updateUI();
-  if (_pendingGroupCallShot) { _pendingGroupCallShot = false; startShot(); }
 }
 document.getElementById("callConfirmYes").addEventListener("click", () => {
   const det = _detectedCallBall;
@@ -9570,14 +9859,18 @@ function setBasisRepeatMode(enabled) {
   if (!game.basisRepeatMode && game.state === "aiming" && !game.shotInProgress) {
     cueDragging = false; lmbDragging = false; rmbDragging = false; rmbStart = null;
     game.aimLocked = false; game.aimActive = false;
-    respawnCueBall();
+    // Stufe 2.9: Im Training kein respawnCueBall (würde Ball-in-Hand triggern).
+    // Die Weiße bleibt einfach an ihrer aktuellen Position, der Spieler kann sie
+    // jederzeit per Drag verschieben.
+    if (game.variant !== "training") respawnCueBall();
   }
   updateUI();
 }
 
 function toggleBasisRepeat(e) {
   if (e) { e.preventDefault(); e.stopPropagation(); }
-  if (game.variant !== "basis") return;
+  // Stufe 2.9: Wiederholen-Mechanik gilt auch im Trainingsmodus.
+  if (game.variant !== "basis" && game.variant !== "training") return;
   setBasisRepeatMode(!game.basisRepeatMode);
 }
 
@@ -9594,6 +9887,12 @@ ui.btnBasisRepeat.addEventListener("pointerdown", (e) => {
 ui.btnBasisRepeat.addEventListener("click", (e) => {
   if (Date.now() - lastBasisRepeatTap < 500) { e.preventDefault(); return; }
   toggleBasisRepeat(e);
+});
+
+// Training-Reset: Tableau leer räumen, alle Bälle in den Vorrat.
+ui.btnTrainingReset.addEventListener("click", () => {
+  if (game.variant !== "training") return;
+  trainingReset();
 });
 
 // Push-Out ansagen
@@ -9636,7 +9935,8 @@ function updateSetsVisibility() {
 })();
 bindOptions(ui.optVariant, v => {
   game.variant = v;
-  const isPool = !(v === "drill15" || v === "basis");
+  // Stufe 2.9: Training ist Solo-only (analog basis/drill15) — Modus-Sektion verstecken.
+  const isPool = !(v === "drill15" || v === "basis" || v === "training");
   const sec = document.getElementById("modeSection");
   if (sec) sec.style.display = isPool ? "" : "none";
   if (ui.aiSection) ui.aiSection.style.display = (isPool && game.mode === "ai") ? "" : "none";
@@ -10181,13 +10481,13 @@ function maybeShowCallModal() {
 }
 
 function updateUI() {
-  const variant = game.variant === "8ball" ? "8-Ball" : game.variant === "9ball" ? "9-Ball" : game.variant === "drill15" ? "15-Kugeln Drill" : "Basisübung";
+  const variant = game.variant === "8ball" ? "8-Ball" : game.variant === "9ball" ? "9-Ball" : game.variant === "drill15" ? "15-Kugeln Drill" : game.variant === "training" ? "Training" : "Basisübung";
   let modeText = "";
   if (game.mode === "hotseat") modeText = "Hot-Seat";
   else if (game.mode === "ai") { const diffLabel = { easy: "Anfänger", medium: "Fortgeschrittener", hard: "Profi" }[game.difficulty] ?? game.difficulty; modeText = "vs KI (" + diffLabel + ")"; }
   else if (game.mode === "online") { modeText = online.code ? `Online · ${online.code}` : "Online"; }
   else modeText = "Solo / Übung";
-  ui.modeTag.textContent = game.variant === "drill15" ? "15-Kugeln Drill" : game.variant === "basis" ? "Basisübung" : `${variant} · ${modeText}`;
+  ui.modeTag.textContent = game.variant === "drill15" ? "15-Kugeln Drill" : game.variant === "basis" ? "Basisübung" : game.variant === "training" ? "Training" : `${variant} · ${modeText}`;
   ui.modeTag.style.cursor = (game.mode === "online" && online.code) ? "pointer" : "";
   ui.modeTag.title = (game.mode === "online" && online.code) ? "Antippen zum Kopieren" : "";
   if (game.mode === "ai") { game.players[0].name = "Du"; game.players[1].name = "KI"; }
@@ -10212,7 +10512,15 @@ function updateUI() {
   } else if (game.awaitingPushOutDecision) {
     ui.statusLine.textContent = `${game.players[game.currentPlayer].name}: Push-Out annehmen oder zurückgeben?`;
   } else if (game.selecting8Pocket) {
-    ui.statusLine.textContent = `${game.players[game.currentPlayer].name}: Klicke auf eine Tasche für die Schwarze 8!`;
+    // Stufe 2.8: Pocket-Auswahl gibt's auch beim Open-Table-Call für Gruppen-Kugeln.
+    // Statustext entsprechend differenzieren.
+    const target = game.calledBall;
+    if (target === null || target === 8) {
+      ui.statusLine.textContent = `${game.players[game.currentPlayer].name}: Klicke auf eine Tasche für die Schwarze 8!`;
+    } else {
+      const label = target >= 1 && target <= 7 ? `Volle ${target}` : `Halbe ${target}`;
+      ui.statusLine.textContent = `${game.players[game.currentPlayer].name}: Klicke auf eine Tasche für die ${label}!`;
+    }
   } else if (game.mode === "ai" && game.currentPlayer === 1 && game.aiPlanProgress) {
     ui.statusLine.textContent = aiProgressText();
   } else if (game.variant === "8ball" && game.mode === "ai" && game.currentPlayer === 1 && (game.aiPlannedTargetNum || game.aiPlannedIsSafety)) {
@@ -10244,6 +10552,8 @@ function updateUI() {
     ui.statusLine.textContent = "Ball-in-Hand – Weiße frei platzieren, dann stoßen";
   } else if (game.variant === "basis") {
     ui.statusLine.textContent = `Stoß ${game.basisShots + 1} · Effekt/Stärke/Winkel frei wählen`;
+  } else if (game.variant === "training") {
+    ui.statusLine.textContent = "Trainingsmodus – Kugeln frei ziehen, jederzeit stoßen";
   } else if (game.variant === "drill15" && game.placingCue) {
     ui.statusLine.textContent = "Ball-in-Hand – Weiße frei auf dem Tisch platzieren";
   } else if (game.variant === "drill15") {
@@ -10288,7 +10598,9 @@ function updateUI() {
   // (auf Handy im Hochformat dreht applyLayout() den Tisch bereits automatisch)
   ui.btnRotateTable.style.display =
     ((game.variant === "drill15" || game.variant === "basis") && !isAutoPortrait()) ? "" : "none";
-  ui.btnBasisRepeat.style.display = (game.variant === "basis") ? "" : "none";
+  // Stufe 2.9: Wiederholen-Button gilt auch im Trainingsmodus.
+  ui.btnBasisRepeat.style.display = (game.variant === "basis" || game.variant === "training") ? "" : "none";
+  ui.btnTrainingReset.style.display = (game.variant === "training") ? "" : "none";
   document.getElementById("btnPhysics").style.display = (game.variant === "basis") ? "" : "none";
   document.getElementById("btnOnlineSync").style.display =
     (game.mode === "online" && online.connected && online.role !== "spectator"
@@ -10311,7 +10623,7 @@ function updateUI() {
   ui.p2Box.classList.toggle("active", game.currentPlayer === 1 && game.mode !== "solo");
   setBadge(ui.p1Badge, game.players[0]);
   setBadge(ui.p2Badge, game.players[1]);
-  ui.p2Box.style.visibility = (game.mode === "solo" || game.variant === "drill15" || game.variant === "basis") ? "hidden" : "visible";
+  ui.p2Box.style.visibility = (game.mode === "solo" || game.variant === "drill15" || game.variant === "basis" || game.variant === "training") ? "hidden" : "visible";
 
   if (online.role === "spectator") {
     if (_fullscreen) {
@@ -10401,6 +10713,7 @@ function newGame() {
   aiClearPlanProgress();
   game.paused = false;
   game.lastSnapshot = null;
+  game.trainingRepeatSnapshot = null;
   game.breakCushionBalls = new Set();
   game.called8Pocket = null; game.ball8PocketIdx = -1; game.selecting8Pocket = false;
   game.pushOutAvailable = false; game.inPushOut = false;
@@ -10431,6 +10744,7 @@ function newGame() {
   }
   else if (game.variant === "drill15") { game.kitchenOnly = false; game.mode = "solo"; setupDrill15(); }
   else if (game.variant === "basis") { game.kitchenOnly = false; game.mode = "solo"; setupBasis(); }
+  else if (game.variant === "training") { game.kitchenOnly = false; game.mode = "solo"; setupTraining(); }
   ui.endScreen.classList.remove("show");
   updateUI();
   tryStartShotTimer();
