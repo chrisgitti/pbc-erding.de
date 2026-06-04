@@ -1418,7 +1418,7 @@ ohne Build-Prozess, für Pflege ohne Next.js-Kenntnisse.
 ---
 
 <details>
-<summary><strong>Billard App – Phasen 1–18</strong></summary>
+<summary><strong>Billard App – Phasen 1–19</strong></summary>
 
 ## Phase 1 – Proof of Concept einer PBC Erding Billard-App integriert (1. Mai 2026)
 
@@ -2923,6 +2923,73 @@ Der Bonus für das Freispielen blockierter eigener Kugeln skaliert jetzt mit der
 - Direkter Voll-Kontakt in `aiFindHardPlayableEscape` erhält höchsten Quell-Bonus (3200); Kick/Jump bei freiem Pfad stark abgewertet (−8000)
 - Notstoß-Stärken reduziert (20–38 % statt 54–62 %) für robustere Ausführung
 - Build-Marker `S2.2` im Debug-Overlay
+
+---
+
+## Phase 19 – KI-Optimierung Stufe 2.3–2.7: Bewertung, Architektur, Push-Out und Break-Physik (1.–4. Juni 2026)
+
+Zusammenfassung mehrerer Iterationen am Profi-KI-Kernpfad: feinere Bewertung von Pots/Safeties, Zentralisierung der KI-Folgezug-Auslösung, Behebung wiederkehrender Push-Out-Hänger, Aufweichung binärer Kandidaten-Killfilter zur Vermeidung erzwungener Foul-Stöße sowie Anpassungen der Anstoß- und Banden-Physik. Build-Marker im Debug-Overlay läuft von `S2.3` bis `S2.7`.
+
+### 19.1  Pocket-Anflugwinkel & Mitteltaschen-Bewertung (S2.3 + S2.4)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Die Profi-KI bewertet jetzt den Anflugwinkel der Zielkugel zur Tasche: Mitteltaschen akzeptieren physikalisch nur enge, fast senkrechte Anflüge, Ecktaschen sind toleranter. Vorher führten 38°-Schnitte an die Mitteltasche zu falschen „spielbar"-Bewertungen. Stufe 2.4 hat zusätzlich einen Distanz-Dämpfungs-Bug behoben (Strafe wurde bei langen Distanzen verstärkt statt gedämpft – häufige Ursache falscher Safety-Wahlen im Endgame) und den Mitteltaschen-Exponent moderater gesetzt (1.9 statt 2.6).
+
+### 19.2  Profi-KI verwirft freie Pots nicht mehr (S2.5 + S2.5b)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Vorab-Veto in `evaluateShotCandidate` entschärft: reguläre Pots werden nicht mehr stumm zu null verworfen, sondern gescort und vom Chooser über realistische Schwellen ausgewählt. Bewertungs-Noise-Floor von 0.4°/3 % auf 0.18°/1.5 % gesenkt – Profi schätzt die eigene Ausführung präziser ein. Ein freier Pot, der vorher wegen einer Robust-Sim-Schwankung unter die 90-%-Schwelle fiel, wird jetzt zuverlässig gespielt. S2.5b verhindert zusätzlich, dass ein „validierter" Jump auf eine blockierte Kugel den freien Direkt-Pot einer anderen Kugel überschreibt – nach dem Anstoß sprang die KI sonst sinnlos ins Cluster.
+
+### 19.3  Zentrale KI-Folgezug-Auslösung (S2.6, Architektur)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Sieben verstreute `aiThinking=true; aiTimer=N`-Trigger sind durch eine zentrale `scheduleAiTurn(delayFrames)`-Funktion ersetzt. Vorbedingungen (Modus, Spieler, State, Pause, ShotInProgress, aiPlanning) prüft genau eine Stelle. Für Trigger nach Click-Handlern und State-Mutationen gibt es zusätzlich `scheduleAiTurnAfterPaint(delayFrames)` mit Double-rAF. Der Side-Effect in `updateUI`, der die KI-Planung aus dem Render-Pfad heraus angestoßen hat, ist entfernt. Statuszeile zeigt jetzt dreistufig „KI stößt…" / „KI denkt nach…" / „KI ist am Zug" entsprechend der tatsächlichen KI-Aktivität.
+
+### 19.4  9-Ball-Safety mit oppAccess-Metrik und Snooker-Generator (S2.6)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Neue Helper-Funktion `aiOpponentAccessToLowestFromSim(sim, targetNum)` misst per Ghost-Ball-Analyse, wie gut der Gegner nach dem Safety-Stoß die niedrigste Kugel direkt versenken könnte. `CommonStrategy.scoreSafety` bestraft hohe Werte gestaffelt (`oppAccess > 0.82` → −180, `> 0.92` → −320) und belohnt echte Profi-Safeties (Snooker bei `oppAccess < 0.20` → +180, Distance-Safety bei `< 0.35` → +90). Zusätzlich erzeugt `aiBuildNineBallSnookerSafetyCandidates` Kandidaten, die die niedrigste Kugel gezielt hinter einer höheren Hider-Kugel parken. Die 9-Ball-Profi-KI legt jetzt die zu spielende Kugel hinter eine andere statt nur an die nächste Bande.
+
+### 19.5  Push-Out-Hänger behoben (S2.6 + S2.6d)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Zwei symmetrische Hänger im 9-Ball-Push-Out-Pfad sind gefixt: Mensch lehnt Push-Out der KI ab (S2.6) bzw. KI nimmt Push-Out des Menschen an (S2.6d). Beide Pfade nutzen jetzt `scheduleAiTurnAfterPaint`, sodass der Schedule erst nach Ablauf des `.finally()`-Blocks des Frame-Loops feuert (`aiPlanning` ist dann sauber zurückgesetzt). Vorher blieb die App im Status „KI denkt nach…" / „KI ist am Zug" hängen, bis Pause→Weiter den Schedule neu anstieß.
+
+### 19.6  Kein erzwungenes Foul, wenn evaluierte Kandidaten existieren (S2.6b)
+
+**Datei:** `pbc-pool-app/index.html`
+
+In Snooker-Lagen verwarf `evaluateShotCandidate` bisher alle Kicks/Jumps wegen `scratchRisk > 0` oder ähnlicher Soft-Risiken. `evaluatedCandidates` blieb 0, und die KI fiel auf `hardForcedContactLastResort` zurück – einen Stoß, der direkt auf das Ziel zielt und den Blocker als Erstkontakt trifft (garantiertes Foul). Edit-Set:
+
+- Klare Trennung von **fundamentalen** Defekten (Scratch, illegaler Erstkontakt, keine Bande nach Kontakt – echte Regelverletzung im exakten Stoß) und **Soft**-Risiken (Robust-Streuung, Cue nahe Tasche, Robust-bestSim nicht safety-legal). Soft-Risiken landen als Score-Mali im Chooser, nicht als Null-Verwurf.
+- `aiSafetyShotLegal`-Fallback: bei Soft-Fail dient der exakte Sim als Bewertungsbasis.
+- Chooser hat zwei zusätzliche Stufen: `realisticSafeties` (scratch/foul ≤ 30 %) und Last-Resort `evaluated[0]` (höchstgescorte verfügbare Option).
+- Vor dem `aiBuildForcedContactShot`-Pfad iteriert die KI nochmals `evaluated[]` und nimmt den ersten Kandidaten, der die exakte Validierung besteht.
+- Non-Safety-Profi-Floor gesenkt von 10 % auf 2 % Pot-Probability – ein legaler 7-%-Jump ist besser als ein garantiertes Foul.
+
+### 19.7  9-Ball-KI-Anstoß analog 8-Ball (S2.6c)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Bisher hatte die KI für den 9-Ball-Anstoß keine dedizierte Logik – sie setzte nur die Cue-Position und ließ `aiPlanShot` weiterlaufen, das einen zufälligen Safety-/Kick-Kandidaten als Aim-Winkel auswählte. Power wurde nachträglich auf 88–100 % gezwungen, der Winkel kam aber aus dem zufälligen Kandidaten. Folge: intermittierend illegaler Anstoß (< 4 Banden-Kugeln), woraufhin der Push-Out-Button regelkonform NICHT angezeigt wurde. Die neue Logik mirror't den 8-Ball-Pfad: gezielt auf die 1 (Apex der 9-Ball-Pyramide), `cueType="break"`, direkt `aiPreviewThenShoot` und `return`.
+
+### 19.8  Break-Physik realistischer (S2.7)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Die 8-Ball-Pyramide lief auch bei voller Power und Break-Queue zu wenig auseinander. Zwei Konstanten angepasst:
+
+| Konstante | Vorher | Nachher | Wirkung |
+| --- | --- | --- | --- |
+| `CUE_PROFILES.break.powerGain` | 1.14 | 1.30 | +14 % Initial-Velocity, +30 % kinetische Energie beim Aufprall, nur Break-Cue betroffen |
+| Banden-`eN`-Offset in `applyRailRebound` | `-0.14` | `-0.08` | Effektive eN-Baseline 0.82 statt 0.76 – realistischer für Pool-Banden, alle Banden-Kontakte |
+
+Die KI verwendet dieselbe Physik in ihren Simulationen, daher gilt das Tuning auch dort konsistent. Andere Physik-Konstanten (`CFG_FRICTION`, `CFG_ROLLING_DRAG`, `CFG_BALL_BOUNCE`, `MAX_POWER`) blieben unverändert.
 
 ---
 

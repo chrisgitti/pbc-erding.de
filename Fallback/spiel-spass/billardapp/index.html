@@ -1661,7 +1661,7 @@ const JUMP_LANDING_DAMP   = 0.34;
 // Queue-Profile
 const CUE_PROFILES = {
   playing:    { label:"Spielqueue",      powerGain:1.00, spinTransfer:1.00, sideTransfer:1.00, squirt:1.00, verticalLoss:0.46, jumpLift:0.18, swerve:1.00, note:"Spielqueue: ausgewogene Kontrolle für Effet und Positionsspiel." },
-  break:      { label:"Break-Queue",     powerGain:1.14, spinTransfer:0.62, sideTransfer:0.55, squirt:1.18, verticalLoss:0.34, jumpLift:0.24, swerve:0.55, note:"Break-Queue: harte Spitze, hohe Kraftübertragung, weniger Effet-Grip." },
+  break:      { label:"Break-Queue",     powerGain:1.30, spinTransfer:0.62, sideTransfer:0.55, squirt:1.18, verticalLoss:0.34, jumpLift:0.24, swerve:0.55, note:"Break-Queue: harte Spitze, hohe Kraftübertragung, weniger Effet-Grip." },
   jump:       { label:"Jump-Queue",      powerGain:0.86, spinTransfer:0.74, sideTransfer:0.72, squirt:0.88, verticalLoss:0.22, jumpLift:0.92, jumpLimit:0.19, jumpHorizontal:0.84, swerve:0.75, note:"Jump-Queue: kontrollierte, eher flachere Flugbahn für mittlere und weitere Jumps." },
   jump_short: { label:"Jump-Queue kurz", powerGain:0.62, spinTransfer:0.66, sideTransfer:0.64, squirt:0.76, verticalLoss:0.30, jumpLift:1.34, jumpLimit:0.15, jumpHorizontal:0.54, swerve:0.62, note:"Verkürztes Jump-Queue: sehr steiler, kurzer Jump bei geringer Distanz zur störenden Kugel." },
 };
@@ -1886,7 +1886,7 @@ const AI_LOOKAHEAD_DEPTH = 3;
 const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S2.5b";
+const AI_BUILD = "S2.7";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -2409,9 +2409,12 @@ function applyRailRebound(b, nx, ny, label = "rail") {
   const tx = -ny, ty = nx;
   const vT = b.vx * tx + b.vy * ty;
 
-  // Default bei CFG_CUSHION_EN = 0.90 entspricht nahezu der alten, realistischeren Datei:
-  // eN ≈ 0.76 + geschwindigkeitsabhängiger Anteil. Der Slider verschiebt diese Basis.
-  const eN = clamp((CFG_CUSHION_EN - 0.14) + Math.min(absN, 38) * 0.0045, 0.62, 0.97);
+  // Stufe 2.7: Offset von -0.14 auf -0.08 entschärft. Bei CFG_CUSHION_EN = 0.90
+  // ist die Baseline jetzt 0.82 (vorher 0.76) — realistischer für Pool-Banden
+  // (echt: 0.85–0.92 normal-orthogonal). Bei typ. absN ≈ 20 ergibt sich
+  // eN = 0.82 + 0.09 = 0.91 (vorher 0.85). Hebt die Bandenrückprall-Energie
+  // beim Anstoß und reduziert das frühere „Pyramide verpufft"-Verhalten.
+  const eN = clamp((CFG_CUSHION_EN - 0.08) + Math.min(absN, 38) * 0.0045, 0.62, 0.97);
   const normalOut = -vN * eN;
 
   // Tangentiale Relativbewegung am Bandenkontakt. Seiteneffet kann die Weiße entlang
@@ -3125,26 +3128,44 @@ function restoreSnapshot() {
   updateUI();
 
   // KI-Zug neu anstoßen wenn nach Undo die KI dran ist
-  if (game.mode === "ai" && game.currentPlayer === 1 && game.state === "aiming") {
-    game.aiThinking = true;
-    game.aiTimer    = 45;
-  }
+  scheduleAiTurn(45);
 }
 
 function togglePause() {
   game.paused = !game.paused;
 
   if (!game.paused) {
-    if (game.mode === "ai" && game.currentPlayer === 1
-        && game.state === "aiming" && !game.aiThinking && !game.aiPlanning) {
-      game.aiThinking = true;
-      game.aiTimer    = 30;
-    }
+    scheduleAiTurn(30);
   }
 
   const btnPause = document.getElementById("btnPause");
   if (btnPause) btnPause.textContent = game.paused ? "▶ Weiter" : "⏸ Pause";
   updateUI();
+}
+
+// Stufe 2.6: Zentrale Auslösung der KI-Planung.
+// Alle Vorbedingungen an EINER Stelle, kein verstreutes `aiThinking=true`.
+// `aiThinking=false`/`aiPlanning=false` werden ausschließlich vom Frame-Loop
+// im `.finally()` von aiPlanShot() zurückgesetzt – nicht hier.
+// Anmerkung: `awaitingPushOutDecision` ist KEINE Blocker-Vorbedingung. Wenn die
+// KI den Push-Out entscheiden muss, dispatcht aiPlanShot intern auf
+// aiDecidePushOut(). Würden wir hier blocken, käme die KI nie zur Entscheidung.
+function scheduleAiTurn(delayFrames = 45) {
+  if (game.mode !== "ai") return false;
+  if (game.currentPlayer !== 1) return false;
+  if (game.state !== "aiming") return false;
+  if (game.paused || game.shotInProgress) return false;
+  if (game.aiPlanning) return false;
+  game.aiThinking = true;
+  game.aiTimer = delayFrames;
+  return true;
+}
+
+// Für Trigger nach Click-Handlern: erst die DOM/State-Mutationen committen
+// lassen (zwei rAF-Ticks), dann scheduleAiTurn aufrufen. Vermeidet Race-Conditions,
+// bei denen Vorbedingungen zum Click-Zeitpunkt noch nicht stimmen.
+function scheduleAiTurnAfterPaint(delayFrames = 45) {
+  requestAnimationFrame(() => requestAnimationFrame(() => scheduleAiTurn(delayFrames)));
 }
 
 function startShot() {
@@ -3253,9 +3274,7 @@ function onShotComplete() {
   if (game.mode === "online") sendOnlineSync();
   updateUI();
   tryStartShotTimer();
-  if (game.mode === "ai" && game.currentPlayer === 1 && game.state === "aiming") {
-    game.aiThinking = true; game.aiTimer = 60;
-  }
+  scheduleAiTurn(60);
 }
 
 function respawnCueBall() {
@@ -3545,6 +3564,9 @@ function handle9BallShot() {
     game.pushOutDoneBy = game.currentPlayer;
     game.currentPlayer = 1 - game.currentPlayer;
     updateUI();
+    // Stufe 2.6: Wenn jetzt die KI entscheiden muss, hier zentral triggern.
+    // Vorher hat updateUI() das selbst gemacht (Side-Effect im Render-Pfad).
+    scheduleAiTurn(45);
     return;
   }
 
@@ -4699,6 +4721,53 @@ function aiSegmentBlockedByBall(ax, ay, bx, by, blocker, margin = BALL_R * 1.9) 
   return Math.hypot(px - blocker.x, py - blocker.y) < margin;
 }
 
+// Stufe 2.6 — zentrale Profi-Safety-Metrik im 9-Ball.
+// Misst, wie gut der Gegner nach diesem Stoß die targetNum-Kugel direkt
+// ghost-ballen könnte: max(dotN) über alle Taschen, gegen die simulierte
+// Post-Shot-Stellung (sim.finalBalls). Wichtig: aiClearPathInBallState,
+// nicht aiGhostBallAngle — letzteres prüft gegen game.balls (Pre-Shot) und
+// würde Snooker-Effekte des Safety-Stoßes ignorieren.
+// Rückgabe: 0 = kein direkter Pot möglich (Idealfall), 1 = freier Pot (Worst Case).
+function aiOpponentAccessToLowestFromSim(sim, targetNum) {
+  const cueFinal = aiSimCueBall(sim);
+  if (!cueFinal || !sim?.finalBalls) return 1;
+
+  const target = sim.finalBalls.find(b => b.inPlay && !b.isCue && b.num === targetNum);
+  if (!target) return 1;
+
+  let best = 0;
+  for (const p of POCKETS) {
+    const dxTP = p.x - target.x;
+    const dyTP = p.y - target.y;
+    const dTP = Math.hypot(dxTP, dyTP);
+    if (dTP < 1) continue;
+
+    const nx = dxTP / dTP;
+    const ny = dyTP / dTP;
+    const ghostX = target.x - nx * target.r * 2;
+    const ghostY = target.y - ny * target.r * 2;
+
+    const cueToGhostClear = aiClearPathInBallState(
+      cueFinal.x, cueFinal.y, ghostX, ghostY,
+      sim.finalBalls, [target.num]
+    );
+    const targetToPocketClear = aiClearPathInBallState(
+      target.x, target.y, p.x, p.y,
+      sim.finalBalls, [target.num]
+    );
+    if (!cueToGhostClear || !targetToPocketClear) continue;
+
+    const dxCG = ghostX - cueFinal.x;
+    const dyCG = ghostY - cueFinal.y;
+    const dCG = Math.hypot(dxCG, dyCG);
+    if (dCG < 1) continue;
+
+    const dotN = nx * (dxCG / dCG) + ny * (dyCG / dCG);
+    best = Math.max(best, dotN);
+  }
+  return best;
+}
+
 function aiSafetyVisibilityScore(sim, targetNum) {
   const cue = aiSimCueBall(sim);
   const target = aiSimBallByNum(sim, targetNum);
@@ -5583,9 +5652,30 @@ const CommonStrategy = {
     const nearPocketPenalty = cueBall && POCKETS.some(p => Math.hypot(cueBall.x - p.x, cueBall.y - p.y) < POCKET_NEAR) ? 90 : 0;
     const legalKickBonus = (cand.type === "multiRailKick" || cand.type === "railProbeKick" || cand.type === "kickShot")
       ? 36 + (cand.kickRails || 1) * 10 : 0;
+
+    // Stufe 2.6: oppAccess — zentrale Profi-Metrik für 9-Ball-Safety.
+    // Misst, wie gut der Gegner die zu spielende Kugel nach diesem Stoß
+    // direkt ghost-ballen könnte. Vorher: nur hideScore (Sichtlinie cue→target)
+    // und railScore (Bandennähe). Beides reichte nicht, daher hat die KI
+    // "Ball an Bande, fertig" gespielt statt echter Snooker.
+    const oppAccess = game.variant === "9ball"
+      ? aiOpponentAccessToLowestFromSim(sim, targetNum)
+      : 0;
+
     let score = Math.max(hideScore, 0) * 1.45 + railScore * 0.70
       + legalKickBonus - nearPocketPenalty
       - robust.scratchRisk * 260 - cand.powerPercent * 0.10;
+
+    // Lineare oppAccess-Strafe + gestaffelte Sellout-Mali + Profi-Boni
+    // (nur 9-Ball-Profi, damit 8-Ball-Safety unverändert bleibt).
+    if (game.variant === "9ball" && prof.searchDepth >= 3) {
+      score -= oppAccess * 260;
+      if (oppAccess > 0.82) score -= 180;   // Gegner hat sicheren Pot
+      if (oppAccess > 0.92) score -= 320;   // praktisch Geschenk
+      if (oppAccess < 0.20 && hideScore > 0) score += 180; // echte Snooker-Safety
+      if (oppAccess < 0.35 && railScore > 0) score += 90;  // gute Distance-Safety
+    }
+
     if (prof.searchDepth >= 3 && !(cand.type === "multiRailKick" || cand.type === "railProbeKick" || cand.type === "kickShot")) score -= 28;
     return score;
   },
@@ -5720,6 +5810,46 @@ function aiBuildSafetyCandidates(cue, targets) {
           type: pw < 24 ? "softSafety" : (pw < 42 ? "distanceSafety" : "containmentSafety"),
           angle: baseAngle + off, powerPercent: pw, pocketIdx: -1,
           targetNum: t.num, isSafety: true, spinHint: "none"
+        });
+      }
+    }
+  }
+  return candidates;
+}
+
+// Stufe 2.6: 9-Ball-Profi-Snooker-Kandidaten. Für jede potenzielle
+// Hider-Kugel werden Stoßvarianten erzeugt, die geometrisch dazu neigen,
+// die lowestBall hinter dem Hider zu parken. Analytisch perfekt muss es
+// nicht sein — Sim + oppAccess-Scoring filtert die guten heraus.
+function aiBuildNineBallSnookerSafetyCandidates(cue, lowestBall) {
+  if (!cue || !lowestBall) return [];
+  const candidates = [];
+  const hiders = game.balls.filter(b =>
+    b.inPlay && !b.isCue && b.num !== lowestBall.num && b.num !== 8 &&
+    Math.hypot(b.x - lowestBall.x, b.y - lowestBall.y) > BALL_R * 2.5
+  ).slice(0, 6);
+
+  const powers = [16, 22, 28, 36];
+  for (const h of hiders) {
+    const baseAngle = Math.atan2(lowestBall.y - cue.y, lowestBall.x - cue.x);
+    // Gewünschte Roll-Richtung der lowestBall nach Kontakt: in Richtung „hinter Hider"
+    // = von lowestBall weg vom Hider, gespiegelt → also Richtung (lowestBall → Hider).
+    const dirToBehind = Math.atan2(h.y - lowestBall.y, h.x - lowestBall.x);
+    // Differenz auf [-π, π] normalisieren, dann anteilig dem Stoßwinkel zumischen.
+    const raw = dirToBehind - baseAngle;
+    const norm = ((raw + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+    const offsets = [norm * 0.12, norm * 0.18, norm * 0.25, norm * 0.32];
+    for (const off of offsets) {
+      for (const pw of powers) {
+        candidates.push({
+          type: "snookerSafety",
+          angle: baseAngle + off,
+          powerPercent: pw,
+          pocketIdx: -1,
+          targetNum: lowestBall.num,
+          isSafety: true,
+          spinHint: "none",
+          hiderNum: h.num
         });
       }
     }
@@ -6675,6 +6805,14 @@ function generateShotCandidates(cue, targets, prof, problematicTargets = null) {
       .sort((a, b) => Math.abs(28 - a.powerPercent) - Math.abs(28 - b.powerPercent))
       .slice(0, prof.searchDepth >= 3 ? 10 : 8);
     candidates.push(...safeties);
+
+    // Stufe 2.6: zusätzliche Snooker-Kandidaten nur für 9-Ball-Profi.
+    // targets[0] ist im 9-Ball die lowestBall (Rules.getLegalTargets sortiert).
+    if (aiIsHardenedProfi(prof) && game.variant === "9ball" && targets.length > 0) {
+      const snookerCands = aiBuildNineBallSnookerSafetyCandidates(cue, targets[0])
+        .slice(0, 24);
+      candidates.push(...snookerCands);
+    }
   }
 
   const directVisibleNineBallTarget = game.variant === "9ball" && targets.length === 1 && (
@@ -6743,9 +6881,20 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   let robust = aiSimulateRobust(cand, samples, evalAimNoise, evalPowerNoise);
   if (cand.type === "jumpContactSafety") {
     const sim = aiSimulateShotResult({ ...cand, noRandomError: true });
+    // Hinweis: aiCheckFirstHitLegal + aiMeetsPostContactRule + !cuePotted sind
+    // FUNDAMENTAL — wenn der exakte Stoß bereits regelwidrig ist, verwerfen.
     if (!sim || sim.cuePotted || !aiCheckFirstHitLegal(sim, cand.targetNum) || !aiMeetsPostContactRule(sim)) return null;
+    // Stufe 2.6b: Safety-Guard nur bei FUNDAMENTAL-Reasons als hartes Nein.
+    // Soft-Risiken (scratch-risk/foul-risk/cue-near-pocket/no-robust-safe-sim/unsafe-safety)
+    // fließen über das Score-Modell ein, statt den Kandidaten zu eliminieren.
     const safetyGuard = aiIsHardenedProfi(prof) ? aiValidateHardSafetyShot(cand, prof, ctx) : null;
-    if (safetyGuard && !safetyGuard.ok) return null;
+    if (safetyGuard && !safetyGuard.ok) {
+      const FUNDAMENTAL_SAFETY_REASONS = new Set([
+        "missing-shot", "not-safety", "no-simulation", "scratch",
+        "illegal-first-hit", "no-cushion-after-contact"
+      ]);
+      if (FUNDAMENTAL_SAFETY_REASONS.has(safetyGuard.reason)) return null;
+    }
     if (safetyGuard?.robust) robust = safetyGuard.robust;
     const cueAfter = aiSimCueBall(sim);
     const posValue = aiScoreCuePositionForNextShot(cueAfter, sim.finalBalls, cand.targetNum);
@@ -6774,14 +6923,45 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   let score;
   let positionPlan = null;
   if (cand.isSafety) {
+    // Stufe 2.6b: Klare Trennung zwischen FUNDAMENTAL (Kandidat regeltechnisch
+    // oder physikalisch kaputt) und SOFT (Kandidat spielbar, aber riskant).
+    // Vorher wurden Soft-Risiken stumm zu null verworfen → in Snooker-Lagen
+    // landete die KI bei einem erzwungenen Notstoß (hardForcedContactLastResort)
+    // statt einem suboptimalen aber legalen Kick.
+    //
+    //   FUNDAMENTAL (return null):
+    //     missing-shot / no-simulation / scratch / illegal-first-hit /
+    //     no-cushion-after-contact (alle aus aiFinalValidateHardShot)
+    //
+    //   SOFT (weiter zur Bewertung, Score bestraft die Risiken via scratchRisk
+    //   und foulRisk in scoreSafety):
+    //     cue-near-pocket   — Cue endet nahe Tasche, exakt aber legal
+    //     scratch-risk      — Robust-Streuung erzeugt vereinzelt Scratch
+    //     foul-risk         — Robust-Streuung erzeugt vereinzelt Foul
+    //     no-robust-safe-sim — robust.bestSim nicht safety-legal, exakt aber schon
+    //     unsafe-safety     — exakt nicht safety-legal; praktisch fast immer
+    //                         "Safety pottet zufällig den Zielball" — KEIN Foul.
+    let safetyExactSim = null; // exakter Sim als Bewertungs-Fallback bei Soft-Fail
     if (aiIsHardenedProfi(prof)) {
       const safetyGuard = aiValidateHardSafetyShot(cand, prof, ctx);
-      if (!safetyGuard.ok) return null;
-      robust = safetyGuard.robust;
+      if (!safetyGuard.ok) {
+        const FUNDAMENTAL_SAFETY_REASONS = new Set([
+          "missing-shot", "not-safety", "no-simulation", "scratch",
+          "illegal-first-hit", "no-cushion-after-contact"
+        ]);
+        if (FUNDAMENTAL_SAFETY_REASONS.has(safetyGuard.reason)) return null;
+      }
+      if (safetyGuard.robust) robust = safetyGuard.robust;
+      if (safetyGuard.sim) safetyExactSim = safetyGuard.sim;
     }
-    const sim = robust.bestSim;
-    if (!sim || !aiSafetyShotLegal(sim, cand.targetNum)) return null;
-    if (aiIsHardenedProfi(prof) && (robust.scratchRisk > 0 || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD)) return null;
+    // Sim-Wahl: bevorzugt robust.bestSim (sofern safety-legal), sonst exakter Sim.
+    // Damit fällt no-robust-safe-sim NICHT mehr zwei Zeilen tiefer wieder durch
+    // den aiSafetyShotLegal-Check.
+    const robustOk = robust?.bestSim && aiSafetyShotLegal(robust.bestSim, cand.targetNum);
+    const sim = robustOk ? robust.bestSim : safetyExactSim;
+    if (!sim) return null;
+    // Hinweis: aiSafetyShotLegal wird oben implizit am robust.bestSim geprüft;
+    // für safetyExactSim ist es bei unsafe-safety bewusst nicht streng — siehe Kommentar.
     score = CommonStrategy.scoreSafety(sim, cand.targetNum, robust, cand, prof);
   } else {
     // Combos tragen real mehr Unsicherheit (zwei Kontakte + Wurf, von der Sim nicht
@@ -6796,8 +6976,11 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
         const comboFloor = Math.max(HARD_SAFE_POT_THRESHOLD, 0.96);
         if (robust.scratchRisk > HARD_SCRATCH_VETO_THRESHOLD || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD || robust.potProbability < comboFloor) return null;
       } else {
-        // Nur offensichtlich chancenlose Pots herausfiltern.
-        if (robust.potProbability < 0.10) return null;
+        // Stufe 2.6b: Nur völlig chancenlose Pots/Jumps herausfiltern (0–1 %
+        // entspricht "deterministisch trifft die Sim das Ziel überhaupt nicht").
+        // Vorher 0.10 — das tötete legale 7 %-Jumps, obwohl die immer noch
+        // besser sind als ein garantiertes Foul aus dem Forced-Contact-Pfad.
+        if (robust.potProbability < 0.02) return null;
       }
     } else if (prof.searchDepth >= 3 && (robust.scratchRisk > 0.22 || robust.foulRisk > 0.22)) {
       return null;
@@ -7532,8 +7715,14 @@ function aiDecidePushOut() {
   game.awaitingPushOutDecision = false;
   if (accept) {
     updateUI();
-    game.aiThinking = true;
-    game.aiTimer = 60;
+    // Stufe 2.6d: scheduleAiTurnAfterPaint statt scheduleAiTurn — aiDecidePushOut
+    // läuft synchron innerhalb von aiPlanShot. Zu diesem Zeitpunkt ist aiPlanning
+    // noch true; scheduleAiTurn würde an seiner aiPlanning-Precondition blocken
+    // und der Folgezug käme nie zustande (Statuszeile zeigt "KI ist am Zug" und
+    // bleibt hängen, bis Pause→Weiter einen sauberen Schedule erzwingt).
+    // Der Double-rAF deferiert bis nach der .finally() des Frame-Loops, die
+    // aiPlanning sauber zurücksetzt.
+    scheduleAiTurnAfterPaint(60);
   } else {
     game.currentPlayer = game.pushOutDoneBy;
     game.pushOutDoneBy = -1;
@@ -7571,9 +7760,34 @@ async function aiPlanShot() {
   const wasPlacingBIH = game.placingCue;
   if (game.placingCue) {
     if (game.isBreakShot && game.variant === "9ball" && game.kitchenOnly) {
+      // Stufe 2.6c: vollständige 9-Ball-Anstoßlogik analog zum 8-Ball.
+      // Vorher: nur Cue-Position gesetzt, danach lief aiPlanShot mit
+      // generischen Safety-/Kick-Kandidaten weiter — der Winkel kam aus
+      // einem zufälligen Kandidaten, Power wurde später auf 88–100 %
+      // forciert. Resultat: intermittierend illegaler Anstoß (< 4 Kugeln
+      // an Bande → Foul + Ball-in-Hand), daher schwankte auch der
+      // Push-Out-Button-Status (er ist nach illegalem Anstoß
+      // regelkonform NICHT verfügbar). Jetzt: gezielt auf die 1 (Apex
+      // der 9-Ball-Pyramide), gleicher Stoßmechanismus wie 8-Ball.
+      const apexBall = game.balls.find(b => b.num === 1 && b.inPlay);
+      const apexX = apexBall ? apexBall.x : PLAY_X1 + PLAY_W * 0.75;
+      const apexY = apexBall ? apexBall.y : PLAY_Y1 + PLAY_H * 0.5;
       cue.x = PLAY_X1 + PLAY_W * 0.21;
       cue.y = Math.random() < 0.5 ? PLAY_Y1 + PLAY_H * 0.25 : PLAY_Y2 - PLAY_H * 0.25;
       game.placingCue = false; game.ballInHand = false; game.kitchenOnly = false;
+      game.aimAngle = Math.atan2(apexY - cue.y, apexX - cue.x) + (Math.random() - 0.5) * 0.018;
+      game.powerPercent = 88 + Math.random() * 12;
+      game.cueType = "break";
+      game.spinX = 0; game.spinY = 0; game.cueElevation = 0;
+      if (typeof updateCueTypeHint === "function") updateCueTypeHint();
+      updatePowerUI();
+      drawSpinCanvas(); updateSpinLabel();
+      drawElevCanvas(); updateElevLabel();
+      syncSpinElevTab();
+      if (token !== game.aiPlanToken) return;
+      if (game.paused) return;
+      await aiPreviewThenShoot({ targetNum: null, pocketIdx: -1, isSafety: true }, token);
+      return;
     } else if (game.isBreakShot && game.variant === "8ball" && game.kitchenOnly) {
       // 8-Ball-Anstoß: Weiße ins Kopffeld, direkt auf Apex-Ball (Ball 1) zielen.
       // Die normale BIH-Planung würde scheitern, weil aiValidateShotBySimulation
@@ -7841,6 +8055,25 @@ async function aiPlanShot() {
         (c.robust?.foulRisk ?? 1) <= HARD_FOUL_VETO_THRESHOLD
       );
       if (hardSafeSafeties.length > 0) bestShot = hardSafeSafeties[0];
+    }
+
+    // Stufe 2.6b: Realistische Safety-Stufe. Wenn keine "perfekte" existiert,
+    // die mit moderaten Risiken nehmen statt zum erzwungenen Notstoß zu fallen.
+    // Spiegelt die realisticPots-Stufe für Pots wider.
+    if (!bestShot) {
+      const realisticSafeties = safeCands.filter(c =>
+        (c.robust?.scratchRisk ?? 1) <= 0.30 &&
+        (c.robust?.foulRisk ?? 1) <= 0.30
+      );
+      if (realisticSafeties.length > 0) bestShot = realisticSafeties[0];
+    }
+
+    // Stufe 2.6b: Last-Resort innerhalb der bewerteten Kandidaten — die
+    // höchstgescorte Variante (Safety oder Pot). scoreSafety/scorePot haben
+    // scratch/foul/oppAccess bereits bestraft, also gewinnt automatisch die
+    // geringst-schädliche Wahl. Immer besser als ein erzwungenes Foul.
+    if (!bestShot && evaluated.length > 0) {
+      bestShot = evaluated[0];
     }
   } else if (prof.searchDepth >= 3) {
     // Profi-Priorität: offene Stellungen ausschießen. Safety nur ohne belastbaren Pot.
@@ -8175,6 +8408,25 @@ async function aiPlanShot() {
         aiApply8BallCallForShot(bestShot, me);
         finalCheck = aiFinalValidateHardShot(aiBuildFinalShotFromGame(bestShot), _ctx);
         if (finalCheck.ok) break;
+      }
+    }
+    // Stufe 2.6b: Letzte Chance vor dem erzwungenen Notstoß — die bereits
+    // bewerteten Kandidaten in Score-Reihenfolge exakt nachvalidieren und den
+    // ersten nehmen, der ok ist. Verhindert, dass die KI auf hardForcedContact
+    // zurückfällt, wenn die Kandidatenliste eine valide Option enthält.
+    if (!finalCheck.ok && Array.isArray(evaluated) && evaluated.length > 0) {
+      for (const cand of evaluated) {
+        const candShot = { ...cand };
+        aiApplyHardFallbackShotState(candShot);
+        aiApply8BallCallForShot(candShot, me);
+        const check = candShot.isSafety
+          ? aiExactLegalEscapeCheck(candShot, _ctx)
+          : aiFinalValidateHardShot(aiBuildFinalShotFromGame(candShot), _ctx);
+        if (check.ok) {
+          bestShot = candShot;
+          finalCheck = check;
+          break;
+        }
       }
     }
     if (!finalCheck.ok) {
@@ -9276,9 +9528,7 @@ ui.btnPushOutAccept.addEventListener("click", () => {
   game.awaitingPushOutDecision = false;
   // currentPlayer ist bereits der Gegner (der jetzt annimmt und spielt)
   updateUI();
-  if (game.mode === "ai" && game.currentPlayer === 1 && game.state === "aiming") {
-    game.aiThinking = true; game.aiTimer = 60;
-  }
+  scheduleAiTurnAfterPaint(60);
 });
 ui.btnPushOutReject.addEventListener("click", () => {
   game.awaitingPushOutDecision = false;
@@ -9289,16 +9539,15 @@ ui.btnPushOutReject.addEventListener("click", () => {
   }
   game.pushOutDoneBy = -1;
 
-  // Wichtig im KI-Modus: Wenn die KI den Push-Out gespielt hat und der
-  // menschliche Spieler zurückgibt, ist wieder die KI am Zug. Ohne diesen
-  // Startimpuls bleibt die App zwar im Status „KI denkt nach…“, plant aber
-  // keinen Folgestoß.
-  if (game.mode === "ai" && game.currentPlayer === 1 && game.state === "aiming" && !game.shotInProgress) {
-    game.aiThinking = true;
-    game.aiTimer = 45;
-  }
-
+  // Stufe 2.6: Push-Out-Phase ist abgeschlossen — defensiv State normalisieren.
+  // game.state war nach Push-Out-Resolve nicht zuverlässig "aiming", was den
+  // alten Trigger ins Leere laufen ließ. aiPlanning bleibt eigentlich vom
+  // .finally() des Frame-Loops sauber zurückgesetzt, hier zusätzlich als
+  // Sicherheitsventil (entspricht dem Effekt von Pause→Weiter).
+  game.state = "aiming";
+  game.aiPlanning = false;
   updateUI();
+  scheduleAiTurnAfterPaint(45);
 });
 
 // Tisch drehen (Drill 15 + Basisübung)
@@ -9984,7 +10233,11 @@ function updateUI() {
   } else if (game.placingCue) {
     ui.statusLine.textContent = "Ball-in-Hand: Weiße per LMB-Klick platzieren";
   } else if (game.mode === "ai" && game.currentPlayer === 1) {
-    ui.statusLine.textContent = "KI denkt nach…";
+    // Stufe 2.6: Statuszeile spiegelt echte KI-Aktivität — vorher hat
+    // "KI denkt nach…" auch dann gestanden, wenn die KI gar nicht plante.
+    if (game.shotInProgress) ui.statusLine.textContent = "KI stößt…";
+    else if (game.aiThinking || game.aiPlanning) ui.statusLine.textContent = "KI denkt nach…";
+    else ui.statusLine.textContent = "KI ist am Zug";
   } else if (game.mode === "online" && game.currentPlayer !== online.myPlayer) {
     ui.statusLine.textContent = `${game.players[game.currentPlayer].name} ist am Zug – warte…`;
   } else if (game.variant === "basis" && game.placingCue) {
@@ -10017,10 +10270,8 @@ function updateUI() {
   if (showPushOutDecision) {
     ui.pushOutDecisionPlayer.textContent = game.players[game.currentPlayer].name;
   }
-  if (game.awaitingPushOutDecision && game.mode === "ai" && game.currentPlayer === 1 && !game.aiThinking && !game.aiPlanning) {
-    game.aiThinking = true;
-    game.aiTimer = 45;
-  }
+  // Stufe 2.6: Side-Effect entfernt — KI-Trigger gehören nicht in den
+  // Render-Pfad. resolveShot() ruft scheduleAiTurn() im Push-Out-Branch direkt.
 
   // Push-Out Button
   const showPushOutBtn = game.variant === "9ball"
@@ -10183,9 +10434,7 @@ function newGame() {
   ui.endScreen.classList.remove("show");
   updateUI();
   tryStartShotTimer();
-  if (game.mode === "ai" && game.currentPlayer === 1 && game.state === "aiming") {
-    game.aiThinking = true; game.aiTimer = 90;
-  }
+  scheduleAiTurn(90);
 }
 
 window.addEventListener("resize", () => { applyLayout(); });
