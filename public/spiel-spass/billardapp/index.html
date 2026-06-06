@@ -1464,6 +1464,12 @@
     <button id="btnRotateTable" style="display:none; border-color: #4cc9f0; color: #4cc9f0;">⟳ Tisch drehen</button>
     <button id="btnBasisRepeat" style="display:none;">↺ Wiederholen</button>
     <button id="btnTrainingReset" style="display:none;">↺ Reset Tableau</button>
+    <select id="trainingPreset" style="display:none;" title="Vordefinierte Aufstellung laden">
+      <option value="">— Aufstellung wählen —</option>
+      <option value="press">Press-Kugeln</option>
+      <option value="smallPosition10">Kleine Position (10)</option>
+      <option value="cornerPockets4">Ecktaschen (4)</option>
+    </select>
     <button id="btnTimerExtend" style="display:none;">⏱ +30s</button>
     <button id="btnPhysics" style="display:none;">⚙ Physik</button>
     <button id="btnOnlineSync" style="display:none" title="Spielzustand synchronisieren – bei eingefrorenem Spiel">⟳ Sync</button>
@@ -1889,7 +1895,7 @@ const AI_LOOKAHEAD_DEPTH = 3;
 const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S2.10";
+const AI_BUILD = "S2.12";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -2746,6 +2752,71 @@ function isTrainingVorratBall(b) {
   return game.variant === "training" && b.inPlay && b.y + b.r < PLAY_Y1;
 }
 
+// S2.11: Einheitlicher Ball-Ball-Kontaktlöser für step() UND
+// aiSimulateShotResult(). Beide MÜSSEN identisch werfen, sonst entkoppelt
+// sich die KI-Pot-Schätzung von der gespielten Realität.
+//
+// Reibkontakt-Modell:
+//  - Normalimpuls unverändert (vc*e / va*e Swap)
+//  - Tangential: Coulomb-Slip gegen die OBERFLÄCHEN-Relativgeschwindigkeit
+//        surfaceRelT = linRelT + BALL_R * (wz_a + wz_c)
+//    Eine Formel ergibt CIT (linRelT), Gear Outside English (spinRelT hebt
+//    linRelT auf), Inside-Boost (addiert sich), Speed-Dämpfung (mu_eff) und
+//    Dünn-Cut-Cap (Jt_cap = mu*Jn).
+//
+// Vorzeichen-Konvention für wz wird empirisch kalibriert (separate Tests A/B).
+function resolveBallBallContact(a, c, nx, ny) {
+  const ddx = c.x - a.x, ddy = c.y - a.y;
+  const dz  = (c.z || 0) - (a.z || 0);
+  const d   = Math.hypot(ddx, ddy);
+  const d3  = Math.sqrt(d * d + dz * dz);
+  const minD = a.r + c.r;
+  const overlap = (minD - d3) / 2;
+  a.x -= nx * overlap; a.y -= ny * overlap;
+  c.x += nx * overlap; c.y += ny * overlap;
+
+  const va = a.vx * nx + a.vy * ny;
+  const vc = c.vx * nx + c.vy * ny;
+  const vApproach = va - vc;
+  if (vApproach <= 0.02) return 0;
+
+  const newVa = vc * CFG_BALL_BOUNCE;
+  const newVc = va * CFG_BALL_BOUNCE;
+  a.vx += (newVa - va) * nx;
+  a.vy += (newVa - va) * ny;
+  c.vx += (newVc - vc) * nx;
+  c.vy += (newVc - vc) * ny;
+
+  if (vApproach > 0.25) {
+    const tx = -ny, ty = nx;
+    const linRelT  = (a.vx - c.vx) * tx + (a.vy - c.vy) * ty;
+    const spinRelT = BALL_R * ((a.wz || 0) + (c.wz || 0));
+    const surfaceRelT = linRelT + spinRelT;
+
+    if (Math.abs(surfaceRelT) > 1e-3) {
+      const CIT_MU_BASE   = 0.16;
+      const CIT_SPEED_REF = 14.0;
+
+      const speedFactor = CIT_SPEED_REF / (CIT_SPEED_REF + vApproach);
+      const mu_eff      = CIT_MU_BASE * speedFactor;
+
+      const Jn      = vApproach * (1 + CFG_BALL_BOUNCE) * 0.5;
+      const JtRaw   = 0.5 * Math.abs(surfaceRelT);
+      const JtCap   = mu_eff * Jn;
+      // Tangentiale Reibung wirkt gegen die Oberflächen-Relativbewegung:
+      // rutscht a am Kontaktpunkt in +t, bekommt a -t und c +t.
+      const Jt      = -Math.min(JtRaw, JtCap) * Math.sign(surfaceRelT);
+
+      a.vx += Jt * tx;  a.vy += Jt * ty;
+      c.vx -= Jt * tx;  c.vy -= Jt * ty;
+      a.motionState = "sliding";
+      c.motionState = "sliding";
+    }
+  }
+
+  return vApproach;
+}
+
 function step() {
   const balls = game.balls.filter(b => b.inPlay && !isTrainingVorratBall(b));
   let maxSpeed = 0;
@@ -2766,19 +2837,7 @@ function step() {
         if (d3sq < minD * minD && d2 > 0.0001) {
           const d = Math.sqrt(d2);
           const nx = ddx / d, ny = ddy / d;
-          const d3 = Math.sqrt(d3sq);
-          const overlap = (minD - d3) / 2;
-          a.x -= nx * overlap; a.y -= ny * overlap;
-          c.x += nx * overlap; c.y += ny * overlap;
-          const va = a.vx * nx + a.vy * ny;
-          const vc = c.vx * nx + c.vy * ny;
-          const newVa = vc * CFG_BALL_BOUNCE;
-          const newVc = va * CFG_BALL_BOUNCE;
-          a.vx += (newVa - va) * nx;
-          a.vy += (newVa - va) * ny;
-          c.vx += (newVc - vc) * nx;
-          c.vy += (newVc - vc) * ny;
-          const strength = Math.abs(va - vc);
+          const strength = resolveBallBallContact(a, c, nx, ny);
           if (a.isCue && game.firstHit === null) { game.firstHit = c.num; if (game.wasBreakFoulKitchenShot) game.firstHitInKitchen = isKitchenContactInHeadField(c.x - nx * c.r); applySpinOnContact(a, nx, ny); }
           else if (c.isCue && game.firstHit === null) { game.firstHit = a.num; if (game.wasBreakFoulKitchenShot) game.firstHitInKitchen = isKitchenContactInHeadField(a.x + nx * a.r); applySpinOnContact(c, -nx, -ny); }
           else if (a.isCue && !game.spinPending.used) { applySpinOnContact(a, nx, ny); }
@@ -3791,6 +3850,87 @@ function trainingReset() {
     b.motionState = "resting";
   }
   game.cuePotted = false;
+  game.placingCue = false;
+  game.ballInHand = false;
+  game.kitchenOnly = false;
+  game.aimActive = false;
+  game.state = "aiming";
+  game.foulMessage = ""; game.foulTimer = 0;
+  game.ballsPottedThisShot = [];
+  updateUI();
+}
+
+// S2.11: Vordefinierte Trainings-Aufstellungen.
+// Positionen relativ zum Spielfeld (Landscape-Koordinaten): xRel/yRel ∈ [0,1].
+// Bälle, die nicht im Preset aufgeführt sind, bleiben im Vorrat (außerhalb
+// des Spielfelds, klickbar zum manuellen Hereinziehen).
+function trainingDiamondBall(num, xIdx, yIdx, dx = 0, dy = 0) {
+  return { num, xRel: xIdx / 8, yRel: yIdx / 4, dx, dy };
+}
+
+const TRAINING_PRESETS = {
+  press: {
+    label: "Press-Kugeln",
+    balls: [
+      trainingDiamondBall(0, 5, 2),         // Weiße: Diamant (5, 2)
+      trainingDiamondBall(1, 3, 2),         // 1 (CIT-Ziel): Diamant (3, 2)
+      trainingDiamondBall(2, 3, 2, -2.02)   // 2: press direkt links neben der 1
+    ]
+  },
+  smallPosition10: {
+    label: "Kleine Position (10)",
+    balls: [
+      { num: 0, xRel: 0.18, yRel: 0.50 },   // Weiße: Kopffeld, frei verschiebbar
+      // Fußbereich: Diamond-Kreuzungspunkte (x = 4..7 Achtel, y = 1..3 Viertel)
+      trainingDiamondBall(3, 5, 1),
+      trainingDiamondBall(6, 6, 1),
+      trainingDiamondBall(1, 7, 1),
+      trainingDiamondBall(9, 4, 2),
+      trainingDiamondBall(10, 5, 2),
+      trainingDiamondBall(5, 6, 2),
+      trainingDiamondBall(8, 7, 2),
+      trainingDiamondBall(4, 5, 3),
+      trainingDiamondBall(7, 6, 3),
+      trainingDiamondBall(2, 7, 3)
+    ]
+  },
+  cornerPockets4: {
+    label: "Ecktaschen (4)",
+    balls: [
+      { num: 0, xRel: 0.18, yRel: 0.50 },   // Weiße: Kopffeld, frei verschiebbar
+      // Diamond-Kreuzungspunkte unmittelbar vor den vier Ecktaschen.
+      trainingDiamondBall(1, 1, 1),
+      trainingDiamondBall(2, 7, 1),
+      trainingDiamondBall(3, 1, 3),
+      trainingDiamondBall(4, 7, 3)
+    ]
+  }
+};
+
+function applyTrainingPreset(name) {
+  const preset = TRAINING_PRESETS[name];
+  if (!preset) return;
+  // Erst alle Bälle in den Vorrat zurück
+  for (const b of game.balls) {
+    const num = b.isCue ? 0 : b.num;
+    const pos = trainingVorratPosition(num);
+    b.x = pos.x; b.y = pos.y;
+    b.vx = 0; b.vy = 0; b.vz = 0; b.z = 0;
+    b.wx = 0; b.wy = 0; b.wz = 0;
+    b.inPlay = true;
+    b.motionState = "resting";
+  }
+  // Dann Preset-Bälle aufs Spielfeld
+  for (const spec of preset.balls) {
+    const ball = game.balls.find(b => (spec.num === 0 ? b.isCue : b.num === spec.num));
+    if (!ball) continue;
+    ball.x = PLAY_X1 + PLAY_W * spec.xRel + (spec.dx || 0) * BALL_R;
+    ball.y = PLAY_Y1 + PLAY_H * spec.yRel + (spec.dy || 0) * BALL_R;
+  }
+  game.cuePotted = false;
+  game.placingCue = false;
+  game.ballInHand = false;
+  game.kitchenOnly = false;
   game.aimActive = false;
   game.state = "aiming";
   game.foulMessage = ""; game.foulTimer = 0;
@@ -4187,20 +4327,7 @@ function aiSimulateShotResult(shot) {
           if (d3sq < minD * minD && d2 > 0.0001) {
             const d = Math.sqrt(d2);
             const nx = ddx / d, ny = ddy / d;
-            const d3 = Math.sqrt(d3sq);
-            const overlap = (minD - d3) / 2;
-            a.x -= nx * overlap; a.y -= ny * overlap;
-            c.x += nx * overlap; c.y += ny * overlap;
-
-            const va = a.vx * nx + a.vy * ny;
-            const vc = c.vx * nx + c.vy * ny;
-            const newVa = vc * CFG_BALL_BOUNCE;
-            const newVc = va * CFG_BALL_BOUNCE;
-            a.vx += (newVa - va) * nx;
-            a.vy += (newVa - va) * ny;
-            c.vx += (newVc - vc) * nx;
-            c.vy += (newVc - vc) * ny;
-
+            resolveBallBallContact(a, c, nx, ny);
             if (a.isCue && result.firstHit === null) {
               result.firstHit = c.num;
               result.firstHitContactX = c.x - nx * c.r;
@@ -7045,6 +7172,44 @@ function generateShotCandidates(cue, targets, prof, problematicTargets = null) {
     .slice(0, prof.searchDepth >= 3 ? 12 : 8);
   candidates.push(...pots);
 
+  // S2.11: Outside-English-Varianten für die bereits gewählten Center-Pots
+  // (Squirt vorkompensiert, throw-control Hint überlebt im finalen Spin-Branch).
+  // Nach dem Slice, damit Spin-Varianten andere Center-Pots nicht verdrängen.
+  if (aiIsHardenedProfi(prof)) {
+    const playingProfile = getCueProfile("playing");
+    const K_DEF = 0.044 * playingProfile.squirt;
+    for (const base of pots) {
+      if (base.dotN < 0.45 || base.dotN >= 0.92) continue;
+      const t = targets.find(b => b.num === base.targetNum);
+      const p = POCKETS[base.pocketIdx];
+      if (!t || !p) continue;
+      const gb = aiGhostBallAngle(cue, t, p);
+      if (!gb) continue;
+      const dxCG = gb.ghostX - cue.x;
+      const dyCG = gb.ghostY - cue.y;
+      const dxTP = p.x - t.x;
+      const dyTP = p.y - t.y;
+      const cutCross = dxCG * dyTP - dyCG * dxTP;
+      if (cutCross === 0) continue;
+      const outsideSign = -Math.sign(cutCross);
+      const pf = clamp(base.powerPercent / 100, 0, 1);
+      for (const sx of [outsideSign * 0.30, outsideSign * 0.55, -outsideSign * 0.20]) {
+        const deflAngle = K_DEF * Math.abs(sx) * Math.pow(pf, 0.64);
+        candidates.push({
+          type: base.type,
+          angle: base.angle + Math.sign(sx) * deflAngle,
+          powerPercent: base.powerPercent,
+          pocketIdx: base.pocketIdx,
+          targetNum: base.targetNum,
+          dotN: base.dotN, dCG: base.dCG, dTP: base.dTP,
+          spinX: sx, spinY: 0,
+          spinHint: "throw-control",
+          cueType: "playing"
+        });
+      }
+    }
+  }
+
   // S2.10: Bank-Shots als reguläre Profi-Erstklass-Kandidaten (8- und 9-Ball).
   // Top 10 nach dotN; Robust-Bewertung übernimmt evaluateCandidatesAsync.
   if (aiIsHardenedProfi(prof)) {
@@ -7318,6 +7483,11 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
     // +120 deckt die Lücke zur distanceSafety9 (+220) und zur hideScore-Safety,
     // ohne unsichere Banks (potProb < 0.55) zu pushen.
     if (cand.type === "bankShot" && (robust.potProbability ?? 0) >= 0.55) score += 120;
+    // S2.11: Center-Ball-Bias — Throw-Control nur bei klarem Pot-Wahrscheinlichkeits-
+    // Gewinn bevorzugen. Die Sim kennt applySpinOnContact nicht und kann
+    // Outside-English-Stellung "zu schön" rechnen; -40 entspricht ~13 % potProb-
+    // Vorteil, den die Outside-Variante real bringen muss um den Center zu schlagen.
+    if (cand.spinHint === "throw-control") score -= 40;
     if (ctx) {
       score += CommonStrategy.scoreLegality(robust.bestSim?.firstHit, ctx.firstHitRequirement);
       if (tableAnalysis) score += EightBallStrategy.scoreCandidate(ctx, cand, robust, tableAnalysis, prof);
@@ -8662,6 +8832,13 @@ async function aiPlanShot() {
     game.spinY = clamp(bestShot.spinY || 0, -0.30, 0.30);
     if (Math.abs(game.spinX) < 0.035) game.spinX = 0;
     if (Math.abs(game.spinY) < 0.035) game.spinY = 0;
+  } else if (aiIsHardenedProfi(prof) && bestShot.spinHint === "throw-control") {
+    // S2.11: Validierter Outside-English-Stoß zur CIT-Kompensation.
+    // Squirt ist im Kandidaten-Aim bereits vorkompensiert; spinX hier
+    // unangetastet durchreichen (höherer Bereich als position-control).
+    game.spinX = clamp(bestShot.spinX || 0, -0.55, 0.55);
+    game.spinY = 0;
+    if (Math.abs(game.spinX) < 0.05) game.spinX = 0;
   } else if ((bestShot.noRandomError && bestShot.spinHint === "none") || aiIsHardSpecialLockShot(bestShot)) {
     // Pot-/Kontakt-/Jump-/Long-Pot-Lock: keine Stellungsexperimente, kein Effet.
     game.spinX = 0; game.spinY = 0;
@@ -9886,6 +10063,7 @@ const ui = {
   btnRotateTable: document.getElementById("btnRotateTable"),
   btnBasisRepeat: document.getElementById("btnBasisRepeat"),
   btnTrainingReset: document.getElementById("btnTrainingReset"),
+  trainingPreset: document.getElementById("trainingPreset"),
   btnTimerExtend: document.getElementById("btnTimerExtend"),
   btnPause: document.getElementById("btnPause"),
   btnUndo: document.getElementById("btnUndo"),
@@ -10011,6 +10189,14 @@ ui.btnBasisRepeat.addEventListener("click", (e) => {
 ui.btnTrainingReset.addEventListener("click", () => {
   if (game.variant !== "training") return;
   trainingReset();
+});
+
+// Training-Preset wählen: vordefinierte Aufstellung laden.
+ui.trainingPreset.addEventListener("change", (e) => {
+  if (game.variant !== "training") return;
+  const name = e.target.value;
+  if (name) applyTrainingPreset(name);
+  e.target.value = ""; // zurück auf Default, damit erneute Auswahl möglich ist
 });
 
 // Push-Out ansagen
@@ -10719,6 +10905,7 @@ function updateUI() {
   // Stufe 2.9: Wiederholen-Button gilt auch im Trainingsmodus.
   ui.btnBasisRepeat.style.display = (game.variant === "basis" || game.variant === "training") ? "" : "none";
   ui.btnTrainingReset.style.display = (game.variant === "training") ? "" : "none";
+  ui.trainingPreset.style.display = (game.variant === "training") ? "" : "none";
   document.getElementById("btnPhysics").style.display = (game.variant === "basis") ? "" : "none";
   document.getElementById("btnOnlineSync").style.display =
     (game.mode === "online" && online.connected && online.role !== "spectator"
