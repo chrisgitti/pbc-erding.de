@@ -1849,6 +1849,12 @@ const HARD_SCRATCH_VETO_THRESHOLD = 0.005;
 const HARD_FOUL_VETO_THRESHOLD = 0.04;
 const HARD_SAFE_POT_THRESHOLD = 0.90;
 const HARD_OPEN_POT_THRESHOLD = 0.95;
+const HARD_DIRECT_LOCK_POT_THRESHOLD = 0.72;
+const HARD_DIRECT_LOCK_AIM_NOISE = 0.16;
+const HARD_DIRECT_LOCK_POWER_NOISE = 0.018;
+const HARD_REALISTIC_POT_FLOOR_8BALL = 0.42;
+const HARD_REALISTIC_POT_FLOOR_9BALL = 0.38;
+const HARD_NINEBALL_ENDGAME_POT_FLOOR = 0.35;
 const HARD_JUMP_SHORT_GAP = BALL_R * 2.1;
 const HARD_LONG_POT_DISTANCE = PLAY_W * 0.55;
 const HARD_RAIL_BALL_DISTANCE = BALL_R * 2.0;
@@ -1868,8 +1874,10 @@ const HARD_FALLBACK_TIME_BUDGET_MS = 450;
 // freie, eigentlich klare Pots aus 18 Robust-Samples regelmäßig unter
 // HARD_SAFE_POT_THRESHOLD (0.90) → die KI verwarf sie und spielte Quatsch-Safes.
 // Ein realistischer Profi schätzt die eigene Ausführung präziser ein.
-const AI_EVAL_AIM_NOISE_FLOOR = 0.18;    // Grad (vorher 0.4)
-const AI_EVAL_POWER_NOISE_FLOOR = 0.015; // relativ (±1.5 %, vorher 3 %)
+const AI_EVAL_AIM_NOISE_FLOOR = 0.10;    // Grad (vorher 0.18)
+const AI_EVAL_POWER_NOISE_FLOOR = 0.008; // relativ (+/-0.8 %, vorher 1.5 %)
+const AI_EVAL_COMBO_AIM_NOISE_FLOOR = 0.18;
+const AI_EVAL_COMBO_POWER_NOISE_FLOOR = 0.015;
 // Stufe 2.3 — Pocket-Approach-Quality: Anflugwinkel Objektball→Tasche relativ
 // zur nächsten Bande. Bei Mitteltaschen überproportional bestraft (Lippe statt
 // Schlund). Bei Eckpockets schwächer (zwei Akzeptanzrichtungen). Distanzabhängig:
@@ -4437,6 +4445,28 @@ function aiSimulateShotResult(shot) {
   return result;
 }
 
+function aiShotNeedsDeclaredPocketMatch(shot) {
+  return !!(shot && !shot.isSafety
+    && game.variant === "8ball"
+    && Number.isInteger(shot.pocketIdx)
+    && shot.pocketIdx >= 0
+    && shot.targetNum != null
+    && shot.targetNum !== 0);
+}
+
+function aiTargetPotFailureReason(sim, shot) {
+  if (!sim || !shot || shot.targetNum == null) return "target-not-potted";
+  if (!sim.potted.includes(shot.targetNum)) return "target-not-potted";
+  if (aiShotNeedsDeclaredPocketMatch(shot) && sim.pocketByNum?.[shot.targetNum] !== shot.pocketIdx) {
+    return shot.targetNum === 8 ? "wrong-eight-pocket" : "wrong-called-pocket";
+  }
+  return null;
+}
+
+function aiSimPotsTargetAsPlanned(sim, shot) {
+  return aiTargetPotFailureReason(sim, shot) === null;
+}
+
 function aiValidateShotBySimulation(shot) {
   const sim = aiSimulateShotResult(shot);
   if (!sim || sim.cuePotted) return null;
@@ -4446,12 +4476,7 @@ function aiValidateShotBySimulation(shot) {
   if (game.variant === "9ball") {
     if (!sim.potted.includes(shot.targetNum)) return null;
   } else if (game.variant === "8ball") {
-    if (shot.targetNum === 8) {
-      if (!sim.potted.includes(8)) return null;
-      if (shot.pocketIdx >= 0 && sim.pocketByNum[8] !== shot.pocketIdx) return null;
-    } else {
-      if (!sim.potted.includes(shot.targetNum)) return null;
-    }
+    if (!aiSimPotsTargetAsPlanned(sim, shot)) return null;
   } else if (!sim.potted.includes(shot.targetNum)) {
     return null;
   }
@@ -5302,7 +5327,8 @@ function aiShotMeetsHardDirectContactGuard(shot, target) {
 function aiShotPotsHardDirectTarget(shot, target) {
   if (!shot || !target) return false;
   const sim = aiSimulateShotResult(shot);
-  return !!(sim && !sim.cuePotted && aiCheckFirstHitLegal(sim, target.num) && aiMeetsPostContactRule(sim) && sim.potted.includes(target.num));
+  return !!(sim && !sim.cuePotted && aiCheckFirstHitLegal(sim, target.num) && aiMeetsPostContactRule(sim)
+    && aiSimPotsTargetAsPlanned(sim, { ...shot, targetNum: target.num }));
 }
 
 function aiFindHardDirectPotLock(cue, target, prof) {
@@ -5341,8 +5367,13 @@ function aiFindHardDirectPotLock(cue, target, prof) {
       if (!validated) continue;
       // Robust check: verify the pot survives small aim/power perturbations.
       // noRandomError must be removed so aiSimulateRobust actually draws samples.
-      const robustCheck = aiSimulateRobust({ ...testShot, noRandomError: false }, 5, 0.45, 0.04);
-      if (robustCheck.potProbability < HARD_SAFE_POT_THRESHOLD) continue;
+      const robustCheck = aiSimulateRobust(
+        { ...testShot, noRandomError: false },
+        5,
+        HARD_DIRECT_LOCK_AIM_NOISE,
+        HARD_DIRECT_LOCK_POWER_NOISE
+      );
+      if (robustCheck.potProbability < HARD_DIRECT_LOCK_POT_THRESHOLD) continue;
       const cueAfter = aiSimCueBall(validated.sim);
       const posValue = aiScoreCuePositionForNextShot(cueAfter, validated.sim.finalBalls, validated.targetNum);
       const score = 420000
@@ -5792,7 +5823,7 @@ function aiSimulateRobust(baseShot, samples, aimNoiseDeg, powerNoise) {
     const sim = aiSimulateShotResult(noisedShot);
     if (!sim) continue;
     actualSamples++;
-    const potted = sim.potted.includes(baseShot.targetNum);
+    const potted = aiSimPotsTargetAsPlanned(sim, baseShot);
     const scratch = sim.cuePotted;
     const foulFirst = !aiCheckFirstHitLegal(sim, baseShot.targetNum);
     const foulPost = !aiMeetsPostContactRule(sim);
@@ -5979,12 +6010,11 @@ const EightBallStrategy = {
     if (ctx.variant !== "8ball" || !ctx.player.group) return 0;
     const me        = ctx.player;
     const finalSim  = robust.bestSim;
-    const potted    = finalSim?.potted ?? [];
     const cueFinal  = finalSim ? aiSimCueBall(finalSim) : null;
     const isOwnBall = cand.targetNum != null && isMyGroupBall(cand.targetNum, me);
     let bonus = 0;
 
-    if (isOwnBall && potted.includes(cand.targetNum)) {
+    if (isOwnBall && aiSimPotsTargetAsPlanned(finalSim, cand)) {
       bonus += 30;  // reward: own group ball potted
 
       // Runout quality + breakout: one loop over post-shot own balls
@@ -6693,10 +6723,7 @@ function aiValidateHardJumpShot(shot) {
       }
     };
   }
-  if (!shot.isSafety && !sim.potted.includes(shot.targetNum)) return null;
-  if (!shot.isSafety && game.variant === "8ball" && shot.targetNum === 8 && shot.pocketIdx >= 0) {
-    if (sim.pocketByNum?.[8] !== shot.pocketIdx) return null;
-  }
+  if (!shot.isSafety && !aiSimPotsTargetAsPlanned(sim, shot)) return null;
   const cueAfter = aiSimCueBall(sim);
   const posValue = aiScoreCuePositionForNextShot(cueAfter, sim.finalBalls, shot.targetNum);
   return {
@@ -6752,7 +6779,7 @@ function aiFindHardValidatedJumpFallback(cue, targets, prof, progressLabel = "Ju
     if (!valid) continue;
     const cueAfter = aiSimCueBall(valid.sim);
     const posValue = aiScoreCuePositionForNextShot(cueAfter, valid.sim.finalBalls, valid.targetNum);
-    const ownTargetPotted = valid.sim.potted.includes(valid.targetNum);
+    const ownTargetPotted = aiSimPotsTargetAsPlanned(valid.sim, valid);
     const anyObjectPotted = valid.sim.potted.some(n => n !== 0);
     const potBonus = ownTargetPotted ? 65000 : (!valid.isSafety ? 50000 : (anyObjectPotted ? 12000 : 0));
     const caromBonus = valid.type === "hardJumpCaromAttack" ? 9000 : 0;
@@ -6966,7 +6993,7 @@ function aiFindHardRailPotLock(cue, targets, prof) {
           };
           const check = aiFinalValidateHardShot(cand);
           if (!check.ok) continue;
-          if (!check.sim?.potted?.includes(t.num)) continue;
+          if (!aiSimPotsTargetAsPlanned(check.sim, cand)) continue;
 
           const cueAfter = aiSimCueBall(check.sim);
           const posValue = aiScoreCuePositionForNextShot(cueAfter, check.sim.finalBalls, t.num);
@@ -7101,7 +7128,7 @@ function aiFindHardBankShotCandidates(cue, targets, prof) {
 
             const check = aiFinalValidateHardShot(cand);
             if (!check.ok) continue;
-            if (!check.sim?.potted?.includes(t.num)) continue;
+            if (!aiSimPotsTargetAsPlanned(check.sim, cand)) continue;
 
             const cueAfter = aiSimCueBall(check.sim);
             const posValue = aiScoreCuePositionForNextShot(cueAfter, check.sim.finalBalls, t.num);
@@ -7213,10 +7240,16 @@ function generateShotCandidates(cue, targets, prof, problematicTargets = null) {
   // S2.10: Bank-Shots als reguläre Profi-Erstklass-Kandidaten (8- und 9-Ball).
   // Top 10 nach dotN; Robust-Bewertung übernimmt evaluateCandidatesAsync.
   if (aiIsHardenedProfi(prof)) {
-    const banks = aiBuildBankShotCandidates(cue, targets, prof)
-      .sort((a, b) => (b.dotN ?? 0) - (a.dotN ?? 0))
-      .slice(0, 10);
-    candidates.push(...banks);
+    let bankTargets = targets;
+    if (game.variant === "8ball" && Array.isArray(problematicTargets)) {
+      bankTargets = problematicTargets.length < targets.length ? [] : problematicTargets;
+    }
+    if (bankTargets.length) {
+      const banks = aiBuildBankShotCandidates(cue, bankTargets, prof)
+        .sort((a, b) => (b.dotN ?? 0) - (a.dotN ?? 0))
+        .slice(0, 10);
+      candidates.push(...banks);
+    }
   }
 
   if (game.variant === "9ball" && prof.searchDepth >= 2 && targets.length > 0) {
@@ -7344,8 +7377,10 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   const useNoiseFloor = (cand.type === "comboShot")
                      || (_fragility >= AI_FRAG_NOISE_THRESHOLD)
                      || (_approachPenalty >= AI_FRAG_NOISE_THRESHOLD);
-  const evalAimNoise = useNoiseFloor ? Math.max(prof.aimErrorDeg || 0, AI_EVAL_AIM_NOISE_FLOOR) : (prof.aimErrorDeg || 0);
-  const evalPowerNoise = useNoiseFloor ? Math.max(prof.powerError || 0, AI_EVAL_POWER_NOISE_FLOOR) : (prof.powerError || 0);
+  const evalAimFloor = cand.type === "comboShot" ? AI_EVAL_COMBO_AIM_NOISE_FLOOR : AI_EVAL_AIM_NOISE_FLOOR;
+  const evalPowerFloor = cand.type === "comboShot" ? AI_EVAL_COMBO_POWER_NOISE_FLOOR : AI_EVAL_POWER_NOISE_FLOOR;
+  const evalAimNoise = useNoiseFloor ? Math.max(prof.aimErrorDeg || 0, evalAimFloor) : (prof.aimErrorDeg || 0);
+  const evalPowerNoise = useNoiseFloor ? Math.max(prof.powerError || 0, evalPowerFloor) : (prof.powerError || 0);
   let robust = aiSimulateRobust(cand, samples, evalAimNoise, evalPowerNoise);
   if (cand.type === "jumpContactSafety") {
     const sim = aiSimulateShotResult({ ...cand, noRandomError: true });
@@ -7378,7 +7413,7 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
       noRandomError: true,
       robust: {
         ...(robust || {}),
-        potProbability: sim.potted.includes(cand.targetNum) ? 1 : 0,
+        potProbability: aiSimPotsTargetAsPlanned(sim, cand) ? 1 : 0,
         scratchRisk: robust?.scratchRisk ?? 0,
         foulRisk: robust?.foulRisk ?? 0,
         positionValue: posValue,
@@ -7455,7 +7490,7 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
         // angehoben, damit der Profi statt einer 30-%-Hoffnungspott eine echte
         // Distance-Safety bevorzugt.
         const inPlayCount = game.balls.filter(b => b.inPlay && !b.isCue).length;
-        const endgameFloor = (game.variant === "9ball" && inPlayCount <= 2) ? 0.55 : 0.02;
+        const endgameFloor = (game.variant === "9ball" && inPlayCount <= 2) ? HARD_NINEBALL_ENDGAME_POT_FLOOR : 0.02;
         if (robust.potProbability < endgameFloor) return null;
       }
     } else if (prof.searchDepth >= 3 && (robust.scratchRisk > 0.22 || robust.foulRisk > 0.22)) {
@@ -7750,9 +7785,9 @@ function aiFinalValidateHardShot(shot, ctx) {
     }
   }
   if (shot.isSafety && !aiSafetyShotLegal(sim, shot.targetNum)) return { ok: false, reason: "unsafe-safety", sim };
-  if (!shot.isSafety && !sim.potted.includes(shot.targetNum)) return { ok: false, reason: "target-not-potted", sim };
-  if (!shot.isSafety && game.variant === "8ball" && shot.targetNum === 8 && shot.pocketIdx >= 0 && sim.pocketByNum?.[8] !== shot.pocketIdx) {
-    return { ok: false, reason: "wrong-eight-pocket", sim };
+  if (!shot.isSafety) {
+    const potFailure = aiTargetPotFailureReason(sim, shot);
+    if (potFailure) return { ok: false, reason: potFailure, sim };
   }
   return { ok: true, reason: "ok", sim };
 }
@@ -7932,7 +7967,7 @@ function aiFindLegalKickEscape(cue, targets, prof, budgetMs = 700) {
         if (!aiMeetsPostContactRule(sim)) continue;          // WPA 6.1: Bande/Pott nach Kontakt
         const cueAfter = aiSimCueBall(sim);
         if (aiCueBallInScratchDanger(cueAfter, 1.6)) continue;
-        const potted = sim.potted.includes(t.num);
+        const potted = aiSimPotsTargetAsPlanned(sim, { ...shot, targetNum: t.num });
         // Foulsicherheit: Der legale Erstkontakt muss auch unter kleiner Zielabweichung
         // erhalten bleiben. Ein dünner Randkontakt ist in der Sim "legal", geht real aber
         // knapp daneben (= "falsche Kugel zuerst"). Solche fragilen Kontakte werden verworfen.
@@ -8050,7 +8085,7 @@ function aiFindHardPlayableEscape(cue, targets, prof, seedCandidates = [], ctx =
     const cueAfter = aiSimCueBall(check.sim);
     const targetAfter = aiSimBallByNum(check.sim, cand.targetNum);
     const scratchDanger = aiCueBallInScratchDanger(cueAfter, 1.8) ? 900 : 0;
-    const targetPotted = check.sim.potted.includes(cand.targetNum);
+    const targetPotted = aiSimPotsTargetAsPlanned(check.sim, cand);
     const anyPotted = check.sim.potted.some(n => n !== 0);
     const railScore = aiRailDistanceSafetyScore(check.sim, cand.targetNum);
     const hideScore = aiSafetyVisibilityScore(check.sim, cand.targetNum);
@@ -8533,8 +8568,11 @@ async function aiPlanShot() {
     // weil ein einzelnes Robust-Sample grenzwertig wurde (Beispiel: 11 in Kopf
     // rechts → Jump-Carom-Safe). Ein echter Profi locht das.
     if (!bestShot) {
+      const realisticPotFloor = game.variant === "8ball"
+        ? HARD_REALISTIC_POT_FLOOR_8BALL
+        : (game.variant === "9ball" ? HARD_REALISTIC_POT_FLOOR_9BALL : 0.55);
       const realisticPots = potCands.filter(c =>
-        (c.robust?.potProbability ?? 0) >= 0.55 &&
+        (c.robust?.potProbability ?? 0) >= realisticPotFloor &&
         (c.robust?.scratchRisk ?? 1) <= 0.15 &&
         (c.robust?.foulRisk ?? 1) <= 0.15
       );
