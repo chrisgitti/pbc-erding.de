@@ -1831,7 +1831,7 @@ const AI_PROFILES = {
     samplesPerShot: 18,
     aimErrorDeg: 0,
     powerError: 0,
-    spinUsage: 0.92,
+    spinUsage: 0.00,
     safetyWeight: 0.08,
     positionWeight: 1.28,
     riskTolerance: 0.00,
@@ -1847,14 +1847,17 @@ function aiGetProfile() { return AI_PROFILES[game.difficulty] ?? AI_PROFILES.med
 const AI_HARD_MODE_DEPTH = 4;
 const HARD_SCRATCH_VETO_THRESHOLD = 0.005;
 const HARD_FOUL_VETO_THRESHOLD = 0.04;
-const HARD_SAFE_POT_THRESHOLD = 0.90;
-const HARD_OPEN_POT_THRESHOLD = 0.95;
-const HARD_DIRECT_LOCK_POT_THRESHOLD = 0.72;
-const HARD_DIRECT_LOCK_AIM_NOISE = 0.16;
-const HARD_DIRECT_LOCK_POWER_NOISE = 0.018;
-const HARD_REALISTIC_POT_FLOOR_8BALL = 0.42;
-const HARD_REALISTIC_POT_FLOOR_9BALL = 0.38;
-const HARD_NINEBALL_ENDGAME_POT_FLOOR = 0.35;
+const HARD_SAFE_POT_THRESHOLD = 0.75;
+const HARD_OPEN_POT_THRESHOLD = 0.86;
+const HARD_DIRECT_LOCK_POT_THRESHOLD = 0.45;
+const HARD_DIRECT_LOCK_AIM_NOISE = 0.04;
+const HARD_DIRECT_LOCK_POWER_NOISE = 0.004;
+const HARD_REALISTIC_POT_FLOOR_8BALL = 0.25;
+const HARD_REALISTIC_POT_FLOOR_9BALL = 0.25;
+const HARD_NINEBALL_ENDGAME_POT_FLOOR = 0.25;
+const HARD_BIH_MIN_DOTN = 0.92;
+const HARD_BIH_STRAIGHT_MIN_POWER = 62;
+const HARD_PROFI_ALLOW_THROW_CONTROL = false;
 const HARD_JUMP_SHORT_GAP = BALL_R * 2.1;
 const HARD_LONG_POT_DISTANCE = PLAY_W * 0.55;
 const HARD_RAIL_BALL_DISTANCE = BALL_R * 2.0;
@@ -1874,8 +1877,8 @@ const HARD_FALLBACK_TIME_BUDGET_MS = 450;
 // freie, eigentlich klare Pots aus 18 Robust-Samples regelmäßig unter
 // HARD_SAFE_POT_THRESHOLD (0.90) → die KI verwarf sie und spielte Quatsch-Safes.
 // Ein realistischer Profi schätzt die eigene Ausführung präziser ein.
-const AI_EVAL_AIM_NOISE_FLOOR = 0.10;    // Grad (vorher 0.18)
-const AI_EVAL_POWER_NOISE_FLOOR = 0.008; // relativ (+/-0.8 %, vorher 1.5 %)
+const AI_EVAL_AIM_NOISE_FLOOR = 0.03;    // Grad (Profi-Potbewertung praktisch fehlerfrei)
+const AI_EVAL_POWER_NOISE_FLOOR = 0.003; // relativ (+/-0.3 %)
 const AI_EVAL_COMBO_AIM_NOISE_FLOOR = 0.18;
 const AI_EVAL_COMBO_POWER_NOISE_FLOOR = 0.015;
 // Stufe 2.3 — Pocket-Approach-Quality: Anflugwinkel Objektball→Tasche relativ
@@ -4629,17 +4632,17 @@ function aiFindFastStraightBallInHandPot(cue, targets, prof) {
           cue.x = cx; cue.y = cy;
           const shot = aiEvaluatePotShot(cue, t, p);
           // Mit BIH ist jeder Cut bis ~30° (dotN≥0.85) sicher spielbar
-          if (!shot || shot.dotN < 0.85) continue;
+          if (!shot || shot.dotN < HARD_BIH_MIN_DOTN) continue;
           if (aiBallInHandSidePocketTooSharp(t, p, shot)) continue;
 
-          const basePower = clamp(Math.max(shot.powerPercent || 0, 46 + dTP * 0.018), 48, 80);
-          const powers = aiUniqueSortedPowers([basePower, basePower + 8, basePower + 16, 58, 68, 78]);
+          const basePower = clamp(Math.max(shot.powerPercent || 0, HARD_BIH_STRAIGHT_MIN_POWER, 50 + dTP * 0.020), HARD_BIH_STRAIGHT_MIN_POWER, 82);
+          const powers = aiUniqueSortedPowers([basePower, basePower + 6, basePower + 12, 64, 72, 80]);
           for (const pw of powers) {
             const baseTestShot = {
               ...shot,
               type: "ballInHandStraightLock",
               isSafety: false,
-              powerPercent: clamp(pw, 48, 84),
+              powerPercent: clamp(pw, HARD_BIH_STRAIGHT_MIN_POWER, 84),
               spinHint: "none",
               noRandomError: true
             };
@@ -4736,6 +4739,21 @@ function aiScoreBallInHandControl(validated, prof) {
 function aiApplyValidatedPositionControl(shot, prof, options = {}) {
   if (!shot || shot.isSafety || shot.isJump || aiIsKickShotType(shot)) return shot;
   if (!aiIsHardenedProfi(prof) && prof?.searchDepth < 3) return shot;
+  if (aiIsHardenedProfi(prof)) {
+    const clean = {
+      ...shot,
+      spinX: 0,
+      spinY: 0,
+      spinHint: "none",
+      noRandomError: true,
+      cueType: shot.cueType || "playing",
+      cueElevation: shot.cueElevation || 0
+    };
+    if (clean.ballInHandPerfect) {
+      clean.bihControl = { ...(clean.bihControl || {}), spinX: 0, spinY: 0, mode: "pot-lock" };
+    }
+    return clean;
+  }
 
   const baseSim = shot.sim || shot.robust?.bestSim || aiSimulateShotResult(shot);
   const cueAfter = aiSimCueBall(baseSim);
@@ -7202,7 +7220,7 @@ function generateShotCandidates(cue, targets, prof, problematicTargets = null) {
   // S2.11: Outside-English-Varianten für die bereits gewählten Center-Pots
   // (Squirt vorkompensiert, throw-control Hint überlebt im finalen Spin-Branch).
   // Nach dem Slice, damit Spin-Varianten andere Center-Pots nicht verdrängen.
-  if (aiIsHardenedProfi(prof)) {
+  if (aiIsHardenedProfi(prof) && HARD_PROFI_ALLOW_THROW_CONTROL) {
     const playingProfile = getCueProfile("playing");
     const K_DEF = 0.044 * playingProfile.squirt;
     for (const base of pots) {
@@ -8431,7 +8449,7 @@ async function aiPlanShot() {
     };
 
     game.aimAngle = forcedBIHShot.angle;
-    game.powerPercent = clamp(forcedBIHShot.powerPercent, forcedBIHShot.type === "ballInHandStraightLock" ? 50 : 5, 100);
+    game.powerPercent = clamp(forcedBIHShot.powerPercent, forcedBIHShot.type === "ballInHandStraightLock" ? HARD_BIH_STRAIGHT_MIN_POWER : 5, 100);
     game.cueType = "playing";
     game.cueElevation = 0;
 
