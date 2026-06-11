@@ -1263,17 +1263,17 @@
       <div class="physics-sliders">
         <label class="slider-row">
           <span>Rollreibung</span>
-          <input type="range" id="slFriction" min="1" max="25" step="1" value="8">
+          <input type="range" id="slFriction" min="1" max="25" step="1" value="6">
           <span id="lblFriction">8‰</span>
         </label>
         <label class="slider-row">
           <span>Rollwiderstand</span>
-          <input type="range" id="slRollingDrag" min="5" max="40" step="1" value="18">
+          <input type="range" id="slRollingDrag" min="5" max="40" step="1" value="12">
           <span id="lblRollingDrag">0.018</span>
         </label>
         <label class="slider-row">
           <span>Banden-Elastizität</span>
-          <input type="range" id="slCushionEN" min="70" max="97" step="1" value="90">
+          <input type="range" id="slCushionEN" min="70" max="97" step="1" value="92">
           <span id="lblCushionEN">0.90</span>
         </label>
         <label class="slider-row">
@@ -1283,7 +1283,7 @@
         </label>
         <label class="slider-row">
           <span>Tuch-Gleitung</span>
-          <input type="range" id="slClothSlide" min="30" max="200" step="5" value="115">
+          <input type="range" id="slClothSlide" min="30" max="200" step="5" value="100">
           <span id="lblClothSlide">0.115</span>
         </label>
         <label class="slider-row">
@@ -1298,7 +1298,7 @@
         </label>
         <label class="slider-row">
           <span>Kugel-Elastizität</span>
-          <input type="range" id="slBallBounce" min="80" max="100" step="1" value="96">
+          <input type="range" id="slBallBounce" min="80" max="100" step="1" value="97">
           <span id="lblBallBounce">0.96</span>
         </label>
       </div>
@@ -1570,17 +1570,17 @@
     <div class="physics-sliders" style="margin-top:14px;">
       <label class="slider-row">
         <span>Rollreibung</span>
-        <input type="range" id="ovFriction" min="1" max="25" step="1" value="8">
+        <input type="range" id="ovFriction" min="1" max="25" step="1" value="6">
         <span id="ovLblFriction">8‰</span>
       </label>
       <label class="slider-row">
         <span>Rollwiderstand</span>
-        <input type="range" id="ovRollingDrag" min="5" max="40" step="1" value="18">
+        <input type="range" id="ovRollingDrag" min="5" max="40" step="1" value="12">
         <span id="ovLblRollingDrag">0.018</span>
       </label>
       <label class="slider-row">
         <span>Banden-Elastizität</span>
-        <input type="range" id="ovCushionEN" min="70" max="97" step="1" value="90">
+        <input type="range" id="ovCushionEN" min="70" max="97" step="1" value="92">
         <span id="ovLblCushionEN">0.90</span>
       </label>
       <label class="slider-row">
@@ -1590,7 +1590,7 @@
       </label>
       <label class="slider-row">
         <span>Tuch-Gleitung</span>
-        <input type="range" id="ovClothSlide" min="30" max="200" step="5" value="115">
+        <input type="range" id="ovClothSlide" min="30" max="200" step="5" value="100">
         <span id="ovLblClothSlide">0.115</span>
       </label>
       <label class="slider-row">
@@ -1605,7 +1605,7 @@
       </label>
       <label class="slider-row">
         <span>Kugel-Elastizität</span>
-        <input type="range" id="ovBallBounce" min="80" max="100" step="1" value="96">
+        <input type="range" id="ovBallBounce" min="80" max="100" step="1" value="97">
         <span id="ovLblBallBounce">0.96</span>
       </label>
     </div>
@@ -1649,14 +1649,17 @@ const BALL_R = 9.5;           // WPA: 57,15 mm / 2 × 8,4 px/inch = 9,45 px
 const CORNER_CUT = 27;        // WPA: 4,5" Ecklocheröffnung = 38 px → 38/√2 ≈ 27 px
 const HALF_SIDE_PW = 21;      // WPA: 5,0" Seitentasche, halbe Öffnungsbreite = 21 px
 // Physik-Konfiguration – per Slider im Menü anpassbar (Standardwerte = Turniertisch)
-let CFG_FRICTION       = 0.992;  // Rollreibung (multiplikativ pro Frame)
-let CFG_ROLLING_DRAG   = 0.018;  // Rollwiderstand (subtraktiv pro Frame)
-let CFG_CUSHION_EN     = 0.90;   // Banden-Normalrestitution (Baseline)
-let CFG_CUSHION_BOUNCE = 0.78;   // Banden-Bounce für Eck-Diagonalen
+// S3.0 (Punkt 7): Standardtisch deutlich schneller – Simonis-artiges Tuch.
+// Rollwiderstand und Gleitreibung gesenkt, Banden- und Kugelrestitution erhöht.
+// Damit laufen die Kugeln spürbar länger und der Anstoß öffnet die Pyramide.
+let CFG_FRICTION       = 0.994;  // Rollreibung (multiplikativ pro Frame)
+let CFG_ROLLING_DRAG   = 0.012;  // Rollwiderstand (subtraktiv pro Frame)
+let CFG_CUSHION_EN     = 0.92;   // Banden-Normalrestitution (Baseline)
+let CFG_CUSHION_BOUNCE = 0.80;   // Banden-Bounce für Eck-Diagonalen
 let CFG_CUSHION_MU     = 0.18;   // Banden-Reibung (Effet-Übertragungskoeffizient)
-let CFG_BALL_BOUNCE    = 0.96;   // Kugel-Kugel-Restitution
+let CFG_BALL_BOUNCE    = 0.97;   // Kugel-Kugel-Restitution
 // Tuch-Physik (Sliding/Rolling-Modell)
-let CFG_CLOTH_SLIDE_ACCEL = 0.115;  // Tuch-Gleitreibung (per Slider einstellbar)
+let CFG_CLOTH_SLIDE_ACCEL = 0.100;  // Tuch-Gleitreibung (per Slider einstellbar)
 const SIDE_SPIN_DECAY     = 0.992;
 const LONG_SPIN_DECAY     = 0.996;
 // Banden-Physik
@@ -1669,12 +1672,15 @@ const JUMP_LANDING_DAMP   = 0.34;
 // Queue-Profile
 const CUE_PROFILES = {
   playing:    { label:"Spielqueue",      powerGain:1.00, spinTransfer:1.00, sideTransfer:1.00, squirt:1.00, verticalLoss:0.46, jumpLift:0.18, swerve:1.00, note:"Spielqueue: ausgewogene Kontrolle für Effet und Positionsspiel." },
-  break:      { label:"Break-Queue",     powerGain:1.30, spinTransfer:0.62, sideTransfer:0.55, squirt:1.18, verticalLoss:0.34, jumpLift:0.24, swerve:0.55, note:"Break-Queue: harte Spitze, hohe Kraftübertragung, weniger Effet-Grip." },
+  break:      { label:"Break-Queue",     powerGain:1.16, spinTransfer:0.62, sideTransfer:0.55, squirt:1.18, verticalLoss:0.34, jumpLift:0.24, swerve:0.55, note:"Break-Queue: harte Spitze, hohe Kraftübertragung, weniger Effet-Grip." },
   jump:       { label:"Jump-Queue",      powerGain:0.86, spinTransfer:0.74, sideTransfer:0.72, squirt:0.88, verticalLoss:0.22, jumpLift:0.55, jumpLimit:0.19, jumpHorizontal:0.84, swerve:0.75, note:"Jump-Queue: kontrollierte, eher flachere Flugbahn für mittlere und weitere Jumps." },
   jump_short: { label:"Jump-Queue kurz", powerGain:0.62, spinTransfer:0.66, sideTransfer:0.64, squirt:0.76, verticalLoss:0.30, jumpLift:1.34, jumpLimit:0.15, jumpHorizontal:0.54, swerve:0.62, note:"Verkürztes Jump-Queue: sehr steiler, kurzer Jump bei geringer Distanz zur störenden Kugel." },
 };
 const MIN_VEL = 0.10;
-const MAX_POWER = 58;
+// S3.0 (Punkt 7): Kontaktenergie um ~14 % angehoben – betrifft Anstoß UND
+// reguläre Stöße. Zusammen mit der reduzierten Tuchreibung laufen die Kugeln
+// jetzt wie auf einem schnellen Turniertisch.
+const MAX_POWER = 66;
 
 const PLAY_X1 = RAIL, PLAY_Y1 = RAIL;
 const PLAY_X2 = W - RAIL, PLAY_Y2 = H - RAIL;
@@ -1759,7 +1765,7 @@ function scheduleShotSafety() {
     game.balls.forEach(b => { if (typeof b.resetMotion === "function") b.resetMotion(); });
     game.shotInProgress = false;
     onShotComplete();
-  }, 7000);
+  }, 14000);
 }
 
 function scheduleSyncWatchdog() {
@@ -1831,14 +1837,14 @@ const AI_PROFILES = {
     samplesPerShot: 18,
     aimErrorDeg: 0,
     powerError: 0,
-    spinUsage: 0.00,
+    spinUsage: 0.00,     // Effet kommt ausschließlich aus der VALIDIERTEN Stellungs-Suche
     safetyWeight: 0.08,
-    positionWeight: 1.28,
+    positionWeight: 1.50,
     riskTolerance: 0.00,
     bankKickUsage: 0.55,
     minDotN: 0.30,
     powerMin: 26,
-    powerMax: 82,
+    powerMax: 86,
     allowJumps: true,    // Profi: volle Jump-Nutzung
     jumpStyle: "full"
   }
@@ -1847,14 +1853,18 @@ function aiGetProfile() { return AI_PROFILES[game.difficulty] ?? AI_PROFILES.med
 const AI_HARD_MODE_DEPTH = 4;
 const HARD_SCRATCH_VETO_THRESHOLD = 0.005;
 const HARD_FOUL_VETO_THRESHOLD = 0.04;
-const HARD_SAFE_POT_THRESHOLD = 0.75;
+// S3.0: Die Sim ist jetzt physik-identisch zum Livespiel → die Schwellen
+// greifen wie konstruiert. 0.72 statt 0.75, damit 13/18 Robust-Samples reichen.
+const HARD_SAFE_POT_THRESHOLD = 0.72;
 const HARD_OPEN_POT_THRESHOLD = 0.86;
 const HARD_DIRECT_LOCK_POT_THRESHOLD = 0.45;
 const HARD_DIRECT_LOCK_AIM_NOISE = 0.04;
 const HARD_DIRECT_LOCK_POWER_NOISE = 0.004;
-const HARD_REALISTIC_POT_FLOOR_8BALL = 0.25;
-const HARD_REALISTIC_POT_FLOOR_9BALL = 0.25;
-const HARD_NINEBALL_ENDGAME_POT_FLOOR = 0.25;
+// S3.0 (Punkt 3+8): Pot-vor-Safety. Ein Profi versucht spielbare Bälle ab ~30 %
+// statt früh in die Safety-Kaskade zu fallen; nur darunter wird verteidigt.
+const HARD_REALISTIC_POT_FLOOR_8BALL = 0.30;
+const HARD_REALISTIC_POT_FLOOR_9BALL = 0.30;
+const HARD_NINEBALL_ENDGAME_POT_FLOOR = 0.35;
 const HARD_BIH_MIN_DOTN = 0.92;
 const HARD_BIH_STRAIGHT_MIN_POWER = 62;
 const HARD_PROFI_ALLOW_THROW_CONTROL = false;
@@ -1867,7 +1877,10 @@ const HARD_CONTACT_WINDOW_MARGIN = BALL_R * 1.05;
 const HARD_KICK_SPIN_VARIANTS = [0, -0.16, 0.16, -0.26, 0.26];
 const HARD_JUMP_MAX_VALIDATIONS    = 80;
 const HARD_KICK_MAX_VALIDATIONS    = 120;
-const HARD_FALLBACK_TIME_BUDGET_MS = 450;
+const HARD_FALLBACK_TIME_BUDGET_MS = 600;
+// S3.0 (Punkt 5): Spezial-Locks (Bande/Bank/Long) dürfen einen bereits
+// gefundenen Direktpot nur ersetzen, wenn dieser real wackelig ist.
+const HARD_LOCK_REPLACE_POT_PROB = 0.60;
 // Robustheits-Bewertung (Stufe 1.1): Selbst der perfekt zielende Profi (aimErrorDeg 0)
 // bewertet Stöße mit einer kleinen MINDEST-Streuung. Dadurch erhalten FRAGILE Stöße
 // (Cross-Table-Combos, dünne/lange Schnitte) eine realistisch niedrigere
@@ -1903,10 +1916,10 @@ const AI_FRAG_SOFT_START      = 0.06;
 // ist rein geometrisch (keine zusätzliche Physik-Simulation) und mischt diskontierte
 // 1-ahead-Werte → bleibt automatisch im Bewertungsband [-100,135].
 const AI_LOOKAHEAD_DEPTH = 3;
-const AI_LOOKAHEAD_BLEND = 0.35;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
+const AI_LOOKAHEAD_BLEND = 0.45;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S2.12";
+const AI_BUILD = "S3.0";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -2419,10 +2432,14 @@ function applyClothPhysics(b) {
   }
 }
 
-function applyRailRebound(b, nx, ny, label = "rail") {
+// S3.0: Reiner Banden-Physik-Kern – wird identisch vom Livespiel (applyRailRebound)
+// UND von der KI-Simulation (aiSimulateShotResult) genutzt. Nur so stimmt die
+// KI-Vorhersage exakt mit dem gespielten Ergebnis überein.
+// Rückgabe: true, wenn ein Rebound stattfand (Bewegung zeigte in die Bande).
+function railReboundCore(b, nx, ny) {
   // nx/ny zeigen von der Bande in die Spielfläche. Nur Bewegung in die Bande hinein reagiert.
   const vN = b.vx * nx + b.vy * ny;
-  if (vN >= 0) return;
+  if (vN >= 0) return false;
 
   const absN = Math.abs(vN);
   const preWx = b.wx, preWy = b.wy;
@@ -2464,7 +2481,11 @@ function applyRailRebound(b, nx, ny, label = "rail") {
   b.wx = preWx * (1 - spinGrip) + desired.wx * spinGrip;
   b.wy = preWy * (1 - spinGrip) + desired.wy * spinGrip;
   b.motionState = "sliding";
+  return true;
+}
 
+function applyRailRebound(b, nx, ny, label = "rail") {
+  if (!railReboundCore(b, nx, ny)) return;
   soundCushion();
   // Regelkorrektur: Eine Vorbande vor dem ersten Objektballkontakt zählt NICHT
   // als Bande "nach Kontakt". Erst ab dem ersten regelrelevanten Treffer darf
@@ -2941,9 +2962,10 @@ function step() {
   }
 }
 
-function applySpinOnContact(cue, nx, ny) {
-  const sp = game.spinPending;
-  if (sp.used) return;
+// S3.0: Reiner Kern – identisch für Livespiel (game.spinPending) und
+// KI-Simulation (lokales simSpinPending-Objekt).
+function applySpinOnContactCore(cue, sp) {
+  if (!sp || sp.used) return;
   const power = sp.power || 1;
   const dx = sp.dirX, dy = sp.dirY;
   const topMag = -sp.y;
@@ -2961,6 +2983,10 @@ function applySpinOnContact(cue, nx, ny) {
   cue.wz += sideMag * power * 0.28 / BALL_R;
   cue.motionState = "sliding";
   sp.used = true;
+}
+
+function applySpinOnContact(cue, nx, ny) {
+  applySpinOnContactCore(cue, game.spinPending);
 }
 
 
@@ -4137,43 +4163,21 @@ function aiClassifyTargetsByEasyPot(cue, targets) {
 }
 
 function aiCloneBallsForSimulation() {
+  // S3.0: Vollständiger Bewegungszustand (inkl. wx/wy/wz, z/vz, motionState),
+  // damit die Simulation EXAKT dieselbe Physik wie das Livespiel rechnen kann.
   return game.balls.map(b => ({
     num: b.num,
     isCue: b.isCue,
     x: b.x, y: b.y,
     vx: 0, vy: 0,
-    z: 0, vz: 0, wz: 0,
+    wx: 0, wy: 0, wz: 0,
+    z: 0, vz: 0,
+    motionState: "resting",
     r: b.r,
-    inPlay: b.inPlay
+    inPlay: b.inPlay,
+    speed() { return Math.hypot(this.vx, this.vy); },
+    spinSpeed() { return Math.hypot(this.wx, this.wy, this.wz); }
   }));
-}
-
-function aiApplySimCushionRebound(b, side) {
-  const normalIsX = (side === "left" || side === "right");
-  const nx = side === "left" ? 1 : side === "right" ? -1 : 0;
-  const ny = side === "top" ? 1 : side === "bottom" ? -1 : 0;
-  const tx = -ny, ty = nx;
-  const vN = b.vx * nx + b.vy * ny;
-  if (vN >= 0) return;
-  const absN = Math.abs(vN);
-  const eN = Math.min(0.97, Math.max(0.62, CFG_CUSHION_EN + (absN - 15) * 0.015));
-  const vT = b.vx * tx + b.vy * ty;
-
-  // Vereinfachte Effet-Abbildung für KI-Simulationen:
-  // Ohne diese Näherung werden Mehrbanden-Kicks mit Effet falsch bewertet,
-  // weil der geplante Seitenspin bei der simulierten Bande keine Wirkung hat.
-  const sideSpin = b.wz || 0;
-  const railSurfaceT = sideSpin * BALL_R * (0.62 + CFG_CUSHION_MU * 0.55);
-  const uT = vT + railSurfaceT;
-  const maxTangential = CFG_RAIL_FRICTION * (1 + eN) * absN;
-  const tangentialGrip = clamp(CFG_CUSHION_MU * 1.45, 0.06, 0.62);
-  const deltaT = clamp(-uT * tangentialGrip, -maxTangential, maxTangential);
-  const tangentOut = (vT + deltaT) * Math.max(0.70, CFG_CUSHION_EN - Math.max(0, (absN - 15) * 0.010));
-  const normalOut = -vN * eN;
-
-  b.vx = normalOut * nx + tangentOut * tx;
-  b.vy = normalOut * ny + tangentOut * ty;
-  b.wz = (sideSpin + (-deltaT * 0.95 / BALL_R)) * clamp(1 - CFG_CUSHION_MU * 1.05, 0.54, 0.90);
 }
 
 function aiRecordSimPreFirstHitRail(result, ball, side) {
@@ -4261,6 +4265,15 @@ const Rules = {
 };
 
 // ── 06 Shot Simulation ────────────────────────────────────────────────
+// S3.0: VOLLSTÄNDIG physik-identische Simulation. Nutzt exakt dieselben
+// Bausteine wie das Livespiel: launchCueBall (Abschuss inkl. Spin, Squirt-
+// Kompensation analog startShot, Masse-Kurve, Jump-Trigger),
+// resolveBallBallContact (Normal- + Reibimpuls/Throw), railReboundCore
+// (Banden inkl. Effet- und Spin-Grip), applySpinOnContactCore (Restdrall-
+// Kick nach Erstkontakt), integrateVerticalMotion (Jumps), applyClothPhysics
+// (Gleit-/Rollreibung, Nachlauf/Rücklauf) und shouldPocketBall/applyPocketJawPull.
+// Damit gilt: Was die KI validiert, passiert am Tisch – Grundlage für
+// fehlerfreie Pots, echtes Stellungsspiel und funktionierende Jumpshots.
 function aiSimulateShotResult(shot) {
   const balls = aiCloneBallsForSimulation();
   const cue = balls.find(b => b.isCue);
@@ -4270,34 +4283,22 @@ function aiSimulateShotResult(shot) {
   const simCueType = shot.cueType || "playing";
   const profile = getCueProfile(simCueType);
   const elev = clamp(shot.cueElevation || 0, 0, 1);
-  const vertical = Math.sin(elev * Math.PI / 2);
-  const horizontalFactor = clamp(1 - profile.verticalLoss * Math.pow(vertical, 1.15), 0.18, 1.0);
-  const jumpHorizontalFactor = getJumpHorizontalFactor(simCueType, vertical);
-  const launchPower = power * profile.powerGain * horizontalFactor * jumpHorizontalFactor;
-  let simAngle = shot.angle;
   const simSpinX = shot.spinX || 0;
   const simSpinY = shot.spinY || 0;
-  cue.wz = simSpinX * power * profile.sideTransfer * (1.75 - 0.35 * vertical) / BALL_R;
+
+  // Squirt-Kompensation – exakt wie in startShot()
+  let simAngle = shot.angle;
   if (Math.abs(simSpinX) > 0.02) {
     const pf = clamp((shot.powerPercent || 0) / 100, 0, 1);
     const deflAngle = 0.044 * profile.squirt * Math.abs(simSpinX) * Math.pow(pf, 0.64);
     simAngle -= Math.sign(simSpinX) * deflAngle;
   }
-  cue.vx = Math.cos(simAngle) * launchPower;
-  cue.vy = Math.sin(simAngle) * launchPower;
-  const spinPower = power * profile.spinTransfer * (0.92 - 0.30 * vertical);
-  const longSpin = (-simSpinY) * spinPower * 1.38 / BALL_R;
-  cue.wx = Math.sin(simAngle) * longSpin;
-  cue.wy = -Math.cos(simAngle) * longSpin;
+  const dirX = Math.cos(simAngle), dirY = Math.sin(simAngle);
 
-  if (simCueType === "jump" || simCueType === "jump_short") {
-    const jumpTrigger = vertical * (shot.powerPercent / 100);
-    if (jumpTrigger > (profile.jumpLimit || 0.18)) {
-      cue.z = 0;
-      cue.vz = power * profile.jumpLift * Math.pow(vertical, 1.7) * 0.34;
-      cue.motionState = "airborne";
-    }
-  }
+  // Identischer Abschuss wie im Livespiel.
+  launchCueBall(cue, dirX, dirY, power, simSpinX, simSpinY, elev, simCueType);
+  // Pendant zu game.spinPending: Restdrall-Kick beim ersten Kontakt der Weißen.
+  const simSpinPending = { x: simSpinX, y: simSpinY, dirX, dirY, power, used: false };
 
   const result = {
     firstHit: null,
@@ -4311,13 +4312,26 @@ function aiSimulateShotResult(shot) {
     preFirstHitRailSequence: []
   };
 
-  for (let frame = 0; frame < 900; frame++) {
-    const active = balls.filter(b => b.inPlay);
-    let maxSpeed = 0;
-    for (const b of active) maxSpeed = Math.max(maxSpeed, Math.hypot(b.vx, b.vy));
-    if (maxSpeed < MIN_VEL && frame > 0) break;
+  const simRail = (b, nx, ny, side) => {
+    if (!railReboundCore(b, nx, ny)) return;
+    aiRecordSimPreFirstHitRail(result, b, side);
+    if (result.firstHit !== null) result.anyCushionAfterFirstHit = true;
+  };
 
+  for (let frame = 0; frame < 1100; frame++) {
+    const active = balls.filter(b => b.inPlay);
+    let allStill = frame > 0;
+    if (allStill) {
+      for (const b of active) {
+        if (b.speed() >= MIN_VEL || Math.abs(b.vz || 0) > 0.05 || (b.z || 0) > 0.05) { allStill = false; break; }
+      }
+    }
+    if (allStill) break;
+
+    let maxSpeed = 0;
+    for (const b of active) { const s = b.speed(); if (s > maxSpeed) maxSpeed = s; }
     const SUBSTEPS = clamp(Math.ceil(maxSpeed / 4) + 2, 4, 16);
+
     for (let s = 0; s < SUBSTEPS; s++) {
       for (const b of active) integrateVerticalMotion(b, 1 / SUBSTEPS);
       for (const b of active) {
@@ -4343,10 +4357,16 @@ function aiSimulateShotResult(shot) {
               result.firstHit = c.num;
               result.firstHitContactX = c.x - nx * c.r;
               result.firstHitInKitchen = isKitchenContactInHeadField(result.firstHitContactX);
+              applySpinOnContactCore(a, simSpinPending);
             } else if (c.isCue && result.firstHit === null) {
               result.firstHit = a.num;
               result.firstHitContactX = a.x + nx * a.r;
               result.firstHitInKitchen = isKitchenContactInHeadField(result.firstHitContactX);
+              applySpinOnContactCore(c, simSpinPending);
+            } else if (a.isCue && !simSpinPending.used) {
+              applySpinOnContactCore(a, simSpinPending);
+            } else if (c.isCue && !simSpinPending.used) {
+              applySpinOnContactCore(c, simSpinPending);
             }
           }
         }
@@ -4366,19 +4386,19 @@ function aiSimulateShotResult(shot) {
 
           if (b.x - b.r < PLAY_X1 && cushVertActive && !nearPocket) {
             b.x = PLAY_X1 + b.r;
-            if (b.vx < 0) { aiApplySimCushionRebound(b, "left"); aiRecordSimPreFirstHitRail(result, b, "left"); if (result.firstHit !== null) result.anyCushionAfterFirstHit = true; }
+            simRail(b, 1, 0, "left");
           }
           if (b.x + b.r > PLAY_X2 && cushVertActive && !nearPocket) {
             b.x = PLAY_X2 - b.r;
-            if (b.vx > 0) { aiApplySimCushionRebound(b, "right"); aiRecordSimPreFirstHitRail(result, b, "right"); if (result.firstHit !== null) result.anyCushionAfterFirstHit = true; }
+            simRail(b, -1, 0, "right");
           }
           if (b.y - b.r < PLAY_Y1 && cushHorizActive && !inSidePocketMouth && !nearCornerPocket) {
             b.y = PLAY_Y1 + b.r;
-            if (b.vy < 0) { aiApplySimCushionRebound(b, "top"); aiRecordSimPreFirstHitRail(result, b, "top"); if (result.firstHit !== null) result.anyCushionAfterFirstHit = true; }
+            simRail(b, 0, 1, "top");
           }
           if (b.y + b.r > PLAY_Y2 && cushHorizActive && !inSidePocketMouth && !nearCornerPocket) {
             b.y = PLAY_Y2 - b.r;
-            if (b.vy > 0) { aiApplySimCushionRebound(b, "bottom"); aiRecordSimPreFirstHitRail(result, b, "bottom"); if (result.firstHit !== null) result.anyCushionAfterFirstHit = true; }
+            simRail(b, 0, -1, "bottom");
           }
 
           if (!nearPocket) {
@@ -4386,13 +4406,7 @@ function aiSimulateShotResult(shot) {
               if (signedDist >= b.r) return;
               const overlap = b.r - signedDist;
               b.x += nxIn * overlap; b.y += nyIn * overlap;
-              const vN = b.vx * nxIn + b.vy * nyIn;
-              if (vN < 0) {
-                const f = 1 + CFG_CUSHION_BOUNCE;
-                b.vx -= f * vN * nxIn; b.vy -= f * vN * nyIn;
-                aiRecordSimPreFirstHitRail(result, b, "corner");
-                if (result.firstHit !== null) result.anyCushionAfterFirstHit = true;
-              }
+              simRail(b, nxIn, nyIn, "corner");
             };
             if (b.x < PLAY_X1 + CORNER_CUT && b.y < PLAY_Y1 + CORNER_CUT) {
               const d = ((b.x - PLAY_X1) + (b.y - PLAY_Y1) - CORNER_CUT) / Math.SQRT2;
@@ -4422,19 +4436,16 @@ function aiSimulateShotResult(shot) {
 
     for (const b of active) {
       if (!b.inPlay) continue;
-      applyPocketJawPull(b);
-      b.vx *= CFG_FRICTION; b.vy *= CFG_FRICTION;
-      const sp = Math.hypot(b.vx, b.vy);
-      if (sp > 0) {
-        const k = Math.max(0, sp - CFG_ROLLING_DRAG) / sp;
-        b.vx *= k; b.vy *= k;
-      }
-      if (Math.hypot(b.vx, b.vy) < MIN_VEL) { b.vx = 0; b.vy = 0; }
-
+      if (isBallPocketRelevantHeight(b)) applyPocketJawPull(b);
+      applyClothPhysics(b);
+    }
+    for (const b of active) {
+      if (!b.inPlay) continue;
       for (let pi = 0; pi < POCKETS.length; pi++) {
         const p = POCKETS[pi];
         if (shouldPocketBall(b, p)) {
-          b.inPlay = false; b.vx = 0; b.vy = 0;
+          b.inPlay = false;
+          b.vx = 0; b.vy = 0; b.wx = 0; b.wy = 0; b.wz = 0; b.z = 0; b.vz = 0;
           result.potted.push(b.num);
           result.pocketByNum[b.num] = pi;
           if (b.isCue) result.cuePotted = true;
@@ -4740,19 +4751,13 @@ function aiApplyValidatedPositionControl(shot, prof, options = {}) {
   if (!shot || shot.isSafety || shot.isJump || aiIsKickShotType(shot)) return shot;
   if (!aiIsHardenedProfi(prof) && prof?.searchDepth < 3) return shot;
   if (aiIsHardenedProfi(prof)) {
-    const clean = {
-      ...shot,
-      spinX: 0,
-      spinY: 0,
-      spinHint: "none",
-      noRandomError: true,
-      cueType: shot.cueType || "playing",
-      cueElevation: shot.cueElevation || 0
-    };
-    if (clean.ballInHandPerfect) {
-      clean.bihControl = { ...(clean.bihControl || {}), spinX: 0, spinY: 0, mode: "pot-lock" };
-    }
-    return clean;
+    // S3.0 (Punkte 1+2): Echte Pre-Shot-Routine des Profis. Der Pot ist bereits
+    // gewählt; jetzt werden Stoßstärke, Treffpunkt (Nachlauf/Rücklauf/Stun) und
+    // dosiertes Seiteneffet so gewählt, dass die Weiße VALIDIERT (vollständige
+    // Physik-Sim, Pot bleibt Pflicht, Scratch/Foul verboten) auf der besten
+    // Position für die Folgekugel(n) ankommt – bewertet über die diskontierte
+    // Runout-Kette (aiRunoutChainScore, Tiefe = _aiLookaheadDepth).
+    return aiHardenedPositionControl(shot, prof, options);
   }
 
   const baseSim = shot.sim || shot.robust?.bestSim || aiSimulateShotResult(shot);
@@ -4840,6 +4845,134 @@ function aiApplyValidatedPositionControl(shot, prof, options = {}) {
   }
 
   return best;
+}
+
+// S3.0 (Punkte 1+2): Validierte Stellungs-Suche des gehärteten Profis.
+// Ablauf der Pre-Shot-Routine:
+//   1. Basis-Stoß (gewählter Pot) exakt nachsimulieren → natürliche Ablage.
+//   2. Plan ableiten (aiBuildCueControlPlan): Wohin soll die Weiße? Follow,
+//      Draw, Stun oder Seitenlage?
+//   3. Varianten über Treffpunkt (spinY: Nachlauf −0.34 … Rücklauf +0.48),
+//      Stoßstärke (±15/±30 %) und – nur bei sicherem Pot – dosiertes
+//      Seiteneffet (Squirt wird in der Sim identisch zu startShot kompensiert)
+//      vollständig simulieren. Pot bleibt PFLICHT, Scratch/Foul ist Veto.
+//   4. Bewertung: diskontierte Runout-Kette (3 Kugeln voraus) minus
+//      Effet-/Power-Risikoabschlag. Budget-gesteuert mit Frühabbruch.
+function aiHardenedPositionControl(shot, prof, options = {}) {
+  const mkShot = (sx, sy, pw) => ({
+    ...shot,
+    spinX: sx,
+    spinY: sy,
+    powerPercent: pw,
+    spinHint: (Math.abs(sx) >= 0.03 || Math.abs(sy) >= 0.03) ? "position-control" : "none",
+    noRandomError: true,
+    cueType: shot.cueType || "playing",
+    cueElevation: shot.cueElevation || 0
+  });
+  const ballInHand = !!options.ballInHand;
+  const basePower = clamp(shot.powerPercent || 50, 24, 92);
+  const baseShot = mkShot(0, 0, basePower);
+
+  const evalVariant = (cand) => {
+    const validated = aiValidateShotBySimulation(cand);
+    if (!validated) return null;
+    const cueFinal = aiSimCueBall(validated.sim);
+    if (!cueFinal) return null;
+    const danger = aiCueBallInScratchDanger(cueFinal, 1.6);
+    const chain = aiRunoutChainScore(cueFinal, validated.sim.finalBalls, cand.targetNum, _aiLookaheadDepth);
+    const ctrl = chain
+      - Math.abs(cand.spinX) * 10
+      - Math.abs(cand.spinY) * 6
+      - Math.max(0, cand.powerPercent - 64) * 0.30
+      - (danger ? 140 : 0);
+    return { cand, validated, ctrl, chain };
+  };
+
+  const base = evalVariant(baseShot);
+  let best = base;
+
+  // Plan aus der Basis-Sim ableiten: bestimmt die Suchreihenfolge.
+  const planSim = base?.validated.sim || shot.sim || shot.robust?.bestSim || null;
+  const planCue = planSim ? aiSimCueBall(planSim) : null;
+  const plan = (planSim && planCue)
+    ? aiBuildCueControlPlan(shot, planCue, planSim.finalBalls, prof)
+    : null;
+
+  // Spielt die Basis bereits hervorragend (Pot + sehr gute Kette), keine Experimente.
+  if (best && best.chain >= 122 && !aiBudgetExceeded(0)) {
+    // weiter: trotzdem 1-2 Plan-Varianten testen, falls Budget üppig –
+    // sonst direkt zurück.
+  }
+
+  const followYs = [-0.12, -0.22, -0.34];
+  const drawYs   = [0.14, 0.26, 0.38, 0.48];
+  const stunYs   = [-0.10, 0.12, -0.20, 0.22];
+  let spinYs;
+  if (plan?.mode === "follow")     spinYs = [...followYs, 0.14, 0.26];
+  else if (plan?.mode === "draw")  spinYs = [...drawYs, -0.12, -0.22];
+  else                             spinYs = [...stunYs, -0.30, 0.34];
+  if (ballInHand) spinYs = spinYs.map(v => clamp(v, -0.26, 0.30));
+
+  const powerVars = aiUniqueSortedPowers([basePower, basePower * 0.85, basePower * 1.18, basePower * 1.35]);
+  const maxSims = 8 + aiShortlistSize() * 5;   // 13 … 23, an Rechenzeit-Slider gekoppelt
+  let sims = 0;
+
+  // Stufe A: Treffpunkt (oben/unten) × Stoßstärke – Kern des Positionsspiels.
+  outer:
+  for (const sy of spinYs) {
+    for (const pw of powerVars) {
+      if (sims >= maxSims || aiBudgetExceeded(140)) break outer;
+      sims++;
+      const r = evalVariant(mkShot(0, sy, pw));
+      if (r && (!best || r.ctrl > best.ctrl + (best === base ? 6 : 0))) best = r;
+      if (best && best.chain >= 124) break outer; // Stellung praktisch perfekt
+    }
+  }
+
+  // Stufe B: dosiertes Seiteneffet – nur bei freiem Budget und sicherem Pot.
+  const allowSide = !!options.allowSide && !ballInHand
+    && (shot.robust?.potProbability ?? 1) >= 0.92
+    && (shot.robust?.scratchRisk ?? 0) <= 0.02;
+  if (allowSide && best && best.chain < 118 && !aiBudgetExceeded(160)) {
+    const sy0 = best.cand.spinY || 0;
+    const pw0 = best.cand.powerPercent;
+    for (const sx of [-0.14, 0.14, -0.26, 0.26]) {
+      if (sims >= maxSims + 4 || aiBudgetExceeded(120)) break;
+      sims++;
+      const r = evalVariant(mkShot(sx, sy0, pw0));
+      if (r && r.ctrl > best.ctrl + 8) best = r;
+    }
+  }
+
+  if (!best) {
+    // Basis-Stoß validiert nicht (sollte praktisch nie passieren) → unverändert
+    // zurückgeben; aiFinalValidateHardShot + Fallback-Kaskade übernehmen.
+    return { ...baseShot };
+  }
+
+  const chosen = {
+    ...best.validated,
+    spinX: best.cand.spinX,
+    spinY: best.cand.spinY,
+    powerPercent: best.cand.powerPercent,
+    spinHint: best.cand.spinHint,
+    noRandomError: true,
+    ballInHandPerfect: shot.ballInHandPerfect,
+    bihControl: shot.ballInHandPerfect
+      ? { spinX: best.cand.spinX, spinY: best.cand.spinY, mode: plan?.mode || "auto" }
+      : shot.bihControl,
+    positionPlan: plan ? { ...plan, spinX: best.cand.spinX, spinY: best.cand.spinY } : shot.positionPlan,
+    robust: {
+      ...(shot.robust || {}),
+      potProbability: Math.max(shot.robust?.potProbability ?? 1, 1),
+      scratchRisk: 0,
+      foulRisk: 0,
+      positionValue: best.chain,
+      bestSim: best.validated.sim
+    },
+    score: (shot.score ?? 0) + Math.max(0, best.ctrl - (base?.ctrl ?? 0))
+  };
+  return chosen;
 }
 
 async function aiFindProBallInHandPlan(cue, targets, prof, token, tableAnalysis) {
@@ -5905,7 +6038,9 @@ const CommonStrategy = {
   // Power penalty (keep shots controlled)
   scorePower(powerPercent, prof) {
     const base        = -powerPercent * (prof.searchDepth >= 3 ? 0.36 : 0.12);
-    const highPenalty = -Math.max(0, powerPercent - 58) * (prof.searchDepth >= 3 ? 1.35 : 0.25);
+    // S3.0 (Punkt 7): Schwelle 58→66 – nach MAX_POWER-Anhebung beginnt
+    // "überhart" erst später; sonst würden normal dosierte Stöße bestraft.
+    const highPenalty = -Math.max(0, powerPercent - 66) * (prof.searchDepth >= 3 ? 1.35 : 0.25);
     return base + highPenalty;
   },
 
@@ -5952,7 +6087,8 @@ const CommonStrategy = {
     return risk;
   },
 
-  // Full safety score (hide + rail distance + kick bonus – penalties)
+  // Full safety score (hide + rail distance + kick bonus – penalties).
+  // Variantenspezifische Anteile liegen in NineBallStrategy.safetyAdjust.
   scoreSafety(sim, targetNum, robust, cand, prof) {
     const hideScore  = aiSafetyVisibilityScore(sim, targetNum);
     const railScore  = aiRailDistanceSafetyScore(sim, targetNum);
@@ -5961,38 +6097,49 @@ const CommonStrategy = {
     const legalKickBonus = (cand.type === "multiRailKick" || cand.type === "railProbeKick" || cand.type === "kickShot")
       ? 36 + (cand.kickRails || 1) * 10 : 0;
 
-    // Stufe 2.6: oppAccess — zentrale Profi-Metrik für 9-Ball-Safety.
-    // Misst, wie gut der Gegner die zu spielende Kugel nach diesem Stoß
-    // direkt ghost-ballen könnte. Vorher: nur hideScore (Sichtlinie cue→target)
-    // und railScore (Bandennähe). Beides reichte nicht, daher hat die KI
-    // "Ball an Bande, fertig" gespielt statt echter Snooker.
-    const oppAccess = game.variant === "9ball"
-      ? aiOpponentAccessToLowestFromSim(sim, targetNum)
-      : 0;
-
     let score = Math.max(hideScore, 0) * 1.45 + railScore * 0.70
       + legalKickBonus - nearPocketPenalty
       - robust.scratchRisk * 260 - cand.powerPercent * 0.10;
 
-    // Lineare oppAccess-Strafe + gestaffelte Sellout-Mali + Profi-Boni
-    // (nur 9-Ball-Profi, damit 8-Ball-Safety unverändert bleibt).
-    if (game.variant === "9ball" && prof.searchDepth >= 3) {
-      score -= oppAccess * 260;
-      if (oppAccess > 0.82) score -= 180;   // Gegner hat sicheren Pot
-      if (oppAccess > 0.92) score -= 320;   // praktisch Geschenk
-      if (oppAccess < 0.20 && hideScore > 0) score += 180; // echte Snooker-Safety
-      // Stufe 2.9b: Distance-Safety-Bonus von +90 auf +180 erhöht — damit
-      // gewinnt eine echte Cue+Target-an-gegenüberliegenden-Banden-Lage
-      // sicher gegen schwache Pot-Versuche.
-      if (oppAccess < 0.35 && railScore > 0) score += 180;
-      // Stufe 2.9b: Zusätzlicher Endspiel-Bonus für gezielt generierte
-      // distanceSafety9-Kandidaten (Cue + lowestBall auf gegenüberliegenden
-      // Banden). Hebt diese Stufe deutlich über schwache Pot-Versuche.
-      if (cand.type === "distanceSafety9" && oppAccess < 0.45) score += 220;
-    }
+    score += NineBallStrategy.safetyAdjust(sim, targetNum, robust, cand, prof, hideScore, railScore);
 
     if (prof.searchDepth >= 3 && !(cand.type === "multiRailKick" || cand.type === "railProbeKick" || cand.type === "kickShot")) score -= 28;
     return score;
+  },
+};
+
+// S3.0 (Punkt 4): 9-Ball-spezifisches taktisches Scoring — analog zu
+// EightBallStrategy als eigenes Modul über CommonStrategy. Verhaltensidentisch
+// zur vorherigen Inline-Variante in CommonStrategy.scoreSafety.
+const NineBallStrategy = {
+
+  // Stufe 2.6: oppAccess — zentrale Profi-Metrik für 9-Ball-Safety.
+  // Misst, wie gut der Gegner die zu spielende Kugel nach diesem Stoß
+  // direkt ghost-ballen könnte. Vorher: nur hideScore (Sichtlinie cue→target)
+  // und railScore (Bandennähe). Beides reichte nicht, daher hat die KI
+  // "Ball an Bande, fertig" gespielt statt echter Snooker.
+  safetyAdjust(sim, targetNum, robust, cand, prof, hideScore, railScore) {
+    if (game.variant !== "9ball") return 0;
+    const oppAccess = aiOpponentAccessToLowestFromSim(sim, targetNum);
+    let adj = 0;
+
+    // Lineare oppAccess-Strafe + gestaffelte Sellout-Mali + Profi-Boni
+    // (nur 9-Ball-Profi, damit 8-Ball-Safety unverändert bleibt).
+    if (prof.searchDepth >= 3) {
+      adj -= oppAccess * 260;
+      if (oppAccess > 0.82) adj -= 180;   // Gegner hat sicheren Pot
+      if (oppAccess > 0.92) adj -= 320;   // praktisch Geschenk
+      if (oppAccess < 0.20 && hideScore > 0) adj += 180; // echte Snooker-Safety
+      // Stufe 2.9b: Distance-Safety-Bonus von +90 auf +180 erhöht — damit
+      // gewinnt eine echte Cue+Target-an-gegenüberliegenden-Banden-Lage
+      // sicher gegen schwache Pot-Versuche.
+      if (oppAccess < 0.35 && railScore > 0) adj += 180;
+      // Stufe 2.9b: Zusätzlicher Endspiel-Bonus für gezielt generierte
+      // distanceSafety9-Kandidaten (Cue + lowestBall auf gegenüberliegenden
+      // Banden). Hebt diese Stufe deutlich über schwache Pot-Versuche.
+      if (cand.type === "distanceSafety9" && oppAccess < 0.45) adj += 220;
+    }
+    return adj;
   },
 };
 
@@ -6096,9 +6243,11 @@ function aiBuildDirectPotCandidates(cue, targets) {
       const distFactor = clamp((gb.dCG + gb.dTP) / 1650, 0, 1);
       const cutPowerBonus = clamp((1 - gb.dotN) * 16, 0, 11);
       const basePower = prof.searchDepth >= 3
-        ? (0.26 + 0.40 * Math.pow(distFactor, 0.86)) * 100
+        // S3.0 (Punkt 7): Grundpower +~15 % – die Sim modelliert jetzt auch die
+        // Gleitreibungsphase; zu weiche Stöße kämen sonst kurz vor der Tasche zum Stehen.
+        ? (0.30 + 0.46 * Math.pow(distFactor, 0.86)) * 100
         : (0.34 + 0.58 * distFactor) * 100;
-      const minDirectPower = prof.searchDepth >= 3 ? 34 : prof.powerMin;
+      const minDirectPower = prof.searchDepth >= 3 ? 36 : prof.powerMin;
       const powerPercent = clamp(basePower + cutPowerBonus, minDirectPower, prof.powerMax);
       candidates.push({
         type: gb.dotN > 0.85 ? "directPot" : "thinCut",
@@ -6464,6 +6613,93 @@ function aiBuildComboCandidates9Ball(cue, lowestBall) {
 
 const AI_ENABLE_JUMP_SHOTS = true;
 
+// S3.0 (Punkte 6+9): Geschlossener ballistischer Flugschätzer – exakt die
+// Formeln aus launchCueBall/integrateVerticalMotion (vz0, horizontale
+// Startgeschwindigkeit, Parabel unter JUMP_GRAVITY, im Flug keine Tuchreibung).
+// Liefert Absprungprofil, Landedistanz und das "Freifenster": den Distanz-
+// bereich, in dem der Mittelpunkt der Weißen hoch genug fliegt (≥ ~2R), um
+// einen liegenden Ball ohne 3D-Kontakt zu überqueren. Damit werden physikalisch
+// unmögliche Jump-Varianten (Blocker wird gerammt ODER Objektkugel überflogen)
+// billig VOR der teuren Vollsimulation aussortiert.
+function aiEstimateJumpFlight(cueType, powerPercent, elevNorm) {
+  const profile = getCueProfile(cueType);
+  const power = (clamp(powerPercent, 1, 100) / 100) * MAX_POWER;
+  const elev = clamp(elevNorm || 0, 0, 1);
+  const vertical = Math.sin(elev * Math.PI / 2);
+  const isJumpCue = cueType === "jump" || cueType === "jump_short";
+  const jumpLimit = isJumpCue ? (profile.jumpLimit || 0.18) : 0.28;
+  if (vertical * (power / MAX_POWER) <= jumpLimit) return null; // hebt nicht ab
+  const vz0 = power * profile.jumpLift * Math.pow(vertical, 1.7) * 0.34;
+  const horizontalFactor = clamp(1 - profile.verticalLoss * Math.pow(vertical, 1.15), 0.18, 1.0);
+  const vH = power * profile.powerGain * horizontalFactor * getJumpHorizontalFactor(cueType, vertical);
+  if (vH <= 0.01 || vz0 <= 0.01) return null;
+  const g = JUMP_GRAVITY;
+  const tFlight = 2 * vz0 / g;
+  const landDist = vH * tFlight;
+  const apex = (vz0 * vz0) / (2 * g);
+  // Kollision Ball-Ball erst bei 3D-Abstand < 2R → Überflug eines liegenden
+  // Balls braucht dort z ≳ 2R (kleine Toleranz, Vollsim validiert final).
+  const clearHeight = BALL_R * 2 * 0.95;
+  const disc = vz0 * vz0 - 2 * g * clearHeight;
+  if (disc <= 0) {
+    return { vz0, vH, tFlight, landDist, apex, clearFrom: Infinity, clearTo: -Infinity };
+  }
+  const sq = Math.sqrt(disc);
+  return {
+    vz0, vH, tFlight, landDist, apex,
+    clearFrom: vH * (vz0 - sq) / g,
+    clearTo:   vH * (vz0 + sq) / g
+  };
+}
+
+// Vorfilter für eine konkrete Jump-Variante:
+//  - blockerDist:        Distanz Weiße → Blocker (muss im Freifenster liegen)
+//  - requiredLandBefore: Distanz, VOR der die Weiße wieder gelandet sein muss
+//    (Ghostball für Pots, Zielkugel für Kontakt-Safeties) – verhindert das
+//    "Überfliegen der Objektkugel" (Mangel 9).
+function aiJumpVariantClearsBlocker(cueType, powerPercent, elevNorm, blockerDist, requiredLandBefore) {
+  const f = aiEstimateJumpFlight(cueType, powerPercent, elevNorm);
+  if (!f) return false;
+  const tol = BALL_R * 1.2;
+  if (blockerDist != null) {
+    if (blockerDist < f.clearFrom - tol) return false; // am Blocker noch zu tief
+    if (blockerDist > f.clearTo + tol) return false;   // dort schon wieder unten
+  }
+  if (requiredLandBefore != null && f.landDist >= requiredLandBefore) return false;
+  return true;
+}
+
+// Kleines analytisches Raster: findet zu (Blockerdistanz, Landefenster) eine
+// physikalisch passende (Power, Elevation)-Kombination. Reine Arithmetik,
+// keine Simulation – Qualität = Blocker mittig im Freifenster + Landereserve.
+function aiFitJumpParams(cueType, blockerDist, requiredLandBefore) {
+  const elevs  = cueType === "jump_short" ? [0.76, 0.84, 0.92, 1.0] : [0.46, 0.56, 0.66, 0.76, 0.86];
+  // Power-Raster bewusst weit nach unten gezogen: Bei dieser Physik fliegt die
+  // Weiße mit 60+ % Power bereits ÜBER den halben Tisch (landDist ∝ power²).
+  // Kurze Snooker-Jumps (Blocker < 150 px) brauchen 16–40 %.
+  const powers = cueType === "jump_short"
+    ? [16, 20, 24, 30, 38, 48, 60, 74, 90]
+    : [22, 28, 34, 42, 52, 64, 78, 90];
+  let best = null;
+  for (const e of elevs) {
+    for (const pw of powers) {
+      const f = aiEstimateJumpFlight(cueType, pw, e);
+      if (!f) continue;
+      const tol = BALL_R * 1.2;
+      if (blockerDist != null && (blockerDist < f.clearFrom - tol || blockerDist > f.clearTo + tol)) continue;
+      if (requiredLandBefore != null && f.landDist >= requiredLandBefore) continue;
+      const halfWin = Math.max(1, (f.clearTo - f.clearFrom) / 2);
+      const centerErr = blockerDist != null ? Math.abs(blockerDist - (f.clearFrom + f.clearTo) / 2) / halfWin : 0;
+      const landSlack = requiredLandBefore != null
+        ? clamp((requiredLandBefore - f.landDist) / Math.max(1, requiredLandBefore), 0, 1)
+        : 0.5;
+      const q = -centerErr + landSlack * 0.8;
+      if (!best || q > best.q) best = { q, powerPercent: pw, cueElevation: e, flight: f };
+    }
+  }
+  return best;
+}
+
 function aiBuildJumpCandidates(cue, targets) {
   if (!AI_ENABLE_JUMP_SHOTS) return [];
   const prof = aiGetProfile();
@@ -6472,6 +6708,10 @@ function aiBuildJumpCandidates(cue, targets) {
 
   for (const t of targets) {
     if (clearPath(cue, t.x, t.y, t)) continue;
+    const blockerOnLine = aiFindFirstBlockerOnPath(cue.x, cue.y, t.x, t.y, [t.num]);
+    const blockerDist = blockerOnLine
+      ? Math.hypot(blockerOnLine.ball.x - cue.x, blockerOnLine.ball.y - cue.y)
+      : null;
 
     for (const p of POCKETS) {
       const dxTP = p.x - t.x, dyTP = p.y - t.y;
@@ -6483,15 +6723,24 @@ function aiBuildJumpCandidates(cue, targets) {
       const dCG = Math.hypot(ghostX - cue.x, ghostY - cue.y);
       if (dCG < 1) continue;
       const angle = Math.atan2(ghostY - cue.y, ghostX - cue.x);
-      const distFactor = clamp((dCG + dTP) / 1650, 0, 1);
+      // S3.0 (Punkt 9): Power/Elevation nicht mehr aus der Distanz raten,
+      // sondern ballistisch fitten – Blocker im Freifenster, Landung VOR dem
+      // Ghostball. Ohne physikalische Lösung wird der Kandidat verworfen.
+      let cueTypePot = dCG < 210 ? "jump_short" : "jump";
+      let fitPot = aiFitJumpParams(cueTypePot, blockerDist, dCG - BALL_R * 0.5);
+      if (!fitPot) {
+        cueTypePot = cueTypePot === "jump" ? "jump_short" : "jump";
+        fitPot = aiFitJumpParams(cueTypePot, blockerDist, dCG - BALL_R * 0.5);
+      }
+      if (!fitPot) continue;
       candidates.push({
         type: "jumpPot",
         angle,
-        powerPercent: clamp((0.52 + 0.38 * distFactor) * 100, 50, 85),
+        powerPercent: fitPot.powerPercent,
         targetNum: t.num, pocketIdx: POCKETS.indexOf(p),
         dCG, dTP,
-        cueType: dCG < 210 ? "jump_short" : "jump",
-        cueElevation: clamp(0.82 + (1 - distFactor) * 0.10, 0.80, 0.92),
+        cueType: cueTypePot,
+        cueElevation: fitPot.cueElevation,
         isJump: true,
         isSafety: false
       });
@@ -6499,17 +6748,24 @@ function aiBuildJumpCandidates(cue, targets) {
 
     const dCT = Math.hypot(t.x - cue.x, t.y - cue.y);
     if (dCT > 1) {
-      const distFactor = clamp(dCT / 700, 0, 1);
-      candidates.push({
-        type: "jumpContactSafety",
-        angle: Math.atan2(t.y - cue.y, t.x - cue.x),
-        powerPercent: clamp(45 + dCT / 18, 45, 78),
-        targetNum: t.num, dCG: dCT,
-        cueType: dCT < 210 ? "jump_short" : "jump",
-        cueElevation: clamp(0.84 + (1 - distFactor) * 0.10, 0.80, 0.94),
-        isJump: true,
-        isSafety: true, safetyIntent: "legal_contact"
-      });
+      let cueTypeContact = dCT < 210 ? "jump_short" : "jump";
+      let fitContact = aiFitJumpParams(cueTypeContact, blockerDist, dCT - BALL_R);
+      if (!fitContact) {
+        cueTypeContact = cueTypeContact === "jump" ? "jump_short" : "jump";
+        fitContact = aiFitJumpParams(cueTypeContact, blockerDist, dCT - BALL_R);
+      }
+      if (fitContact) {
+        candidates.push({
+          type: "jumpContactSafety",
+          angle: Math.atan2(t.y - cue.y, t.x - cue.x),
+          powerPercent: fitContact.powerPercent,
+          targetNum: t.num, dCG: dCT,
+          cueType: cueTypeContact,
+          cueElevation: fitContact.cueElevation,
+          isJump: true,
+          isSafety: true, safetyIntent: "legal_contact"
+        });
+      }
     }
   }
   return candidates.slice(0, 8);
@@ -6598,14 +6854,15 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
     const blockerInfo = aiIsTargetFullyBlockedForHardJump(cue, target);
     if (!blockerInfo) continue;
 
-    const cueType = aiChooseHardJumpCueType(cue, blockerInfo);
+    let cueType = aiChooseHardJumpCueType(cue, blockerInfo);
     const baseAngleToTarget = Math.atan2(target.y - cue.y, target.x - cue.x);
-    const elevVariants = cueType === "jump_short"
-      ? [0.76, 0.84, 0.92, 1.00]
-      : [0.46, 0.56, 0.66, 0.76];
-    const powerVariants = cueType === "jump_short"
-      ? [62, 70, 78, 86, 94]
-      : [54, 62, 70, 78, 86];
+    // S3.0 (Punkt 9): Power-Raster nach unten erweitert. landDist wächst
+    // quadratisch mit der Power; die alten 54–94 % erzeugten ausnahmslos
+    // Flüge über den halben/ganzen Tisch (Überfliegen der Objektkugel).
+    const jumpGrid = (ct) => ct === "jump_short"
+      ? { elevs: [0.76, 0.84, 0.92, 1.00], powers: [16, 20, 24, 30, 38, 48, 60, 74, 90] }
+      : { elevs: [0.46, 0.56, 0.66, 0.76], powers: [22, 28, 34, 42, 52, 64, 78, 90] };
+    let { elevs: elevVariants, powers: powerVariants } = jumpGrid(cueType);
     const angleVariants = [-0.020, -0.012, -0.006, 0, 0.006, 0.012, 0.020];
     const attackOffsets = [-1.75, -1.35, -0.95, -0.55, 0, 0.55, 0.95, 1.35, 1.75].map(v => v * target.r);
     const attackFineAngles = [-0.018, -0.010, -0.004, 0, 0.004, 0.010, 0.018];
@@ -6614,9 +6871,36 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
     const tyCue = (target.y - cue.y) / toTargetDist;
     const pxCue = -tyCue, pyCue = txCue;
 
-    for (const elev of elevVariants) {
-      for (const pw of powerVariants) {
-        for (const da of angleVariants) {
+    // S3.0 (Punkte 6+9): Ballistischer Vorfilter. Nur (Elevation, Power)-Paare,
+    // bei denen die Weiße den Blocker im Freifenster überfliegt UND vor der
+    // Zielkugel wieder landet, erzeugen überhaupt Kandidaten. Reduziert die
+    // Rastergröße massiv und eliminiert "Foul am Blocker"/"Überflieger" vorab.
+    const blockerDist = Math.hypot(blockerInfo.ball.x - cue.x, blockerInfo.ball.y - cue.y);
+    const buildParams = (ct, landBefore) => {
+      const grid = jumpGrid(ct);
+      const out = [];
+      for (const elev of grid.elevs) {
+        for (const pw of grid.powers) {
+          if (aiJumpVariantClearsBlocker(ct, pw, elev, blockerDist, landBefore)) out.push({ elev, pw });
+        }
+      }
+      return out;
+    };
+    let contactParams = buildParams(cueType, toTargetDist - BALL_R);
+    // Liefert der nach Gap gewählte Queue-Typ keine physikalische Lösung,
+    // den anderen Typ probieren (z.B. kurzer Blockerabstand, aber weites Ziel).
+    if (!contactParams.length) {
+      const altType = cueType === "jump" ? "jump_short" : "jump";
+      const altParams = buildParams(altType, toTargetDist - BALL_R);
+      if (altParams.length) {
+        cueType = altType;
+        ({ elevs: elevVariants, powers: powerVariants } = jumpGrid(cueType));
+        contactParams = altParams;
+      }
+    }
+
+    for (const { elev, pw } of contactParams) {
+      for (const da of angleVariants) {
           candidates.push({
             type: "hardJumpContact",
             isJump: true,
@@ -6624,7 +6908,7 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
             targetNum: target.num,
             pocketIdx: -1,
             angle: baseAngleToTarget + da,
-            powerPercent: clamp(pw, prof.powerMin, Math.max(prof.powerMax, 94)),
+            powerPercent: clamp(pw, 10, 96),
             cueType,
             cueElevation: elev,
             spinX: 0,
@@ -6634,7 +6918,6 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
             blockerNum: blockerInfo.ball.num,
             blockerGap: blockerInfo.gap
           });
-        }
       }
     }
 
@@ -6646,8 +6929,7 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
       const aimX = target.x + pxCue * off;
       const aimY = target.y + pyCue * off;
       const baseAttackAngle = Math.atan2(aimY - cue.y, aimX - cue.x);
-      for (const elev of elevVariants) {
-        for (const pw of powerVariants) {
+      for (const { elev, pw } of contactParams) {
           for (const da of attackFineAngles) {
             candidates.push({
               type: "hardJumpCaromAttack",
@@ -6656,7 +6938,7 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
               targetNum: target.num,
               pocketIdx: -1,
               angle: baseAttackAngle + da,
-              powerPercent: clamp(pw + (Math.abs(off) > target.r ? 4 : 0), prof.powerMin, Math.max(prof.powerMax, 96)),
+              powerPercent: clamp(pw + (Math.abs(off) > target.r ? 4 : 0), 10, 96),
               cueType,
               cueElevation: elev,
               spinX: 0,
@@ -6668,7 +6950,6 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
               jumpAttackOffset: off
             });
           }
-        }
       }
     }
 
@@ -6683,9 +6964,11 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
       const ghostY = target.y - ty * target.r * 2;
       const basePotAngle = Math.atan2(ghostY - cue.y, ghostX - cue.x);
       const fineAngles = [-0.014, -0.008, -0.004, 0, 0.004, 0.008, 0.014];
+      const dCGJump = Math.hypot(ghostX - cue.x, ghostY - cue.y);
+      // Pot-Filter: Landung muss VOR dem Ghostball-Punkt liegen (sonst Überflug).
+      const potParams = buildParams(cueType, dCGJump - BALL_R * 0.5);
 
-      for (const elev of elevVariants) {
-        for (const pw of powerVariants) {
+      for (const { elev, pw } of potParams) {
           for (const da of fineAngles) {
             candidates.push({
               type: "hardJumpPot",
@@ -6694,7 +6977,7 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
               targetNum: target.num,
               pocketIdx: pi,
               angle: basePotAngle + da,
-              powerPercent: clamp(pw, prof.powerMin, Math.max(prof.powerMax, 94)),
+              powerPercent: clamp(pw, 10, 96),
               cueType,
               cueElevation: elev,
               spinX: 0,
@@ -6703,11 +6986,10 @@ function aiBuildHardJumpCandidates(cue, targets, prof) {
               noRandomError: true,
               blockerNum: blockerInfo.ball.num,
               blockerGap: blockerInfo.gap,
-              dCG: Math.hypot(ghostX - cue.x, ghostY - cue.y),
+              dCG: dCGJump,
               dTP
             });
           }
-        }
       }
     }
   }
@@ -6777,8 +7059,9 @@ function aiFindHardValidatedJumpFallback(cue, targets, prof, progressLabel = "Ju
       if (edgeGoalA !== edgeGoalB) return edgeGoalA - edgeGoalB;
       const elevGoalA = a.cueType === "jump_short" ? 0.88 : 0.62;
       const elevGoalB = b.cueType === "jump_short" ? 0.88 : 0.62;
-      const da = Math.abs((a.cueElevation || elevGoalA) - elevGoalA) + Math.abs((a.powerPercent || 72) - 72) * 0.004;
-      const db = Math.abs((b.cueElevation || elevGoalB) - elevGoalB) + Math.abs((b.powerPercent || 72) - 72) * 0.004;
+      // S3.0: niedrigere Power = kürzerer, kontrollierterer Flug → bevorzugen.
+      const da = Math.abs((a.cueElevation || elevGoalA) - elevGoalA) + (a.powerPercent || 50) * 0.004;
+      const db = Math.abs((b.cueElevation || elevGoalB) - elevGoalB) + (b.powerPercent || 50) * 0.004;
       return da - db;
     });
   aiSetPlanProgress(progressLabel, 0, Math.max(1, candidates.length), "Sprung-Kandidaten");
@@ -7530,12 +7813,14 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
           + CommonStrategy.scoreSellout(selloutRisk)
           + CommonStrategy.scorePower(cand.powerPercent, prof)
           + CommonStrategy.scoreCutRisk(cand.dotN, prof, _dTP, _approachPenalty);
-    if (aiIsHardenedProfi(prof) && robust.potProbability >= HARD_OPEN_POT_THRESHOLD && robust.scratchRisk <= HARD_SCRATCH_VETO_THRESHOLD && robust.foulRisk <= HARD_FOUL_VETO_THRESHOLD) score += 200000;
+    // S3.0 (Punkt 5): Der Mega-Bonus gilt nur für DIREKTE Pots. Bank-Shots
+    // erhalten ihn nicht mehr – sonst verdrängt eine 86 %-Bank den 99 %-Direktpot.
+    if (aiIsHardenedProfi(prof) && cand.type !== "bankShot" && robust.potProbability >= HARD_OPEN_POT_THRESHOLD && robust.scratchRisk <= HARD_SCRATCH_VETO_THRESHOLD && robust.foulRisk <= HARD_FOUL_VETO_THRESHOLD) score += 200000;
     if (cand.type === "comboShot" && cand.targetNum === 9) score += robust.potProbability * 120;
-    // S2.10: Solide validierende Bank-Shots sollen Safeties schlagen.
-    // +120 deckt die Lücke zur distanceSafety9 (+220) und zur hideScore-Safety,
-    // ohne unsichere Banks (potProb < 0.55) zu pushen.
-    if (cand.type === "bankShot" && (robust.potProbability ?? 0) >= 0.55) score += 120;
+    // S3.0 (Punkt 5): Banks sind beim Profi Mittel der letzten Wahl. Fester
+    // Malus statt Bonus – eine validierte Bank schlägt weiterhin Safeties mit
+    // niedrigem Score, aber nie einen spielbaren Direktpot.
+    if (cand.type === "bankShot") score -= 140;
     // S2.11: Center-Ball-Bias — Throw-Control nur bei klarem Pot-Wahrscheinlichkeits-
     // Gewinn bevorzugen. Die Sim kennt applySpinOnContact nicht und kann
     // Outside-English-Stellung "zu schön" rechnen; -40 entspricht ~13 % potProb-
@@ -7758,6 +8043,14 @@ async function evaluateCandidatesAsync(allCands, prof, ctx, tableAnalysis) {
   let sliceStart = performance.now();
   aiSetPlanProgress("Kandidaten simulieren", 0, allCands.length, "Pot, Foul und Scratch");
   for (let i = 0; i < allCands.length; i++) {
+    // S3.0: Budget-Guard. Kandidaten kommen Pots-first; sobald das Zeitbudget
+    // praktisch aufgebraucht ist UND mindestens ein Pot bewertet wurde, wird
+    // abgebrochen. Verhindert UI-Hänger bei vollen Tischen, ohne die
+    // Stoßqualität zu mindern (Rest wäre ohnehin schlechter sortiert).
+    if (i > 0 && aiBudgetExceeded(150) && evaluated.some(c => !c.isSafety)) {
+      aiSetPlanProgress("Kandidaten simulieren", i, allCands.length, `${evaluated.length} brauchbar (Budget)`);
+      break;
+    }
     const ev = evaluateShotCandidate(allCands[i], prof, ctx, tableAnalysis);
     if (ev) evaluated.push(ev);
     if (performance.now() - sliceStart > 18) {
@@ -8566,6 +8859,21 @@ async function aiPlanShot() {
   const safeCands = evaluated.filter(c => c.isSafety);
   let bestShot = null;
 
+  // ───────────────────────────────────────────────────────────────────────
+  // S3.0 (Punkt 4): Gemeinsame Stoßwahl-Pipeline für 8-Ball UND 9-Ball.
+  // Regelspezifik liegt ausschließlich in den Modulen:
+  //   • CommonStrategy      – variantenübergreifend (Pot/Position/Power/Risiko)
+  //   • EightBallStrategy   – 8-Ball-Taktik (Gruppen, 8er-Endspiel, Breakouts)
+  //   • NineBallStrategy    – 9-Ball-Taktik (oppAccess-Safety, Push-Out-Umfeld)
+  // Chooser-Kaskade (Angriff vor Sicherheit, validierte Physik als Wahrheit):
+  //   1. Offene Pots   ≥ HARD_OPEN_POT_THRESHOLD  → bedingungslos ausschießen
+  //   2. Sichere Pots  ≥ HARD_SAFE_POT_THRESHOLD  → spielen
+  //   3. Realistische Pots ≥ REALISTIC_POT_FLOOR  → nur wenn besser als Safety
+  //   4. Safeties (oppAccess-/Snooker-bewertet)
+  //   5. Blockade-Pfad: validierter Jump → Kick → Legal Escape
+  //   6. Spezial-Locks (Rail/Bank/Long) nur, wenn kein verlässlicher Pot
+  //   7. Stellungsspiel (aiHardenedPositionControl) + finale Vollvalidierung
+  // ───────────────────────────────────────────────────────────────────────
   if (prof.searchDepth >= 3 && forcedBIHShot) {
     // Nach Ball-in-Hand führt die Profi-KI den zuvor validierten 100%-Schuss unverändert aus.
     bestShot = forcedBIHShot;
@@ -8667,7 +8975,11 @@ async function aiPlanShot() {
       // Anstoß (in dem fast immer irgendeine Kugel im Cluster gesnookert ist)
       // ein „validierter" Jump für die blockierte Kugel den perfekt spielbaren
       // freien Direkt-Pot einer anderen Kugel → KI springt sinnlos ins Nirgendwo.
-      const blockedFallbackAllowed = !bestShot || bestShot.isSafety || aiIsKickShotType(bestShot);
+      // S3.0 (Punkt 6): Gate zusätzlich öffnen, wenn der beste gefundene Stoß
+      // ein unzuverlässiger Pot (<50 %) ist – nach gegnerischen Safeties ist
+      // ein validierter Jump dann die bessere Option als ein Verzweiflungspot.
+      const blockedFallbackAllowed = !bestShot || bestShot.isSafety || aiIsKickShotType(bestShot)
+        || (bestShot.robust?.potProbability ?? 0) < 0.5;
       if (blockedFallbackAllowed) {
         const hardJump = aiFindHardValidatedJumpFallback(cue, [hardSnooker.target], prof);
         if (hardJump) {
@@ -8760,14 +9072,20 @@ async function aiPlanShot() {
       aiSetPlanProgress("Spezial-Locks prüfen", 5, 6, "Bande, Bank, Long Pot");
       await yieldToBrowser();
       const railPotLock = aiFindHardRailPotLock(cue, lockTargets, prof);
-      if (railPotLock && (!bestShot || bestShot.isSafety || (railPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
+      // S3.0 (Punkt 5): Ein Lock ersetzt einen vorhandenen Pot nur noch, wenn
+      // dessen Versenkwahrscheinlichkeit unter HARD_LOCK_REPLACE_POT_PROB liegt.
+      // Direktpots werden nicht mehr durch score-stärkere Banden-Varianten verdrängt.
+      const lockMayReplace = (lock) => !bestShot || bestShot.isSafety ||
+        ((bestShot.robust?.potProbability ?? 0) < HARD_LOCK_REPLACE_POT_PROB &&
+         (lock.score ?? -Infinity) > (bestShot.score ?? -Infinity));
+      if (railPotLock && lockMayReplace(railPotLock)) {
         bestShot = railPotLock;
       }
       if ((!bestShot || bestShot.isSafety) && !aiBudgetExceeded()) {
         aiSetPlanProgress("Bank-Shot prüfen", 5, 6, "validierte Bande");
         await yieldToBrowser();
         const bankShotLock = aiFindHardBankShotCandidates(cue, lockTargets, prof);
-        if (bankShotLock && (!bestShot || bestShot.isSafety || (bankShotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
+        if (bankShotLock && lockMayReplace(bankShotLock)) {
           bestShot = bankShotLock;
         }
       }
@@ -8775,7 +9093,7 @@ async function aiPlanShot() {
         aiSetPlanProgress("Long-Pot prüfen", 5, 6, "gerade lange Pots");
         await yieldToBrowser();
         const longPotLock = aiFindHardLongPotLock(cue, lockTargets, prof);
-        if (longPotLock && (!bestShot || bestShot.isSafety || (longPotLock.score ?? -Infinity) > (bestShot.score ?? -Infinity))) {
+        if (longPotLock && lockMayReplace(longPotLock)) {
           bestShot = longPotLock;
         }
       }
@@ -8859,7 +9177,10 @@ async function aiPlanShot() {
   } else {
     game.cueType = bestShot.cueType || "playing";
     game.cueElevation = bestShot.cueElevation || 0;
-    if (bestShot.ballInHandPerfect || aiIsHardSpecialLockShot(bestShot)) {
+    if (bestShot.ballInHandPerfect || aiIsHardSpecialLockShot(bestShot) || bestShot.isJump) {
+      // S3.0 (Punkt 9): Jump-Stöße führen die VALIDIERTE Power 1:1 aus –
+      // landDist wächst quadratisch mit der Power; jedes nachträgliche Clampen
+      // auf powerMin/powerMax verschiebt den Landepunkt um hunderte Pixel.
       game.powerPercent = clamp(bestShot.powerPercent, 5, 100);
     } else if (prof.searchDepth >= 3 && !aiIsHardenedProfi(prof) && !bestShot.isSafety) {
       const potProb = bestShot.robust?.potProbability ?? 0;
@@ -8876,18 +9197,21 @@ async function aiPlanShot() {
     // Trefflinie unverfälscht. Im gehärteten Profi wird auch Längsdrall erst
     // wieder zugelassen, wenn er final validiert simuliert werden kann.
     const bihCtrl = bestShot.bihControl || {};
-    game.spinX = clamp(bestShot.spinX || bihCtrl.spinX || 0, -0.10, 0.10);
-    game.spinY = clamp(bestShot.spinY || bihCtrl.spinY || 0, -0.22, 0.22);
+    game.spinX = clamp(bestShot.spinX || bihCtrl.spinX || 0, -0.14, 0.14);
+    game.spinY = clamp(bestShot.spinY || bihCtrl.spinY || 0, -0.34, 0.34);
     if (Math.abs(game.spinY) < 0.04) game.spinY = 0;
   } else if (bestShot.type === "hardValidatedKickFallback") {
     // Mehrbanden-Kicks dürfen kontrolliertes, final validiertes Seiteneffet behalten.
     game.spinX = bestShot.spinX || 0;
     game.spinY = 0;
   } else if (aiIsHardenedProfi(prof) && bestShot.spinHint === "position-control") {
-    game.spinX = clamp(bestShot.spinX || 0, -0.16, 0.16);
-    game.spinY = clamp(bestShot.spinY || 0, -0.30, 0.30);
-    if (Math.abs(game.spinX) < 0.035) game.spinX = 0;
-    if (Math.abs(game.spinY) < 0.035) game.spinY = 0;
+    // S3.0: Bereich muss die in aiHardenedPositionControl VALIDIERTEN Werte
+    // abdecken (spinX bis ±0.26, spinY Follow −0.34 / Draw +0.48). Ein engerer
+    // Clamp würde den final simulierten Stoß nachträglich verfälschen.
+    game.spinX = clamp(bestShot.spinX || 0, -0.30, 0.30);
+    game.spinY = clamp(bestShot.spinY || 0, -0.50, 0.50);
+    if (Math.abs(game.spinX) < 0.03) game.spinX = 0;
+    if (Math.abs(game.spinY) < 0.03) game.spinY = 0;
   } else if (aiIsHardenedProfi(prof) && bestShot.spinHint === "throw-control") {
     // S2.11: Validierter Outside-English-Stoß zur CIT-Kompensation.
     // Squirt ist im Kandidaten-Aim bereits vorkompensiert; spinX hier
@@ -10353,9 +10677,12 @@ updateAiComputeBudgetUI();
 
 // ── Tischprofil-Presets ──────────────────────────────────────────────────────
 const TABLE_PRESETS = {
-  fast:   { friction:5,  drag:10, en:93, mu:12, pocketCorner:18, pocketSide:22, slide:90,  railFric:28, railGrip:58, ballBounce:97 }, // Profiturniertisch (friction=5‰ → CFG=0.995)
-  medium: { friction:8,  drag:18, en:90, mu:18, pocketCorner:20, pocketSide:25, slide:115, railFric:34, railGrip:66, ballBounce:96 }, // Turniertisch (friction=8‰ → CFG=0.992)
-  slow:   { friction:15, drag:30, en:80, mu:22, pocketCorner:23, pocketSide:29, slide:150, railFric:42, railGrip:74, ballBounce:94 }, // Kneipentisch (friction=15‰ → CFG=0.985)
+  // S3.0 (Punkt 7): Presets an die neuen, schnelleren Default-Physikwerte angepasst.
+  // "medium" entspricht EXAKT den Code-Defaults (CFG_FRICTION 0.994 → friction=6 usw.),
+  // damit Slider-Sync und Preset deckungsgleich sind.
+  fast:   { friction:4,  drag:8,  en:94, mu:14, pocketCorner:18, pocketSide:22, slide:88,  railFric:28, railGrip:58, ballBounce:97 }, // Profiturniertisch (Simonis-neu)
+  medium: { friction:6,  drag:12, en:92, mu:18, pocketCorner:20, pocketSide:25, slide:100, railFric:34, railGrip:66, ballBounce:97 }, // Turniertisch (= Default)
+  slow:   { friction:12, drag:24, en:84, mu:22, pocketCorner:23, pocketSide:29, slide:135, railFric:42, railGrip:74, ballBounce:95 }, // Kneipentisch
 };
 function applyTablePreset(key) {
   const p = TABLE_PRESETS[key];
