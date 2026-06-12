@@ -1466,9 +1466,8 @@
     <button id="btnTrainingReset" style="display:none;">↺ Reset Tableau</button>
     <select id="trainingPreset" style="display:none;" title="Vordefinierte Aufstellung laden">
       <option value="">— Aufstellung wählen —</option>
-      <option value="press">Press-Kugeln</option>
-      <option value="smallPosition10">Kleine Position (10)</option>
-      <option value="cornerPockets4">Ecktaschen (4)</option>
+      <!-- Aufstellungen werden beim Start aus TRAINING_PRESETS eingefügt
+           (eine Quelle, * Anfänger / ** Fortgeschrittene / *** Profis). -->
     </select>
     <button id="btnTimerExtend" style="display:none;">⏱ +30s</button>
     <button id="btnPhysics" style="display:none;">⚙ Physik</button>
@@ -3942,16 +3941,113 @@ function trainingDiamondBall(num, xIdx, yIdx, dx = 0, dy = 0) {
 }
 
 const TRAINING_PRESETS = {
+  // ── Anfänger (*) ──────────────────────────────────────────────────────
+  cornerPockets4: {
+    label: "* Ecktaschen (4)",
+    balls: [
+      { num: 0, xRel: 0.18, yRel: 0.50 },   // Weiße: Kopffeld, frei verschiebbar
+      // Diamond-Kreuzungspunkte unmittelbar vor den vier Ecktaschen.
+      trainingDiamondBall(1, 1, 1),
+      trainingDiamondBall(2, 7, 1),
+      trainingDiamondBall(3, 1, 3),
+      trainingDiamondBall(4, 7, 3)
+    ]
+  },
+  hangers6: {
+    label: "* Taschen-Hänger (6)",
+    balls: [
+      { num: 0, xRel: 0.18, yRel: 0.50 },
+      // Je eine Kugel vor allen sechs Taschen (Ecken + Mitten).
+      trainingDiamondBall(1, 1, 1),
+      trainingDiamondBall(2, 7, 1),
+      trainingDiamondBall(3, 1, 3),
+      trainingDiamondBall(4, 7, 3),
+      { num: 5, xRel: 0.5, yRel: 0, dy: 2.2 },   // vor der oberen Mitteltasche
+      { num: 6, xRel: 0.5, yRel: 1, dy: -2.2 }   // vor der unteren Mitteltasche
+    ]
+  },
+  stopShot: {
+    label: "* Stoppball-Linie",
+    balls: [
+      // Weiße–1–Ecktasche oben rechts liegen exakt auf einer Geraden.
+      { num: 0, xRel: 0.50, yRel: 0.50 },
+      { num: 1, xRel: 0.75, yRel: 0.245 }
+    ]
+  },
+  followDraw: {
+    label: "* Nachläufer / Rückläufer",
+    balls: [
+      // Senkrechte Linie in die untere Mitteltasche: Weiße–1–Tasche.
+      { num: 0, xRel: 0.50, yRel: 0.28 },
+      { num: 1, xRel: 0.50, yRel: 0.62 }
+    ]
+  },
+  longStraight: {
+    label: "* Lange Gerade",
+    balls: [
+      // Diagonale Gerade in die Ecktasche unten rechts, beide Wege gleich lang.
+      { num: 0, xRel: 0.2286, yRel: 0.2236 },
+      { num: 1, xRel: 0.6190, yRel: 0.6212 }
+    ]
+  },
+  // ── Fortgeschrittene (**) ─────────────────────────────────────────────
   press: {
-    label: "Press-Kugeln",
+    label: "** Press-Kugeln",
     balls: [
       trainingDiamondBall(0, 5, 2),         // Weiße: Diamant (5, 2)
       trainingDiamondBall(1, 3, 2),         // 1 (CIT-Ziel): Diamant (3, 2)
       trainingDiamondBall(2, 3, 2, -2.02)   // 2: press direkt links neben der 1
     ]
   },
+  lineDrill7: {
+    label: "** Linien-Drill (7)",
+    balls: [
+      { num: 0, xRel: 0.50, yRel: 0.15 },
+      // Kugeln 1–7 gleichmäßig auf der Längsachse.
+      { num: 1, xRel: 0.20, yRel: 0.50 },
+      { num: 2, xRel: 0.30, yRel: 0.50 },
+      { num: 3, xRel: 0.40, yRel: 0.50 },
+      { num: 4, xRel: 0.50, yRel: 0.50 },
+      { num: 5, xRel: 0.60, yRel: 0.50 },
+      { num: 6, xRel: 0.70, yRel: 0.50 },
+      { num: 7, xRel: 0.80, yRel: 0.50 }
+    ]
+  },
+  cutSteps3: {
+    label: "** Schnittwinkel-Treppe (3)",
+    balls: [
+      // Feste Weiße; drei Kugeln in gleicher Taschendistanz zur Ecke unten
+      // rechts mit wachsendem Schnittwinkel (≈ 12° / 32° / 55°).
+      { num: 0, xRel: 0.30, yRel: 0.30 },
+      { num: 1, xRel: 0.674, yRel: 0.774 },
+      { num: 2, xRel: 0.757, yRel: 0.514 },
+      { num: 3, xRel: 0.831, yRel: 0.400 }
+    ]
+  },
+  railFrozen4: {
+    label: "** Banden-Kugeln (4)",
+    balls: [
+      { num: 0, xRel: 0.50, yRel: 0.62 },
+      // Vier Kugeln press an der oberen langen Bande.
+      { num: 1, xRel: 0.25, yRel: 0, dy: 1.0 },
+      { num: 2, xRel: 0.42, yRel: 0, dy: 1.0 },
+      { num: 3, xRel: 0.58, yRel: 0, dy: 1.0 },
+      { num: 4, xRel: 0.75, yRel: 0, dy: 1.0 }
+    ]
+  },
+  bankLong2: {
+    label: "** Bank über die lange Bande (2)",
+    balls: [
+      { num: 0, xRel: 0.50, yRel: 0.66 },
+      // Zwei Kugeln für Cross-Side-Banks über die obere lange Bande
+      // in die untere Mitteltasche.
+      { num: 1, xRel: 0.42, yRel: 0.28 },
+      { num: 2, xRel: 0.62, yRel: 0.26 }
+    ]
+  },
+  // ── Profis (***) ──────────────────────────────────────────────────────
   smallPosition10: {
-    label: "Kleine Position (10)",
+    label: "*** Kleine Position (10)",
     balls: [
       { num: 0, xRel: 0.18, yRel: 0.50 },   // Weiße: Kopffeld, frei verschiebbar
       // Fußbereich: Diamond-Kreuzungspunkte (x = 4..7 Achtel, y = 1..3 Viertel)
@@ -3967,15 +4063,71 @@ const TRAINING_PRESETS = {
       trainingDiamondBall(2, 7, 3)
     ]
   },
-  cornerPockets4: {
-    label: "Ecktaschen (4)",
+  circle8: {
+    label: "*** Kreis-Drill (8)",
     balls: [
-      { num: 0, xRel: 0.18, yRel: 0.50 },   // Weiße: Kopffeld, frei verschiebbar
-      // Diamond-Kreuzungspunkte unmittelbar vor den vier Ecktaschen.
-      trainingDiamondBall(1, 1, 1),
-      trainingDiamondBall(2, 7, 1),
-      trainingDiamondBall(3, 1, 3),
-      trainingDiamondBall(4, 7, 3)
+      // Acht Kugeln im Kreis (Radius 1 Diamant) um den Fußpunkt, Weiße im Zentrum.
+      { num: 0, xRel: 0.75, yRel: 0.50 },
+      { num: 1, xRel: 0.875,  yRel: 0.50 },
+      { num: 2, xRel: 0.8385, yRel: 0.3233 },
+      { num: 3, xRel: 0.75,   yRel: 0.25 },
+      { num: 4, xRel: 0.6615, yRel: 0.3233 },
+      { num: 5, xRel: 0.625,  yRel: 0.50 },
+      { num: 6, xRel: 0.6615, yRel: 0.6767 },
+      { num: 7, xRel: 0.75,   yRel: 0.75 },
+      { num: 8, xRel: 0.8385, yRel: 0.6767 }
+    ]
+  },
+  lDrill6: {
+    label: "*** L-Drill (6)",
+    balls: [
+      { num: 0, xRel: 0.50, yRel: 0.50 },
+      // L um die Ecktasche unten rechts, je ein Diamant von den Banden.
+      { num: 1, xRel: 0.625,  yRel: 0.75 },
+      { num: 2, xRel: 0.6875, yRel: 0.75 },
+      { num: 3, xRel: 0.75,   yRel: 0.75 },
+      { num: 4, xRel: 0.875,  yRel: 0.375 },
+      { num: 5, xRel: 0.875,  yRel: 0.50 },
+      { num: 6, xRel: 0.875,  yRel: 0.625 }
+    ]
+  },
+  ghost9: {
+    label: "*** 9-Ball-Geist",
+    balls: [
+      // Auslaufbares 9-Ball-Muster: 1–9 in Reihenfolge versenken.
+      { num: 0, xRel: 0.10, yRel: 0.50 },
+      { num: 1, xRel: 0.16, yRel: 0.26 },
+      { num: 2, xRel: 0.84, yRel: 0.22 },
+      { num: 3, xRel: 0.22, yRel: 0.78 },
+      { num: 4, xRel: 0.55, yRel: 0.84 },
+      { num: 5, xRel: 0.86, yRel: 0.62 },
+      { num: 6, xRel: 0.38, yRel: 0.42 },
+      { num: 7, xRel: 0.68, yRel: 0.40 },
+      { num: 8, xRel: 0.30, yRel: 0.60 },
+      { num: 9, xRel: 0.58, yRel: 0.58 }
+    ]
+  },
+  railRunout15: {
+    label: "*** Banden-Runout (15)",
+    balls: [
+      // Zwölf Kugeln press an den Banden auf den Diamant-Positionen,
+      // drei auf der Mittellinie, Weiße frei im Kopffeld.
+      { num: 0, xRel: 0.50, yRel: 0.12 },
+      { num: 2, xRel: 0.125, yRel: 0, dy: 1.0 },
+      { num: 3, xRel: 0.375, yRel: 0, dy: 1.0 },
+      { num: 4, xRel: 0.625, yRel: 0, dy: 1.0 },
+      { num: 5, xRel: 0.875, yRel: 0, dy: 1.0 },
+      { num: 12, xRel: 0.125, yRel: 1, dy: -1.0 },
+      { num: 11, xRel: 0.375, yRel: 1, dy: -1.0 },
+      { num: 10, xRel: 0.625, yRel: 1, dy: -1.0 },
+      { num: 9,  xRel: 0.875, yRel: 1, dy: -1.0 },
+      { num: 1,  xRel: 0, yRel: 0.25, dx: 1.0 },
+      { num: 13, xRel: 0, yRel: 0.75, dx: 1.0 },
+      { num: 6,  xRel: 1, yRel: 0.25, dx: -1.0 },
+      { num: 7,  xRel: 1, yRel: 0.75, dx: -1.0 },
+      trainingDiamondBall(14, 2, 2),
+      trainingDiamondBall(15, 4, 2),
+      trainingDiamondBall(8, 6, 2)
     ]
   }
 };
@@ -10801,6 +10953,15 @@ const ui = {
   miniCount8Opts:   document.getElementById("miniCount8Opts"),
   miniCount9Opts:   document.getElementById("miniCount9Opts"),
 };
+
+// Trainings-Aufstellungen ins Dropdown übernehmen (eine Quelle: TRAINING_PRESETS;
+// Kennzeichnung im Label: * Anfänger, ** Fortgeschrittene, *** Profis).
+for (const [key, preset] of Object.entries(TRAINING_PRESETS)) {
+  const opt = document.createElement("option");
+  opt.value = key;
+  opt.textContent = preset.label;
+  ui.trainingPreset.appendChild(opt);
+}
 
 let _pendingGroupCallShot = false;
 function handleCallChoice(num) {
