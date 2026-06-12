@@ -1924,11 +1924,30 @@ let _aiLookaheadDepth = 1;
 // Ein realer Profi spielt denselben Ball schlicht mit Rückzieher/Stopp.
 // Die Rescue-Stufe testet validierte Treffpunkt-Varianten (Rücklauf zuerst,
 // dann Nachlauf), bevor ein Direktpot wegen Scratch-Risiko verworfen wird.
-const AI_SCRATCH_RESCUE_SPINS = [0.20, 0.32, 0.45, -0.14, -0.26];
+// S3.2: Treffpunkt-Varianten als [spinY, powerFaktor]-Paare. Rückzieher/Stopp
+// verpufft bei langem Anlaufweg mit Formel-Power (die Weiße rollt beim Kontakt
+// bereits) — ein realer Profi spielt den Stopp dann mit mehr Tempo. Die
+// Power-Stufen decken genau das ab; Reihenfolge: erst Treffpunkt allein,
+// dann Treffpunkt + Tempo.
+const AI_SCRATCH_RESCUE_VARIANTS = [
+  [0.20, 1], [0.32, 1], [0.45, 1], [-0.14, 1], [-0.26, 1],
+  [0.32, 1.35], [0.45, 1.35], [0.45, 1.60]
+];
 const AI_SCRATCH_RESCUE_MAX = 4;   // max. gerettete Kandidaten pro Planung (Budgetschutz)
 let _aiScratchRescueCount = 0;
+// S3.2: Exakte Winkel-Nachführung für Pot-Kandidaten. Der Generator-Winkel
+// kommt aus reiner Ghostball-Geometrie; die volle Physik (Throw/CIT bei
+// vollen, langsamen Treffern, Taschennasen-Geometrie) verschiebt den realen
+// Treff-Korridor um einige Zehntelgrad. Bei langem Objektkugel-Restweg oder
+// flachem Taschenanflug verfehlt der exakte Stoß dann komplett — der Pot
+// fiel mit potProbability 0 aus der Auswahl und die KI wich auf Safeties aus.
+const AI_POT_REFINE_MAX_DEG    = 2.4;  // Suchspanne um den Geometrie-Winkel (±)
+const AI_POT_REFINE_STEP_DEG   = 0.3;  // Schrittweite der Treffersuche
+const AI_POT_REFINE_EDGE_DEG   = 0.15; // Schrittweite der Fensterrand-Auslotung
+const AI_POT_REFINE_SIM_BUDGET = 90;   // max. Refine-Sims pro Planung (Budgetschutz)
+let _aiPotRefineSims = 0;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.1";
+const AI_BUILD = "S3.3";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -4921,6 +4940,10 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
   const posDeadline = performance.now() + clamp(aiTimeBudgetMs() * 0.55, 220, 620);
   const posBudgetLeft = (reserveMs = 0) => performance.now() + reserveMs < posDeadline;
 
+  // S3.3: Wunschablage der Weißen für die FOLGEKUGEL — wird nach dem Plan-Bau
+  // gesetzt und verankert die gesamte Suche: Varianten, die der Wunschzone
+  // näher kommen, erhalten einen Zielterm; die Stufe T löst gezielt darauf hin.
+  let _desired = null;
   const evalVariant = (cand) => {
     const validated = aiValidateShotBySimulation(cand);
     if (!validated) return null;
@@ -4932,13 +4955,16 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
     // Stellungsqualität gewinnt die kurze, direkte Route (Stun/Follow/Draw mit
     // passender Härte) gegen die Mehrbanden-Tour. Natürlicheres Profi-Spiel.
     const cueRails = validated.sim.cueRailsAfterContact || 0;
+    const tDist = _desired ? Math.hypot(cueFinal.x - _desired.x, cueFinal.y - _desired.y) : null;
     const ctrl = chain
+      + (tDist !== null ? Math.max(0, 56 - tDist * 0.30) : 0)
       - Math.abs(cand.spinX) * 9
       - Math.abs(cand.spinY) * 5
       - Math.max(0, cand.powerPercent - 66) * 0.28
-      - cueRails * 5
+      - Math.max(0, cand.powerPercent - 74) * 0.6
+      - cueRails * 8
       - (danger ? 140 : 0);
-    return { cand, validated, ctrl, chain };
+    return { cand, validated, ctrl, chain, tDist, cueFinal };
   };
 
   const base = evalVariant(baseShot);
@@ -4951,6 +4977,17 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
   const plan = (planSim && planCue)
     ? aiBuildCueControlPlan(shot, planCue, planSim.finalBalls, prof)
     : null;
+  // S3.3: Die im Plan bestimmte Wunschablage (beste Zone für die Folgekugel,
+  // unabhängig vom natürlichen Lauf — siehe aiBuildCueControlPlan) verankert
+  // ab hier Suche und Bewertung. Die Basis-Bewertung wird um den Zielterm
+  // nachgeführt, damit Basis und Varianten vergleichbar bleiben.
+  if (plan && Number.isFinite(plan.desiredX) && Number.isFinite(plan.desiredY) && plan.mode !== "finish") {
+    _desired = { x: plan.desiredX, y: plan.desiredY };
+    if (base && base.cueFinal) {
+      base.tDist = Math.hypot(base.cueFinal.x - _desired.x, base.cueFinal.y - _desired.y);
+      base.ctrl += Math.max(0, 56 - base.tDist * 0.30);
+    }
+  }
 
   const followYs = [-0.12, -0.22, -0.34];
   const drawYs   = [0.14, 0.26, 0.38, 0.48];
@@ -4970,7 +5007,61 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
     [basePower * 0.62, basePower * 0.80, basePower, basePower * 1.16, basePower * 1.34],
     16, 90
   );
-  const maxSims = 12 + aiShortlistSize() * 6;   // 18 … 36, an Rechenzeit-Slider gekoppelt
+  const maxSims = 16 + aiShortlistSize() * 7;   // 23 … 44, an Rechenzeit-Slider gekoppelt
+
+  // Stufe T (S3.3): Zielgerichtete Lösung von Treffpunkt und Tempo auf die
+  // Wunschablage — der Kern von "erst Ablage, dann Technik". Das bisherige
+  // Kreuzraster war base-Power-zentriert; Kombinationen wie "kräftig + Zug"
+  // (nötig, wenn die Wunschzone weit hinter dem Kontakt liegt) lagen
+  // strukturell außerhalb. Hier: Start-Treffpunkt aus dem Plan-Modus,
+  // Start-Tempo aus dem Laufweg Kontakt→Wunschzone, dann zwei Runden
+  // Koordinaten-Abstieg (Tempo, Treffpunkt) auf minimale Zonen-Distanz.
+  // Angenommen wird wie überall nur über ctrl (inkl. Scratch-/Banden-Termen).
+  if (_desired && posBudgetLeft(60)) {
+    const _tBall = game.balls.find(b => b.num === shot.targetNum && b.inPlay && !b.isCue);
+    const runLen = _tBall ? Math.hypot(_desired.x - _tBall.x, _desired.y - _tBall.y) : 220;
+    const syClamp = (v) => ballInHand ? clamp(v, -0.26, 0.30) : clamp(v, -0.34, 0.50);
+    let curSy = syClamp(plan.mode === "draw" ? 0.38 : plan.mode === "follow" ? -0.22 : clamp(plan.spinY ?? 0, -0.20, 0.20));
+    let curPw = clamp(basePower * (0.62 + runLen / 320), 16, 88);
+    const tryV = (sy, pw) => {
+      if (sims >= maxSims || !posBudgetLeft(40)) return null;
+      sims++;
+      return evalVariant(mkShot(baseSpinX, sy, pw));
+    };
+    let cur = tryV(curSy, curPw);
+    if (cur && (!best || cur.ctrl > best.ctrl)) best = cur;
+    for (const facs of [[0.74, 1.30], [0.86, 1.16], [0.93, 1.08]]) {
+      for (const f of facs) {
+        const pw2 = clamp(curPw * f, 16, 88);
+        const r = tryV(curSy, pw2);
+        if (r && (!cur || (r.tDist ?? 1e9) < (cur.tDist ?? 1e9))) { cur = r; curPw = pw2; }
+        if (r && (!best || r.ctrl > best.ctrl)) best = r;
+      }
+      for (const ds of [0.10, -0.10]) {
+        const sy2 = syClamp(curSy + ds);
+        const r = tryV(sy2, curPw);
+        if (r && (!cur || (r.tDist ?? 1e9) < (cur.tDist ?? 1e9))) { cur = r; curSy = sy2; }
+        if (r && (!best || r.ctrl > best.ctrl)) best = r;
+      }
+      if (cur && (cur.tDist ?? 1e9) <= 55) break;
+    }
+    // Der Lauf der Weißen ist über Banden/Rollphasen NICHT monoton in der
+    // Stoßhärte — der Abstieg kann in einer lokalen Mulde enden. Liegt die
+    // beste gefundene Endlage weiter als 90 px neben der Wunschzone, sichert
+    // eine grobe Tempo-Leiter am gefundenen Treffpunkt den Bereich quer ab.
+    if ((!best || (best.tDist ?? 1e9) > 90) && posBudgetLeft(50)) {
+      for (const m of [0.90, 1.15, 1.40, 1.65]) {
+        const r = tryV(curSy, clamp(basePower * m, 16, 88));
+        if (r && (!best || r.ctrl > best.ctrl)) best = r;
+        if (best && (best.tDist ?? 1e9) <= 55) break;
+      }
+    }
+  }
+
+  // S3.3: "praktisch perfekt" verlangt jetzt beides — hervorragende Kette UND
+  // Nähe zur Wunschablage. Vorher beendete chain ≥ 124 die Suche, auch wenn
+  // die Weiße weit neben der geplanten Zone für die Folgekugel lag.
+  const _posPerfect = (r) => !!r && r.chain >= 124 && (!_desired || (r.tDist ?? 1e9) <= 70);
 
   // Stufe A0: reine Stärkenvariation am Basis-Treffpunkt. Die Stoßhärte ist
   // die "natürlichste" Stellschraube eines Profis (Stun-Lauf dosieren) und die
@@ -4981,11 +5072,11 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
     sims++;
     const r = evalVariant(mkShot(baseSpinX, baseSpinY, pw));
     if (r && (!best || r.ctrl > best.ctrl + (best === base ? 4 : 0))) best = r;
-    if (best && best.chain >= 124) break; // Stellung praktisch perfekt
+    if (_posPerfect(best)) break; // Stellung praktisch perfekt
   }
 
   // Stufe A1: Treffpunkt (oben/unten) × Stoßstärke — Kern des Positionsspiels.
-  if (!(best && best.chain >= 124)) {
+  if (!_posPerfect(best)) {
     const pwAnchor = best?.cand.powerPercent ?? basePower;
     outer:
     for (const sy of spinYs) {
@@ -4995,7 +5086,7 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
         sims++;
         const r = evalVariant(mkShot(baseSpinX, sy, pw));
         if (r && (!best || r.ctrl > best.ctrl + (best === base ? 5 : 0))) best = r;
-        if (best && best.chain >= 124) break outer; // Stellung praktisch perfekt
+        if (_posPerfect(best)) break outer; // Stellung praktisch perfekt
       }
     }
   }
@@ -5006,7 +5097,7 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
   const allowSide = !!options.allowSide && !ballInHand
     && (shot.robust?.potProbability ?? 1) >= 0.90
     && (shot.robust?.scratchRisk ?? 0) <= 0.02;
-  if (allowSide && best && best.chain < 122 && posBudgetLeft(60)) {
+  if (allowSide && best && (best.chain < 122 || (_desired && (best.tDist ?? 1e9) > 90)) && posBudgetLeft(60)) {
     const sy0 = best.cand.spinY || 0;
     const pw0 = best.cand.powerPercent;
     for (const sx of [-0.12, 0.12, -0.22, 0.22, -0.30, 0.30]) {
@@ -5014,7 +5105,7 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
       sims++;
       const r = evalVariant(mkShot(sx, sy0, pw0));
       if (r && r.ctrl > best.ctrl + 6) best = r;
-      if (best && best.chain >= 124) break;
+      if (_posPerfect(best)) break;
     }
   }
 
@@ -5940,8 +6031,17 @@ function aiBuildCuePositionZones(nextTgt, finalBalls) {
         const x = ghostX - nx * off - ny * lat;
         const y = ghostY - ny * off + nx * lat;
         if (!aiCuePositionSafeInState(x, y, finalBalls)) continue;
+        // S3.3: Eine Wunschablage ist nur brauchbar, wenn die Folgekugel von
+        // dort SICHTBAR ist. Vorher zählten verdeckte Zonen voll — die
+        // Stellungsbewertung lobte Ablagen, aus denen gar kein Stoß möglich war.
+        if (!aiClearPathInBallState(x, y, nextTgt.x, nextTgt.y, finalBalls, [nextTgt.num])) continue;
         const centerBonus = Math.max(0, 22 - Math.hypot(x - (PLAY_X1 + PLAY_X2) / 2, y - (PLAY_Y1 + PLAY_Y2) / 2) * 0.035);
-        zones.push({ x, y, pocketIdx: POCKETS.indexOf(p), score: 44 + (p.type === "corner" ? 8 : 0) + centerBonus - Math.abs(lat) * 0.16 });
+        // S3.3: Zonen-Score differenziert jetzt nach Folge-Pot-Qualität —
+        // komfortable Stoßdistanz (110–190) und kurzer Restweg der Folgekugel
+        // zur Tasche machen den nächsten Ball leichter.
+        const distBandBonus = (off >= 110 && off <= 190) ? 6 : 0;
+        const shortPotBonus = Math.max(0, 12 - dTP * 0.03);
+        zones.push({ x, y, pocketIdx: POCKETS.indexOf(p), score: 36 + (p.type === "corner" ? 8 : 0) + centerBonus + distBandBonus + shortPotBonus - Math.abs(lat) * 0.16 });
       }
     }
   }
@@ -6008,10 +6108,21 @@ function aiBuildCueControlPlan(shot, cueFinal, finalBalls, prof) {
   if (!nextTgt) return { mode: "finish", spinX: 0, spinY: 0, desiredX: cueFinal.x, desiredY: cueFinal.y, score: 125 };
   const zones = aiBuildCuePositionZones(nextTgt, finalBalls);
   if (!zones.length) return { mode: "stun", spinX: 0, spinY: 0, desiredX: cueFinal.x, desiredY: cueFinal.y, score: aiScoreCuePositionForNextShot(cueFinal, finalBalls, shot.targetNum) };
+  // S3.3: Wunschablage ZUERST. Vorher wählte `z.score + (100 − d·0.34)` die
+  // Zone, die der ohnehin entstehenden Center-Endlage am nächsten lag — die
+  // Planung folgte dem Stoß statt umgekehrt. Jetzt dominiert der Zonen-Score
+  // (= Qualität der Ablage für die Folgekugel); Nähe zum natürlichen Lauf ist
+  // nur noch Tiebreaker, unrealistisch weite Ablagen vom Kontaktpunkt aus
+  // erhalten einen moderaten Laufweg-Malus.
+  const _tgtBall = game.balls.find(b => b.num === shot.targetNum && b.inPlay && !b.isCue);
+  const _contact = _tgtBall ? { x: _tgtBall.x, y: _tgtBall.y } : cueFinal;
   let best = null, bestVal = -Infinity;
   for (const z of zones) {
-    const d = Math.hypot(z.x - cueFinal.x, z.y - cueFinal.y);
-    const val = z.score + Math.max(-70, 100 - d * 0.34);
+    const dNat = Math.hypot(z.x - cueFinal.x, z.y - cueFinal.y);
+    const dRun = Math.hypot(z.x - _contact.x, z.y - _contact.y);
+    const val = z.score
+      + Math.max(0, 30 - dNat * 0.10)
+      - Math.max(0, dRun - 430) * 0.16;
     if (val > bestVal) { bestVal = val; best = z; }
   }
   if (!best) return null;
@@ -6042,7 +6153,7 @@ function aiSimulateRobust(baseShot, samples, aimNoiseDeg, powerNoise) {
   const deterministic = baseShot?.noRandomError || (Math.abs(aimNoiseDeg || 0) < 0.000001 && Math.abs(powerNoise || 0) < 0.000001);
   const sampleLimit = deterministic ? 1 : samples;
   const aimNoiseRad = aimNoiseDeg * Math.PI / 180;
-  let potCount = 0, scratchCount = 0, foulCount = 0, actualSamples = 0;
+  let potCount = 0, potCleanCount = 0, scratchCount = 0, foulCount = 0, actualSamples = 0;
   let bestSim = null, bestPosVal = -Infinity;
   for (let i = 0; i < sampleLimit; i++) {
     const noiseAngle = i === 0 ? 0 : (Math.random() - 0.5) * aimNoiseRad * 2;
@@ -6060,6 +6171,9 @@ function aiSimulateRobust(baseShot, samples, aimNoiseDeg, powerNoise) {
     const prem8 = game.variant === "8ball" && baseShot.targetNum !== 8 && sim.potted.includes(8);
     const foul = foulFirst || foulPost || prem8;
     if (potted && !scratch && !foul) potCount++;
+    // S3.2: Pot-Anteil unabhängig von Scratch/Foul — Rescue-Gate-Signal
+    // ("Pot wäre da, wird nur durch Scratch/Foul entwertet").
+    if (potted) potCleanCount++;
     if (scratch) scratchCount++;
     if (foul) foulCount++;
     if (!scratch && !foul && ((baseShot.isSafety && !potted) || potted)) {
@@ -6074,7 +6188,7 @@ function aiSimulateRobust(baseShot, samples, aimNoiseDeg, powerNoise) {
     if (actualSamples >= 4 && foulCount / actualSamples > 0.6) break;
   }
   const denom = Math.max(1, actualSamples);
-  return { potProbability: potCount / denom, scratchRisk: scratchCount / denom, foulRisk: foulCount / denom, positionValue: bestPosVal, bestSim };
+  return { potProbability: potCount / denom, potIfClean: potCleanCount / denom, scratchRisk: scratchCount / denom, foulRisk: foulCount / denom, positionValue: bestPosVal, bestSim };
 }
 
 // ── CommonStrategy – named scoring components, same numbers as before ──
@@ -7719,6 +7833,54 @@ function generateShotCandidates(cue, targets, prof, problematicTargets = null) {
 }
 
 // ── 11 AI Candidate Evaluation ────────────────────────────────────────
+// S3.2: Exakte Winkel-Nachführung für Pot-Kandidaten (gehärteter Profi).
+// Sucht ausgehend vom Geometrie-Winkel das reale Treff-Fenster in der vollen
+// Physik-Sim und zentriert den Winkel auf dessen Mitte. Die Zentrierung macht
+// den Pot robust gegen die Power-Variation der nachgelagerten Stellungs-Suche
+// (Throw skaliert mit dem Tempo, das Fenster wandert mit der Power).
+// Treffer-Kriterium = vollständige Pot-Legalität: geplante Tasche, legaler
+// Erstkontakt, Post-Contact-Regel, kein Scratch, keine vorzeitige 8.
+function aiRefineExactPotAngle(cand) {
+  const deg = Math.PI / 180;
+  const simAt = (ang) => {
+    _aiPotRefineSims++;
+    return aiSimulateShotResult({ ...cand, angle: ang, noRandomError: true });
+  };
+  const hits = (sim) => !!sim && !sim.cuePotted
+    && aiSimPotsTargetAsPlanned(sim, cand)
+    && aiCheckFirstHitLegal(sim, cand.targetNum)
+    && aiMeetsPostContactRule(sim)
+    && !(game.variant === "8ball" && cand.targetNum !== 8 && sim.potted.includes(8));
+  let hitAngle = null;
+  if (hits(simAt(cand.angle))) {
+    hitAngle = cand.angle;
+  } else {
+    for (let dd = AI_POT_REFINE_STEP_DEG; dd <= AI_POT_REFINE_MAX_DEG + 1e-9; dd += AI_POT_REFINE_STEP_DEG) {
+      if (_aiPotRefineSims >= AI_POT_REFINE_SIM_BUDGET || aiBudgetExceeded(200)) return false;
+      if (hits(simAt(cand.angle + dd * deg))) { hitAngle = cand.angle + dd * deg; break; }
+      if (hits(simAt(cand.angle - dd * deg))) { hitAngle = cand.angle - dd * deg; break; }
+    }
+  }
+  if (hitAngle === null) return false;
+  // Fensterränder ausloten und auf die Mitte zentrieren.
+  let lo = hitAngle, hi = hitAngle;
+  for (let i = 1; i <= 8; i++) {
+    if (_aiPotRefineSims >= AI_POT_REFINE_SIM_BUDGET) break;
+    const a = hitAngle - i * AI_POT_REFINE_EDGE_DEG * deg;
+    if (hits(simAt(a))) lo = a; else break;
+  }
+  for (let i = 1; i <= 8; i++) {
+    if (_aiPotRefineSims >= AI_POT_REFINE_SIM_BUDGET) break;
+    const a = hitAngle + i * AI_POT_REFINE_EDGE_DEG * deg;
+    if (hits(simAt(a))) hi = a; else break;
+  }
+  let center = (lo + hi) / 2;
+  if (center !== hitAngle && !hits(simAt(center))) center = hitAngle; // Schutz bei nicht-konvexem Fenster
+  if (Math.abs(center - cand.angle) > 1e-9) cand.refinedFromAngle = cand.angle;
+  cand.angle = center;
+  return true;
+}
+
 function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   let samples;
   if (cand.type === "kickShot" || cand.type === "multiRailKick" || cand.type === "railProbeKick") {
@@ -7762,6 +7924,13 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   const evalPowerFloor = cand.type === "comboShot" ? AI_EVAL_COMBO_POWER_NOISE_FLOOR : AI_EVAL_POWER_NOISE_FLOOR;
   const evalAimNoise = useNoiseFloor ? Math.max(prof.aimErrorDeg || 0, evalAimFloor) : (prof.aimErrorDeg || 0);
   const evalPowerNoise = useNoiseFloor ? Math.max(prof.powerError || 0, evalPowerFloor) : (prof.powerError || 0);
+  // S3.2: Exakte Winkel-Nachführung für Pot-Kandidaten — VOR der
+  // Robust-Bewertung, damit ein nur geometrisch knapp verfehlter Pot nicht
+  // mit potProbability 0 stirbt. Combos (Zwei-Kontakt-Geometrie) und Jumps
+  // (Flugbahn-Fits) bleiben außen vor.
+  if (aiIsHardenedProfi(prof) && _isPotLike && cand.type !== "comboShot" && !cand.isJump) {
+    aiRefineExactPotAngle(cand);
+  }
   let robust = aiSimulateRobust(cand, samples, evalAimNoise, evalPowerNoise);
   // ── S3.1 (Defizit 1): Scratch-/Foul-Rescue für Direktpots ────────────────
   // Kandidaten werden grundsätzlich mit Center-Ball bewertet. Gerade und fast
@@ -7773,18 +7942,23 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   // Scratch-/Foul-Risiko den Pot blockiert; Anzahl pro Planung budgetbegrenzt.
   if (aiIsHardenedProfi(prof) && !cand.isSafety && !cand.isJump
       && (cand.type === "directPot" || cand.type === "thinCut")
-      && robust.potProbability >= 0.60
+      // S3.2: Gate auf potIfClean erweitert. Beim fehlerfreien Profi ist die
+      // Robust-Sim deterministisch (1 Sample) — ein Follow-Scratch setzt
+      // potProbability dann hart auf 0 und das alte Gate (≥ 0.60) blockierte
+      // den Rescue genau in der Lage, für die er gebaut wurde.
+      && Math.max(robust.potProbability, robust.potIfClean ?? 0) >= 0.60
       && (robust.scratchRisk > HARD_SCRATCH_VETO_THRESHOLD || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD)
       && _aiScratchRescueCount < AI_SCRATCH_RESCUE_MAX
       && !aiBudgetExceeded(220)) {
     _aiScratchRescueCount++;
     const rescueSamples = Math.min(samples, 8);
-    for (const sy of AI_SCRATCH_RESCUE_SPINS) {
-      const r = aiSimulateRobust({ ...cand, spinX: 0, spinY: sy }, rescueSamples, evalAimNoise, evalPowerNoise);
+    for (const [sy, pwMul] of AI_SCRATCH_RESCUE_VARIANTS) {
+      const pw = clamp(cand.powerPercent * pwMul, cand.powerPercent, 84);
+      const r = aiSimulateRobust({ ...cand, spinX: 0, spinY: sy, powerPercent: pw }, rescueSamples, evalAimNoise, evalPowerNoise);
       if (r.potProbability >= Math.max(HARD_SAFE_POT_THRESHOLD, robust.potProbability - 0.02)
           && r.scratchRisk <= HARD_SCRATCH_VETO_THRESHOLD
           && r.foulRisk <= HARD_FOUL_VETO_THRESHOLD) {
-        cand = { ...cand, spinX: 0, spinY: sy, spinHint: "position-control", scratchRescue: true };
+        cand = { ...cand, spinX: 0, spinY: sy, powerPercent: pw, spinHint: "position-control", scratchRescue: true };
         robust = r;
         break;
       }
@@ -8681,6 +8855,7 @@ async function aiPlanShot() {
   const token = ++game.aiPlanToken;
   _aiPlanStart = performance.now(); // Stufe 1: Zeitbudget-Uhr starten
   _aiScratchRescueCount = 0;        // S3.1: Rescue-Budget pro Planung
+  _aiPotRefineSims = 0;             // S3.2: Winkel-Refine-Budget pro Planung
   if (game.awaitingPushOutDecision) { aiDecidePushOut(); return; }
   aiClearPlanProgress();
   aiSetPlanProgress("Regeln prüfen", 0, 6, "legale Ziele");
