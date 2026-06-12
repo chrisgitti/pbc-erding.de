@@ -1946,8 +1946,16 @@ const AI_POT_REFINE_STEP_DEG   = 0.3;  // Schrittweite der Treffersuche
 const AI_POT_REFINE_EDGE_DEG   = 0.15; // Schrittweite der Fensterrand-Auslotung
 const AI_POT_REFINE_SIM_BUDGET = 90;   // max. Refine-Sims pro Planung (Budgetschutz)
 let _aiPotRefineSims = 0;
+// S3.4: Realismus-Fenster für Banker über eine KURZE Bande (links/rechts) in
+// eine MITTELTASCHE. Solche Banks spielt ein Profi nur, wenn die Objektkugel
+// bereits nahe der gebankten kurzen Bande liegt UND in der Höhe im mittleren
+// Drittel des Tisches steht — andernfalls erreicht sie die Mitteltasche nur
+// aus spitzestem Winkel (teils über zwei kurze Banden quer über den Tisch).
+// Außerhalb des Fensters werden diese Kandidaten gar nicht erst erzeugt;
+// schwere Direktstöße oder Banks über die LANGE Bande übernehmen.
+const AI_BANK_SHORTRAIL_SIDE_MAXDIST = 230; // max. Abstand Objektkugel → gebankte kurze Bande
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.3";
+const AI_BUILD = "S3.4";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -4338,6 +4346,9 @@ function aiSimulateShotResult(shot) {
     // den Routen-Malus im Stellungsspiel: kurze, direkte Wege in die Ablage
     // schlagen gleichwertige Mehrbanden-Routen.
     cueRailsAfterContact: 0,
+    // S3.4: Bandenkontakte je Kugelnummer — Grundlage der Banden-Treue-Prüfung
+    // für Banker (geplant ist genau EINE Bande der Objektkugel).
+    railHitsByNum: {},
     firstHitContactX: null,
     firstHitInKitchen: false,
     preFirstHitRails: 0,
@@ -4347,6 +4358,7 @@ function aiSimulateShotResult(shot) {
   const simRail = (b, nx, ny, side) => {
     if (!railReboundCore(b, nx, ny)) return;
     aiRecordSimPreFirstHitRail(result, b, side);
+    result.railHitsByNum[b.num] = (result.railHitsByNum[b.num] || 0) + 1;
     if (result.firstHit !== null) {
       result.anyCushionAfterFirstHit = true;
       if (b.isCue) result.cueRailsAfterContact++;
@@ -4508,6 +4520,13 @@ function aiTargetPotFailureReason(sim, shot) {
   if (!sim.potted.includes(shot.targetNum)) return "target-not-potted";
   if (aiShotNeedsDeclaredPocketMatch(shot) && sim.pocketByNum?.[shot.targetNum] !== shot.pocketIdx) {
     return shot.targetNum === 8 ? "wrong-eight-pocket" : "wrong-called-pocket";
+  }
+  // S3.4: Banden-Treue für Banker — geplant ist genau EINE Bande der
+  // Objektkugel. Läuft sie in der Sim über mehrere Banden (etwa zwei kurze
+  // Banden quer über den Tisch in eine Mitteltasche), ist das ein anderer,
+  // unrealistischer Stoß und zählt nicht als "wie geplant".
+  if (shot.type === "bankShot" && (sim.railHitsByNum?.[shot.targetNum] ?? 0) !== 1) {
+    return "bank-rail-count";
   }
   return null;
 }
@@ -6458,6 +6477,16 @@ function aiBuildDirectPotCandidates(cue, targets) {
 // Spiegelt jedes Loch an jeder Bande → liefert Geistball-Winkel + Power.
 // Robustheits-/Pot-Wahrscheinlichkeits-Validierung passiert anschließend im
 // normalen evaluateCandidatesAsync-Pfad (gleiche Pipeline wie Direkt-Pots).
+function aiBankShotRealistic(t, side, pocketIdx) {
+  const p = POCKETS[pocketIdx];
+  if (!p || p.type !== "side") return true;                 // nur Mitteltaschen einschränken
+  if (side !== "left" && side !== "right") return true;     // nur kurze Banden einschränken
+  const railX = side === "left" ? PLAY_X1 : PLAY_X2;
+  if (Math.abs(t.x - railX) > AI_BANK_SHORTRAIL_SIDE_MAXDIST) return false;
+  const third = (PLAY_Y2 - PLAY_Y1) / 3;
+  return t.y >= PLAY_Y1 + third && t.y <= PLAY_Y2 - third;  // mittleres Drittel der Tischhöhe
+}
+
 function aiBuildBankShotCandidates(cue, targets, prof) {
   if (!aiIsHardenedProfi(prof) || !cue || !targets?.length || game.isBreakShot) return [];
   const candidates = [];
@@ -6471,6 +6500,7 @@ function aiBuildBankShotCandidates(cue, targets, prof) {
       const railLine = aiRailLine(side);
       for (let pi = 0; pi < POCKETS.length; pi++) {
         const p = POCKETS[pi];
+        if (!aiBankShotRealistic(t, side, pi)) continue;   // S3.4: Kurzbande→Mitteltasche nur im Gunst-Fenster
         const vp = aiReflectPointAcrossRail(p, side);
         const dvx = vp.x - t.x, dvy = vp.y - t.y;
         const dvDist = Math.hypot(dvx, dvy);
@@ -7545,6 +7575,7 @@ function aiFindHardBankShotCandidates(cue, targets, prof) {
       for (let pi = 0; pi < POCKETS.length; pi++) {
         if (aiBudgetExceeded()) return best; // Stufe 1: Zeitbudget
         const p = POCKETS[pi];
+        if (!aiBankShotRealistic(t, side, pi)) continue;   // S3.4: Kurzbande→Mitteltasche nur im Gunst-Fenster
 
         // Virtuelles Loch: Spiegelung des echten Lochs an der Bande
         const vp = aiReflectPointAcrossRail(p, side);
@@ -8103,6 +8134,11 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
     // Malus statt Bonus – eine validierte Bank schlägt weiterhin Safeties mit
     // niedrigem Score, aber nie einen spielbaren Direktpot.
     if (cand.type === "bankShot") score -= 140;
+    // S3.4: Kurzbande→Mitteltasche ist selbst im Gunst-Fenster die
+    // unattraktivste Bank-Klasse — vorhandene Alternativen (Direktstoß,
+    // Bank über die lange Bande) sollen gewinnen.
+    if (cand.type === "bankShot" && (cand.bankSide === "left" || cand.bankSide === "right")
+        && POCKETS[cand.pocketIdx]?.type === "side") score -= 90;
     // S2.11: Center-Ball-Bias — Throw-Control nur bei klarem Pot-Wahrscheinlichkeits-
     // Gewinn bevorzugen. Die Sim kennt applySpinOnContact nicht und kann
     // Outside-English-Stellung "zu schön" rechnen; -40 entspricht ~13 % potProb-
