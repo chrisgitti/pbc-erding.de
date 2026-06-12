@@ -1918,8 +1918,17 @@ const AI_FRAG_SOFT_START      = 0.06;
 const AI_LOOKAHEAD_DEPTH = 3;
 const AI_LOOKAHEAD_BLEND = 0.45;   // Gewicht des diskontierten Folge-Runouts (Rest: aktuelle Kugel)
 let _aiLookaheadDepth = 1;
+// S3.1 (Defizit 1): Scratch-/Foul-Rescue für Direktpots. Gerade und fast gerade
+// Bälle scratchen mit Center-Ball (Weiße folgt der Objektkugel) und fielen
+// dadurch komplett aus der Pot-Auswahl — die KI wich auf Banken/Kicks aus.
+// Ein realer Profi spielt denselben Ball schlicht mit Rückzieher/Stopp.
+// Die Rescue-Stufe testet validierte Treffpunkt-Varianten (Rücklauf zuerst,
+// dann Nachlauf), bevor ein Direktpot wegen Scratch-Risiko verworfen wird.
+const AI_SCRATCH_RESCUE_SPINS = [0.20, 0.32, 0.45, -0.14, -0.26];
+const AI_SCRATCH_RESCUE_MAX = 4;   // max. gerettete Kandidaten pro Planung (Budgetschutz)
+let _aiScratchRescueCount = 0;
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.0";
+const AI_BUILD = "S3.1";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
@@ -4306,6 +4315,10 @@ function aiSimulateShotResult(shot) {
     pocketByNum: {},
     cuePotted: false,
     anyCushionAfterFirstHit: false,
+    // S3.1 (Defizit 2): Banden der WEISSEN nach dem Erstkontakt. Grundlage für
+    // den Routen-Malus im Stellungsspiel: kurze, direkte Wege in die Ablage
+    // schlagen gleichwertige Mehrbanden-Routen.
+    cueRailsAfterContact: 0,
     firstHitContactX: null,
     firstHitInKitchen: false,
     preFirstHitRails: 0,
@@ -4315,7 +4328,10 @@ function aiSimulateShotResult(shot) {
   const simRail = (b, nx, ny, side) => {
     if (!railReboundCore(b, nx, ny)) return;
     aiRecordSimPreFirstHitRail(result, b, side);
-    if (result.firstHit !== null) result.anyCushionAfterFirstHit = true;
+    if (result.firstHit !== null) {
+      result.anyCushionAfterFirstHit = true;
+      if (b.isCue) result.cueRailsAfterContact++;
+    }
   };
 
   for (let frame = 0; frame < 1100; frame++) {
@@ -4495,20 +4511,37 @@ function aiValidateShotBySimulation(shot) {
     return null;
   }
 
-  const extraPots = sim.potted.filter(n => n !== 0 && n !== shot.targetNum).length;
+  // S3.1 (Defizit 3): Vorzeitig versenkte 8 ist im 8-Ball SPIELVERLUST (WPA).
+  // Vorher wurde sie als +18-„extraPot"-Bonus belohnt — die KI konnte sehenden
+  // Auges einen Stoß validieren, der die 8 mitlocht.
+  if (game.variant === "8ball" && shot.targetNum !== 8 && sim.potted.includes(8)) return null;
+
+  // S3.1: Extra-Pots differenziert — eigene Kugeln sind ein Bonus, GEGNERISCHE
+  // mitversenkte Kugeln sind ein Geschenk und werden bestraft (kein Foul, aber
+  // ein Profi vermeidet sie).
+  const me8v = game.variant === "8ball" ? game.players[game.currentPlayer] : null;
+  let extraOwn = 0, extraOpp = 0;
+  for (const n of sim.potted) {
+    if (n === 0 || n === shot.targetNum) continue;
+    if (me8v && me8v.group && n !== 8 && !isMyGroupBall(n, me8v)) extraOpp++;
+    else extraOwn++;
+  }
   const positionValue = aiScoreCuePositionForNextShot(aiSimCueBall(sim), sim.finalBalls, shot.targetNum);
   return {
     ...shot,
-    score: shot.score + 260 + extraPots * 18 + clamp(positionValue, -100, 135) - (sim.cuePotted ? 500 : 0),
+    score: shot.score + 260 + extraOwn * 18 - extraOpp * 12 + clamp(positionValue, -100, 135) - (sim.cuePotted ? 500 : 0),
     sim
   };
 }
 
 
-function aiUniqueSortedPowers(values) {
+function aiUniqueSortedPowers(values, lo = 18, hi = 84) {
+  // S3.1: optionale Grenzen — die Stellungs-Suche des gehärteten Profis nutzt
+  // 16–90 (jede Variante wird ohnehin vollsimuliert validiert); alle übrigen
+  // Aufrufer behalten die bisherigen 18–84.
   const seen = new Set();
   return values
-    .map(v => Math.round(clamp(v, 18, 84) * 10) / 10)
+    .map(v => Math.round(clamp(v, lo, hi) * 10) / 10)
     .filter(v => {
       const key = Math.round(v * 10);
       if (seen.has(key)) return false;
@@ -4859,6 +4892,11 @@ function aiApplyValidatedPositionControl(shot, prof, options = {}) {
 //   4. Bewertung: diskontierte Runout-Kette (3 Kugeln voraus) minus
 //      Effet-/Power-Risikoabschlag. Budget-gesteuert mit Frühabbruch.
 function aiHardenedPositionControl(shot, prof, options = {}) {
+  // S3.1: Basis ist der Stoß WIE GEWÄHLT — inklusive eines ggf. per
+  // Scratch-Rescue gefundenen Treffpunkts. Vorher wurde stets von (0,0)
+  // ausgegangen; ein gerettetes Rücklauf-Setup ging damit wieder verloren.
+  const baseSpinX = shot.spinX || 0;
+  const baseSpinY = shot.spinY || 0;
   const mkShot = (sx, sy, pw) => ({
     ...shot,
     spinX: sx,
@@ -4870,8 +4908,18 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
     cueElevation: shot.cueElevation || 0
   });
   const ballInHand = !!options.ballInHand;
-  const basePower = clamp(shot.powerPercent || 50, 24, 92);
-  const baseShot = mkShot(0, 0, basePower);
+  const basePower = clamp(shot.powerPercent || 50, 20, 88);
+  const baseShot = mkShot(baseSpinX, baseSpinY, basePower);
+
+  // S3.1 (Defizite 1+2): Eigenes, vom globalen Planungsbudget ENTKOPPELTES
+  // Zeitfenster. Die Stellungs-Suche läuft als letzter Pipeline-Schritt; das
+  // Globalbudget war nach der Kandidaten-Evaluation praktisch immer
+  // aufgebraucht → aiBudgetExceeded() brach hier sofort ab → 0 Varianten
+  // getestet → der Stoß ging ohne Treffpunkt- und Stärkenwahl raus
+  // (Center-Ball, Formel-Power). Genau das erzeugte die gemeldeten Symptome
+  // "kaum Nachlauf/Rücklauf/Effet" und "immer gleiche Stoßhärte".
+  const posDeadline = performance.now() + clamp(aiTimeBudgetMs() * 0.55, 220, 620);
+  const posBudgetLeft = (reserveMs = 0) => performance.now() + reserveMs < posDeadline;
 
   const evalVariant = (cand) => {
     const validated = aiValidateShotBySimulation(cand);
@@ -4880,16 +4928,22 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
     if (!cueFinal) return null;
     const danger = aiCueBallInScratchDanger(cueFinal, 1.6);
     const chain = aiRunoutChainScore(cueFinal, validated.sim.finalBalls, cand.targetNum, _aiLookaheadDepth);
+    // S3.1 (Defizit 2): Banden-Malus für die Weiße — bei vergleichbarer
+    // Stellungsqualität gewinnt die kurze, direkte Route (Stun/Follow/Draw mit
+    // passender Härte) gegen die Mehrbanden-Tour. Natürlicheres Profi-Spiel.
+    const cueRails = validated.sim.cueRailsAfterContact || 0;
     const ctrl = chain
-      - Math.abs(cand.spinX) * 10
-      - Math.abs(cand.spinY) * 6
-      - Math.max(0, cand.powerPercent - 64) * 0.30
+      - Math.abs(cand.spinX) * 9
+      - Math.abs(cand.spinY) * 5
+      - Math.max(0, cand.powerPercent - 66) * 0.28
+      - cueRails * 5
       - (danger ? 140 : 0);
     return { cand, validated, ctrl, chain };
   };
 
   const base = evalVariant(baseShot);
   let best = base;
+  let sims = 1;
 
   // Plan aus der Basis-Sim ableiten: bestimmt die Suchreihenfolge.
   const planSim = base?.validated.sim || shot.sim || shot.robust?.bestSim || null;
@@ -4898,12 +4952,6 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
     ? aiBuildCueControlPlan(shot, planCue, planSim.finalBalls, prof)
     : null;
 
-  // Spielt die Basis bereits hervorragend (Pot + sehr gute Kette), keine Experimente.
-  if (best && best.chain >= 122 && !aiBudgetExceeded(0)) {
-    // weiter: trotzdem 1-2 Plan-Varianten testen, falls Budget üppig –
-    // sonst direkt zurück.
-  }
-
   const followYs = [-0.12, -0.22, -0.34];
   const drawYs   = [0.14, 0.26, 0.38, 0.48];
   const stunYs   = [-0.10, 0.12, -0.20, 0.22];
@@ -4911,43 +4959,72 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
   if (plan?.mode === "follow")     spinYs = [...followYs, 0.14, 0.26];
   else if (plan?.mode === "draw")  spinYs = [...drawYs, -0.12, -0.22];
   else                             spinYs = [...stunYs, -0.30, 0.34];
+  if (Math.abs(baseSpinY) >= 0.05) spinYs = [baseSpinY, ...spinYs]; // Rescue-Treffpunkt zuerst
   if (ballInHand) spinYs = spinYs.map(v => clamp(v, -0.26, 0.30));
+  spinYs = spinYs.filter((v, i, arr) => arr.findIndex(x => Math.abs(x - v) < 0.015) === i);
 
-  const powerVars = aiUniqueSortedPowers([basePower, basePower * 0.85, basePower * 1.18, basePower * 1.35]);
-  const maxSims = 8 + aiShortlistSize() * 5;   // 13 … 23, an Rechenzeit-Slider gekoppelt
-  let sims = 0;
+  // S3.1 (Defizit 2): breiteres Stärkenraster (weich bis kräftig). Lokale
+  // Clamp-Spanne 16–90 statt 18–84 — jede Variante wird vollsimuliert validiert,
+  // und die Ausführung übernimmt validierte Werte 1:1.
+  const powerVars = aiUniqueSortedPowers(
+    [basePower * 0.62, basePower * 0.80, basePower, basePower * 1.16, basePower * 1.34],
+    16, 90
+  );
+  const maxSims = 12 + aiShortlistSize() * 6;   // 18 … 36, an Rechenzeit-Slider gekoppelt
 
-  // Stufe A: Treffpunkt (oben/unten) × Stoßstärke – Kern des Positionsspiels.
-  outer:
-  for (const sy of spinYs) {
-    for (const pw of powerVars) {
-      if (sims >= maxSims || aiBudgetExceeded(140)) break outer;
-      sims++;
-      const r = evalVariant(mkShot(0, sy, pw));
-      if (r && (!best || r.ctrl > best.ctrl + (best === base ? 6 : 0))) best = r;
-      if (best && best.chain >= 124) break outer; // Stellung praktisch perfekt
+  // Stufe A0: reine Stärkenvariation am Basis-Treffpunkt. Die Stoßhärte ist
+  // die "natürlichste" Stellschraube eines Profis (Stun-Lauf dosieren) und die
+  // direkte Antwort auf Defizit 2.
+  for (const pw of powerVars) {
+    if (Math.abs(pw - basePower) < 0.5) continue;
+    if (sims >= maxSims || !posBudgetLeft(40)) break;
+    sims++;
+    const r = evalVariant(mkShot(baseSpinX, baseSpinY, pw));
+    if (r && (!best || r.ctrl > best.ctrl + (best === base ? 4 : 0))) best = r;
+    if (best && best.chain >= 124) break; // Stellung praktisch perfekt
+  }
+
+  // Stufe A1: Treffpunkt (oben/unten) × Stoßstärke — Kern des Positionsspiels.
+  if (!(best && best.chain >= 124)) {
+    const pwAnchor = best?.cand.powerPercent ?? basePower;
+    outer:
+    for (const sy of spinYs) {
+      for (const pw of aiUniqueSortedPowers([pwAnchor, basePower * 0.80, basePower * 1.16], 16, 90)) {
+        if (sims >= maxSims || !posBudgetLeft(40)) break outer;
+        if (Math.abs(sy - baseSpinY) < 0.02 && Math.abs(pw - basePower) < 0.5) continue;
+        sims++;
+        const r = evalVariant(mkShot(baseSpinX, sy, pw));
+        if (r && (!best || r.ctrl > best.ctrl + (best === base ? 5 : 0))) best = r;
+        if (best && best.chain >= 124) break outer; // Stellung praktisch perfekt
+      }
     }
   }
 
-  // Stufe B: dosiertes Seiteneffet – nur bei freiem Budget und sicherem Pot.
+  // Stufe B: dosiertes Seiteneffet — auch in Kombination mit Bandenabprall der
+  // Weißen (Effet öffnet oder verkürzt den Winkel NACH der Bande; railReboundCore
+  // rechnet das vollständig). Nur bei sicherem Pot.
   const allowSide = !!options.allowSide && !ballInHand
-    && (shot.robust?.potProbability ?? 1) >= 0.92
+    && (shot.robust?.potProbability ?? 1) >= 0.90
     && (shot.robust?.scratchRisk ?? 0) <= 0.02;
-  if (allowSide && best && best.chain < 118 && !aiBudgetExceeded(160)) {
+  if (allowSide && best && best.chain < 122 && posBudgetLeft(60)) {
     const sy0 = best.cand.spinY || 0;
     const pw0 = best.cand.powerPercent;
-    for (const sx of [-0.14, 0.14, -0.26, 0.26]) {
-      if (sims >= maxSims + 4 || aiBudgetExceeded(120)) break;
+    for (const sx of [-0.12, 0.12, -0.22, 0.22, -0.30, 0.30]) {
+      if (sims >= maxSims + 6 || !posBudgetLeft(40)) break;
       sims++;
       const r = evalVariant(mkShot(sx, sy0, pw0));
-      if (r && r.ctrl > best.ctrl + 8) best = r;
+      if (r && r.ctrl > best.ctrl + 6) best = r;
+      if (best && best.chain >= 124) break;
     }
   }
 
   if (!best) {
-    // Basis-Stoß validiert nicht (sollte praktisch nie passieren) → unverändert
-    // zurückgeben; aiFinalValidateHardShot + Fallback-Kaskade übernehmen.
-    return { ...baseShot };
+    // Basis-Stoß validiert nicht (z. B. Robust-Pot, dessen exakte Probe knapp
+    // verfehlt) → ORIGINAL unverändert zurückgeben; aiFinalValidateHardShot +
+    // Fallback-Kaskade übernehmen. S3.1: Vorher wurde hier ein 0-Spin-Klon
+    // zurückgegeben — ein per Scratch-Rescue gefundener Treffpunkt ging damit
+    // verloren und der Stoß scratchte real.
+    return { ...shot, noRandomError: true };
   }
 
   const chosen = {
@@ -5978,7 +6055,10 @@ function aiSimulateRobust(baseShot, samples, aimNoiseDeg, powerNoise) {
     const scratch = sim.cuePotted;
     const foulFirst = !aiCheckFirstHitLegal(sim, baseShot.targetNum);
     const foulPost = !aiMeetsPostContactRule(sim);
-    const foul = foulFirst || foulPost;
+    // S3.1 (Defizit 3): Vorzeitig versenkte 8 = Spielverlust → wie Foul werten.
+    // Treibt foulRisk solcher Kandidaten über das Veto, statt sie zu belohnen.
+    const prem8 = game.variant === "8ball" && baseShot.targetNum !== 8 && sim.potted.includes(8);
+    const foul = foulFirst || foulPost || prem8;
     if (potted && !scratch && !foul) potCount++;
     if (scratch) scratchCount++;
     if (foul) foulCount++;
@@ -7683,6 +7763,34 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
   const evalAimNoise = useNoiseFloor ? Math.max(prof.aimErrorDeg || 0, evalAimFloor) : (prof.aimErrorDeg || 0);
   const evalPowerNoise = useNoiseFloor ? Math.max(prof.powerError || 0, evalPowerFloor) : (prof.powerError || 0);
   let robust = aiSimulateRobust(cand, samples, evalAimNoise, evalPowerNoise);
+  // ── S3.1 (Defizit 1): Scratch-/Foul-Rescue für Direktpots ────────────────
+  // Kandidaten werden grundsätzlich mit Center-Ball bewertet. Gerade und fast
+  // gerade Bälle scratchen so (Weiße folgt der Objektkugel in die Tasche) und
+  // fielen komplett aus der Pot-Auswahl — die KI wich auf real absurde
+  // Banken-/Kick-Stöße aus. Ein Profi spielt denselben Ball mit Rückzieher
+  // oder Stopp. Hier wird der Treffpunkt VOR dem Verwerfen variiert und mit
+  // identischer Robust-Streuung neu validiert. Greift nur, wenn ausschließlich
+  // Scratch-/Foul-Risiko den Pot blockiert; Anzahl pro Planung budgetbegrenzt.
+  if (aiIsHardenedProfi(prof) && !cand.isSafety && !cand.isJump
+      && (cand.type === "directPot" || cand.type === "thinCut")
+      && robust.potProbability >= 0.60
+      && (robust.scratchRisk > HARD_SCRATCH_VETO_THRESHOLD || robust.foulRisk > HARD_FOUL_VETO_THRESHOLD)
+      && _aiScratchRescueCount < AI_SCRATCH_RESCUE_MAX
+      && !aiBudgetExceeded(220)) {
+    _aiScratchRescueCount++;
+    const rescueSamples = Math.min(samples, 8);
+    for (const sy of AI_SCRATCH_RESCUE_SPINS) {
+      const r = aiSimulateRobust({ ...cand, spinX: 0, spinY: sy }, rescueSamples, evalAimNoise, evalPowerNoise);
+      if (r.potProbability >= Math.max(HARD_SAFE_POT_THRESHOLD, robust.potProbability - 0.02)
+          && r.scratchRisk <= HARD_SCRATCH_VETO_THRESHOLD
+          && r.foulRisk <= HARD_FOUL_VETO_THRESHOLD) {
+        cand = { ...cand, spinX: 0, spinY: sy, spinHint: "position-control", scratchRescue: true };
+        robust = r;
+        break;
+      }
+      if (aiBudgetExceeded(160)) break;
+    }
+  }
   if (cand.type === "jumpContactSafety") {
     const sim = aiSimulateShotResult({ ...cand, noRandomError: true });
     // Hinweis: aiCheckFirstHitLegal + aiMeetsPostContactRule + !cuePotted sind
@@ -8572,6 +8680,7 @@ function aiDecidePushOut() {
 async function aiPlanShot() {
   const token = ++game.aiPlanToken;
   _aiPlanStart = performance.now(); // Stufe 1: Zeitbudget-Uhr starten
+  _aiScratchRescueCount = 0;        // S3.1: Rescue-Budget pro Planung
   if (game.awaitingPushOutDecision) { aiDecidePushOut(); return; }
   aiClearPlanProgress();
   aiSetPlanProgress("Regeln prüfen", 0, 6, "legale Ziele");
@@ -8742,13 +8851,21 @@ async function aiPlanShot() {
     };
 
     game.aimAngle = forcedBIHShot.angle;
-    game.powerPercent = clamp(forcedBIHShot.powerPercent, forcedBIHShot.type === "ballInHandStraightLock" ? HARD_BIH_STRAIGHT_MIN_POWER : 5, 100);
+    // S3.1 (Defizit 3): Gehärteter Profi führt validierte BIH-Werte 1:1 aus.
+    // Der frühere 62-%-Mindestwert konnte eine vollsimulierte weichere
+    // Stellungs-Variante nachträglich härter machen → Drift + Retry-Schleife.
+    game.powerPercent = aiIsHardenedProfi(prof)
+      ? clamp(forcedBIHShot.powerPercent, 5, 100)
+      : clamp(forcedBIHShot.powerPercent, forcedBIHShot.type === "ballInHandStraightLock" ? HARD_BIH_STRAIGHT_MIN_POWER : 5, 100);
     game.cueType = "playing";
     game.cueElevation = 0;
 
     const bihCtrl = forcedBIHShot.bihControl || {};
     game.spinX = clamp(forcedBIHShot.spinX || bihCtrl.spinX || 0, -0.10, 0.10);
-    game.spinY = clamp(forcedBIHShot.spinY || bihCtrl.spinY || 0, -0.22, 0.22);
+    // S3.1: Bereich deckt das validierte BIH-Raster der Stellungs-Suche ab
+    // (Follow bis −0.26, Draw bis +0.30). Der alte ±0.22-Clamp verfälschte
+    // validierte Draw-Varianten nachträglich.
+    game.spinY = clamp(forcedBIHShot.spinY || bihCtrl.spinY || 0, -0.26, 0.30);
     if (Math.abs(game.spinY) < 0.04) game.spinY = 0;
 
     if (aiIsHardenedProfi(prof) && !game.isBreakShot) {
@@ -8879,12 +8996,27 @@ async function aiPlanShot() {
     bestShot = forcedBIHShot;
   } else if (aiIsHardenedProfi(prof)) {
     // Neuer Profi: harte Reihenfolge. Erst legaler Pot ohne Scratch, dann Safety.
+    // S3.1 (Defizit 1): Direktes Spiel hat absoluten Vorrang. Eine Bank gilt nur
+    // dann als spielbarer Pot, wenn KEIN brauchbarer Direktpot (≥ 55 %) auf
+    // irgendein Ziel existiert — ein realer Profi bankt nicht an einer
+    // spielbaren Winkelkugel vorbei. Zusammen mit dem Scratch-Rescue (gerade
+    // Bälle überleben jetzt mit validiertem Rückzieher) verschwinden die
+    // gemeldeten Mehrbanden-Absurditäten.
+    const bestDirectPotProb = potCands.reduce((m, c) =>
+      (c.type !== "bankShot" && !c.isJump) ? Math.max(m, c.robust?.potProbability ?? 0) : m, 0);
+    const bankAllowed = bestDirectPotProb < 0.55;
+    // Spielstärke-Erhalt: Eine Bank mit KLAR überlegener Versenkwahrscheinlich-
+    // keit (≥ +22 Punkte ggü. bestem Direktpot) bleibt zulässig.
+    const bankOk = (c) => c.type !== "bankShot" || bankAllowed
+      || (c.robust?.potProbability ?? 0) >= bestDirectPotProb + 0.22;
     const hardSafePots = potCands.filter(c =>
       (c.robust?.potProbability ?? 0) >= HARD_SAFE_POT_THRESHOLD &&
       (c.robust?.scratchRisk ?? 1) <= HARD_SCRATCH_VETO_THRESHOLD &&
-      (c.robust?.foulRisk ?? 1) <= HARD_FOUL_VETO_THRESHOLD
+      (c.robust?.foulRisk ?? 1) <= HARD_FOUL_VETO_THRESHOLD &&
+      bankOk(c)
     );
-    const hardOpenPots = hardSafePots.filter(c => (c.robust?.potProbability ?? 0) >= HARD_OPEN_POT_THRESHOLD);
+    const hardOpenPots = hardSafePots.filter(c =>
+      (c.robust?.potProbability ?? 0) >= HARD_OPEN_POT_THRESHOLD && c.type !== "bankShot");
     if (hardOpenPots.length > 0) bestShot = hardOpenPots[0];
     else if (hardSafePots.length > 0) bestShot = hardSafePots[0];
 
@@ -8900,7 +9032,8 @@ async function aiPlanShot() {
       const realisticPots = potCands.filter(c =>
         (c.robust?.potProbability ?? 0) >= realisticPotFloor &&
         (c.robust?.scratchRisk ?? 1) <= 0.15 &&
-        (c.robust?.foulRisk ?? 1) <= 0.15
+        (c.robust?.foulRisk ?? 1) <= 0.15 &&
+        (c.type !== "bankShot" || bankAllowed)   // S3.1: Bank nur ohne Direktoption
       );
       if (realisticPots.length > 0) bestShot = realisticPots[0];
     }
@@ -9188,7 +9321,13 @@ async function aiPlanShot() {
       game.powerPercent = clamp(game.powerPercent, prof.powerMin, cap);
       if (bestShot.positionPlan?.mode === "draw") game.powerPercent = Math.min(game.powerPercent, 56);
     } else if (aiIsHardenedProfi(prof) && !bestShot.isSafety) {
-      game.powerPercent = clamp(game.powerPercent, prof.powerMin, prof.powerMax);
+      // S3.1 (Defizit 3): Validierte Werte 1:1 ausführen. Der frühere Clamp auf
+      // powerMin/powerMax (26–86) konnte vollsimulierte weiche (< 26 %) oder
+      // kräftige Stellungs-Stöße nachträglich verfälschen → Plan-Realitäts-
+      // Drift, fehlschlagende Finalvalidierung und unnötige Notstoß-Fallbacks.
+      // Jeder Stoß durchläuft ohnehin die finale Vollvalidierung mit exakt den
+      // hier gesetzten Spielwerten.
+      game.powerPercent = clamp(game.powerPercent, 5, 100);
     }
   }
 
