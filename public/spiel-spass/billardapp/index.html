@@ -1304,43 +1304,43 @@
       <div class="physics-sliders">
         <label class="slider-row">
           <span>Rollreibung</span>
-          <input type="range" id="slFriction" min="1" max="25" step="1" value="6">
-          <span id="lblFriction">8‰</span>
+          <input type="range" id="slFriction" min="1" max="25" step="1" value="10">
+          <span id="lblFriction">10‰</span>
         </label>
         <label class="slider-row">
           <span>Rollwiderstand</span>
-          <input type="range" id="slRollingDrag" min="5" max="40" step="1" value="12">
-          <span id="lblRollingDrag">0.018</span>
+          <input type="range" id="slRollingDrag" min="5" max="40" step="1" value="28">
+          <span id="lblRollingDrag">0.028</span>
         </label>
         <label class="slider-row">
           <span>Banden-Elastizität</span>
-          <input type="range" id="slCushionEN" min="70" max="97" step="1" value="92">
-          <span id="lblCushionEN">0.90</span>
+          <input type="range" id="slCushionEN" min="70" max="97" step="1" value="82">
+          <span id="lblCushionEN">0.82</span>
         </label>
         <label class="slider-row">
           <span>Banden-Effet</span>
-          <input type="range" id="slCushionMu" min="8" max="35" step="1" value="18">
-          <span id="lblCushionMu">0.18</span>
+          <input type="range" id="slCushionMu" min="8" max="35" step="1" value="16">
+          <span id="lblCushionMu">0.16</span>
         </label>
         <label class="slider-row">
           <span>Tuch-Gleitung</span>
-          <input type="range" id="slClothSlide" min="30" max="200" step="5" value="100">
-          <span id="lblClothSlide">0.115</span>
+          <input type="range" id="slClothSlide" min="30" max="200" step="5" value="120">
+          <span id="lblClothSlide">0.120</span>
         </label>
         <label class="slider-row">
           <span>Banden-Reibung</span>
-          <input type="range" id="slRailFriction" min="10" max="60" step="2" value="34">
-          <span id="lblRailFriction">0.34</span>
+          <input type="range" id="slRailFriction" min="10" max="60" step="2" value="32">
+          <span id="lblRailFriction">0.32</span>
         </label>
         <label class="slider-row">
           <span>Banden-Spin-Grip</span>
-          <input type="range" id="slRailSpinGrip" min="20" max="90" step="2" value="66">
-          <span id="lblRailSpinGrip">0.66</span>
+          <input type="range" id="slRailSpinGrip" min="20" max="90" step="2" value="62">
+          <span id="lblRailSpinGrip">0.62</span>
         </label>
         <label class="slider-row">
           <span>Kugel-Elastizität</span>
           <input type="range" id="slBallBounce" min="80" max="100" step="1" value="97">
-          <span id="lblBallBounce">0.96</span>
+          <span id="lblBallBounce">0.97</span>
         </label>
       </div>
     </div>
@@ -1706,19 +1706,19 @@ const HALF_SIDE_PW = 21;      // WPA: 5,0" Seitentasche, halbe Öffnungsbreite =
 // S3.0 (Punkt 7): Standardtisch deutlich schneller – Simonis-artiges Tuch.
 // Rollwiderstand und Gleitreibung gesenkt, Banden- und Kugelrestitution erhöht.
 // Damit laufen die Kugeln spürbar länger und der Anstoß öffnet die Pyramide.
-let CFG_FRICTION       = 0.994;  // Rollreibung (multiplikativ pro Frame)
-let CFG_ROLLING_DRAG   = 0.012;  // Rollwiderstand (subtraktiv pro Frame)
-let CFG_CUSHION_EN     = 0.92;   // Banden-Normalrestitution (Baseline)
-let CFG_CUSHION_BOUNCE = 0.80;   // Banden-Bounce für Eck-Diagonalen
-let CFG_CUSHION_MU     = 0.18;   // Banden-Reibung (Effet-Übertragungskoeffizient)
+let CFG_FRICTION       = 0.990;  // Rollreibung (multiplikativ pro Frame) – Turniertisch 10‰
+let CFG_ROLLING_DRAG   = 0.028;  // Rollwiderstand (subtraktiv pro Frame)
+let CFG_CUSHION_EN     = 0.82;   // Banden-Normalrestitution (Baseline)
+let CFG_CUSHION_BOUNCE = 0.70;   // Banden-Bounce für Eck-Diagonalen
+let CFG_CUSHION_MU     = 0.16;   // Banden-Reibung (Effet-Übertragungskoeffizient)
 let CFG_BALL_BOUNCE    = 0.97;   // Kugel-Kugel-Restitution
 // Tuch-Physik (Sliding/Rolling-Modell)
-let CFG_CLOTH_SLIDE_ACCEL = 0.100;  // Tuch-Gleitreibung (per Slider einstellbar)
+let CFG_CLOTH_SLIDE_ACCEL = 0.120;  // Tuch-Gleitreibung (per Slider einstellbar)
 const SIDE_SPIN_DECAY     = 0.992;
 const LONG_SPIN_DECAY     = 0.996;
 // Banden-Physik
-let CFG_RAIL_FRICTION     = 0.34;   // Banden-Tangentialreibung (per Slider einstellbar)
-let CFG_RAIL_SPIN_GRIP    = 0.66;   // Banden-Spin-Übertragung, Soft (per Slider einstellbar)
+let CFG_RAIL_FRICTION     = 0.32;   // Banden-Tangentialreibung (per Slider einstellbar)
+let CFG_RAIL_SPIN_GRIP    = 0.62;   // Banden-Spin-Übertragung, Soft (per Slider einstellbar)
 const RAIL_SPIN_GRIP_HARD = 0.24;
 // Jump-Physik
 const JUMP_GRAVITY        = 0.34;
@@ -11733,8 +11733,8 @@ const TABLE_PRESETS = {
   // S3.0 (Punkt 7): Presets an die neuen, schnelleren Default-Physikwerte angepasst.
   // "medium" entspricht EXAKT den Code-Defaults (CFG_FRICTION 0.994 → friction=6 usw.),
   // damit Slider-Sync und Preset deckungsgleich sind.
-  fast:   { friction:4,  drag:8,  en:94, mu:14, pocketCorner:18, pocketSide:22, slide:88,  railFric:28, railGrip:58, ballBounce:97 }, // Profiturniertisch (Simonis-neu)
-  medium: { friction:6,  drag:12, en:92, mu:18, pocketCorner:20, pocketSide:25, slide:100, railFric:34, railGrip:66, ballBounce:97 }, // Turniertisch (= Default)
+  fast:   { friction:7,  drag:23, en:78, mu:14, pocketCorner:18, pocketSide:22, slide:115, railFric:28, railGrip:58, ballBounce:97 }, // Profiturniertisch
+  medium: { friction:10, drag:28, en:82, mu:16, pocketCorner:20, pocketSide:25, slide:120, railFric:32, railGrip:62, ballBounce:97 }, // Turniertisch
   slow:   { friction:12, drag:24, en:84, mu:22, pocketCorner:23, pocketSide:29, slide:135, railFric:42, railGrip:74, ballBounce:95 }, // Kneipentisch
 };
 function applyTablePreset(key) {
