@@ -987,6 +987,40 @@
     padding: 6px 10px;
     font-size: 11px;
   }
+
+  /* ── Tablet Landscape (≥768px Breite, <900px Höhe, Querformat) ── */
+  body.tablet-landscape #playArea {
+    grid-template-columns: auto 200px;
+    align-items: stretch;
+  }
+  body.tablet-landscape #controlPanel {
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  body.tablet-landscape #app {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  body.tablet-landscape #scoreboard {
+    padding: 5px 10px;
+  }
+  body.tablet-landscape #bottomControls {
+    gap: 5px;
+  }
+  body.tablet-landscape #bottomControls button {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  body.tablet-landscape .ctrl-hint { display: none; }
+  body.tablet-landscape .panel-title { font-size: 9px; margin-bottom: 3px; }
+  body.tablet-landscape #spinCanvas,
+  body.tablet-landscape #elevCanvas { width: 80px; height: 80px; }
+  body.tablet-landscape .power-value { font-size: 18px; }
+  body.tablet-landscape #btnShoot { padding: 8px 12px; font-size: 13px; }
+
   /* Physik-Slider im Menü */
   .physics-sliders { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
   .slider-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.8); }
@@ -10907,6 +10941,12 @@ function endTrainingDrag() {
 function isAutoPortrait() {
   return window.innerWidth < 768 && window.innerHeight > window.innerWidth;
 }
+function isTabletLandscape() {
+  return !isAutoPortrait()
+    && window.innerWidth >= 768
+    && window.innerHeight < 900
+    && window.innerWidth > window.innerHeight;
+}
 function isPortraitMode() {
   return game.drill15Rotated || isAutoPortrait();
 }
@@ -10966,6 +11006,7 @@ function stopControlBubble(e) {
 function applyLayout() {
   const portrait = isPortraitMode();
   document.body.classList.toggle('portrait-mode', portrait);
+  document.body.classList.toggle('tablet-landscape', !portrait && isTabletLandscape());
   if (portrait) {
     canvas.width  = H;
     canvas.height = W;
