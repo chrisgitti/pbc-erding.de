@@ -2010,10 +2010,10 @@ let _aiPotRefineSims = 0;
 // schwere Direktstöße oder Banks über die LANGE Bande übernehmen.
 const AI_BANK_SHORTRAIL_SIDE_MAXDIST = 230; // max. Abstand Objektkugel → gebankte kurze Bande
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.7";
+const AI_BUILD = "S3.8";
 // App-Version (eigenständig von der KI-Build-Kennung). Bei jedem Release erhöhen.
 // © 2026 Christian Weber / PBC Erding.
-const APP_VERSION = "1.0.2";
+const APP_VERSION = "1.0.3";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07c KI-Spielstärke-Handicap (stufenlose Abschwächung der beiden oberen Stufen) ──
@@ -11726,6 +11726,7 @@ document.getElementById("slAiStrengthIngame")?.addEventListener("input", functio
   }
   const lbl = document.getElementById("lblAiStrengthIngame");
   if (lbl) lbl.textContent = Math.round(v * 100) + " %";
+  saveMenuSettingsDebounced();
 });
 
 // ── Tischprofil-Presets ──────────────────────────────────────────────────────
