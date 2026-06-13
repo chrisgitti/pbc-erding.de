@@ -2010,10 +2010,10 @@ let _aiPotRefineSims = 0;
 // schwere Direktstöße oder Banks über die LANGE Bande übernehmen.
 const AI_BANK_SHORTRAIL_SIDE_MAXDIST = 230; // max. Abstand Objektkugel → gebankte kurze Bande
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.6";
+const AI_BUILD = "S3.7";
 // App-Version (eigenständig von der KI-Build-Kennung). Bei jedem Release erhöhen.
 // © 2026 Christian Weber / PBC Erding.
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.0.2";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07c KI-Spielstärke-Handicap (stufenlose Abschwächung der beiden oberen Stufen) ──
@@ -7103,8 +7103,7 @@ function aiBuildKickCandidates(cue, targets) {
     ["top", "left"], ["top", "right"], ["bottom", "left"], ["bottom", "right"],
     ["left", "top"], ["left", "bottom"], ["right", "top"], ["right", "bottom"],
     ["top", "bottom"], ["bottom", "top"], ["left", "right"], ["right", "left"],
-    ["top", "left", "bottom"], ["top", "right", "bottom"],
-    ["bottom", "left", "top"], ["bottom", "right", "top"],
+    // 3 Banden: nur lang-kurz-lang (realistisch). kurz-lang-kurz existiert im Spiel nicht.
     ["left", "top", "right"], ["left", "bottom", "right"],
     ["right", "top", "left"], ["right", "bottom", "left"]
   ];
@@ -7161,7 +7160,8 @@ function aiBuildKickCandidates(cue, targets) {
             isSafety: true,
             spinHint: "none",
             kickRails: seq.length,
-            kickSequence: seq.join("-")
+            kickSequence: seq.join("-"),
+            multiRailLastResort: seq.length >= 3
           });
         }
       }
@@ -9755,6 +9755,12 @@ async function aiPlanShot() {
   aiSetPlanProgress("Kandidaten filtern", 3, 6, `${filteredCands.length}/${allCands.length} übrig`);
   await yieldToBrowser();
   const evaluated = await evaluateCandidatesAsync(filteredCands, prof, _ctx, tableAnalysis);
+  // 3-Banden-Kicks als Notlösung: Score skill-abhängig senken (lang-kurz-lang bleibt möglich,
+  // aber Safety und Direktpot haben immer Vorrang). Bei 100 % Stärke: -40 %, bei 50 %: -79 %.
+  const _multiRailPenalty = 0.4 + 0.4 * aiStrengthLoss(prof);
+  for (const c of evaluated) {
+    if (c.multiRailLastResort) c.score = (c.score ?? 0) * (1 - _multiRailPenalty);
+  }
   evaluated.sort((a, b) => b.score - a.score);
   aiSetPlanProgress("Besten Stoß wählen", 4, 6, `${evaluated.length} bewertet`);
   await yieldToBrowser();
