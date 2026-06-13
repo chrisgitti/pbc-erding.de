@@ -1,5 +1,12 @@
 <!DOCTYPE html>
-<!-- PBC Erding – Pool Billard App -->
+<!--
+  PBC Erding – Pool Billard App
+  Version 1.0.0 · KI-Build S3.5
+
+  Copyright (c) 2026 Christian Weber / PBC Erding.
+  Original development repository and history retained by the author.
+  All rights reserved unless explicitly licensed otherwise.
+-->
 
 <html lang="de">
 <head>
@@ -1248,6 +1255,22 @@
       </div>
     </div>
 
+    <div class="menu-section" id="aiStrengthSection" style="display:none;">
+      <h3>KI-Spielstärke-Feinabstimmung</h3>
+      <div class="physics-sliders">
+        <label class="slider-row">
+          <span>Fortgeschrittener</span>
+          <input type="range" id="slAiStrengthMedium" min="0.5" max="1" step="0.01" value="1">
+          <span id="lblAiStrengthMedium">100 %</span>
+        </label>
+        <label class="slider-row">
+          <span>Profi</span>
+          <input type="range" id="slAiStrengthHard" min="0.5" max="1" step="0.01" value="1">
+          <span id="lblAiStrengthHard">100 %</span>
+        </label>
+      </div>
+    </div>
+
     <div class="menu-section">
       <h3>Tischprofil</h3>
       <div class="options" id="optTablePreset">
@@ -1304,6 +1327,11 @@
       </div>
     </div>
 
+    <div class="menu-section" style="text-align:center; margin-top:6px;">
+      <button id="btnResetSettings" type="button" style="background:transparent;border:1px solid rgba(255,255,255,0.35);color:rgba(255,255,255,0.75);font-size:13px;padding:8px 18px;border-radius:6px;cursor:pointer;">↺ Alle Einstellungen auf Standard</button>
+      <div style="font-size:11px;opacity:0.7;margin-top:4px;">Einstellungen werden automatisch gespeichert.</div>
+    </div>
+
   </details>
 
   <div class="start-row">
@@ -1311,6 +1339,7 @@
     <button onclick="window.open('hilfe.html','_blank')" style="background:transparent;border:1px solid rgba(255,255,255,0.35);color:rgba(255,255,255,0.75);font-size:13px;padding:8px 18px;border-radius:6px;cursor:pointer;">? Spielanleitung</button>
   </div>
   <p class="hint">LMT ziehen = zielen · RMT ziehen = Stoßstärke + Stoß · Power-Bar klickbar · Pfeil-Tasten = Feinjustierung · Mini-Ball = Effet · Leertaste = ausführen · M = Menü</p>
+  <div id="versionStamp" style="text-align:center;font-size:10px;opacity:0.45;margin-top:6px;">© 2026 Christian Weber / PBC Erding</div>
   <div class="bottom-accent"></div>
 </div>
 
@@ -1672,8 +1701,8 @@ const JUMP_LANDING_DAMP   = 0.34;
 const CUE_PROFILES = {
   playing:    { label:"Spielqueue",      powerGain:1.00, spinTransfer:1.00, sideTransfer:1.00, squirt:1.00, verticalLoss:0.46, jumpLift:0.18, swerve:1.00, note:"Spielqueue: ausgewogene Kontrolle für Effet und Positionsspiel." },
   break:      { label:"Break-Queue",     powerGain:1.16, spinTransfer:0.62, sideTransfer:0.55, squirt:1.18, verticalLoss:0.34, jumpLift:0.24, swerve:0.55, note:"Break-Queue: harte Spitze, hohe Kraftübertragung, weniger Effet-Grip." },
-  jump:       { label:"Jump-Queue",      powerGain:0.86, spinTransfer:0.74, sideTransfer:0.72, squirt:0.88, verticalLoss:0.22, jumpLift:0.55, jumpLimit:0.19, jumpHorizontal:0.84, swerve:0.75, note:"Jump-Queue: kontrollierte, eher flachere Flugbahn für mittlere und weitere Jumps." },
-  jump_short: { label:"Jump-Queue kurz", powerGain:0.62, spinTransfer:0.66, sideTransfer:0.64, squirt:0.76, verticalLoss:0.30, jumpLift:1.34, jumpLimit:0.15, jumpHorizontal:0.54, swerve:0.62, note:"Verkürztes Jump-Queue: sehr steiler, kurzer Jump bei geringer Distanz zur störenden Kugel." },
+  jump:       { label:"Jump-Queue",      powerGain:0.75, spinTransfer:0.74, sideTransfer:0.72, squirt:0.88, verticalLoss:0.22, jumpLift:0.66, jumpLimit:0.19, jumpHorizontal:0.84, jumpVExp:1.0, jumpHExp:2.1, swerve:0.75, note:"Jump-Queue: kontrollierte, eher flachere Flugbahn für mittlere und weitere Jumps." },
+  jump_short: { label:"Jump-Queue kurz", powerGain:0.50, spinTransfer:0.66, sideTransfer:0.64, squirt:0.76, verticalLoss:0.30, jumpLift:1.15, jumpLimit:0.15, jumpHorizontal:0.38, jumpVExp:1.0, jumpHExp:2.3, swerve:0.62, note:"Verkürztes Jump-Queue: sehr steiler, kurzer Jump bei geringer Distanz zur störenden Kugel." },
 };
 const MIN_VEL = 0.10;
 // S3.0 (Punkt 7): Kontaktenergie um ~14 % angehoben – betrifft Anstoß UND
@@ -1955,8 +1984,116 @@ let _aiPotRefineSims = 0;
 // schwere Direktstöße oder Banks über die LANGE Bande übernehmen.
 const AI_BANK_SHORTRAIL_SIDE_MAXDIST = 230; // max. Abstand Objektkugel → gebankte kurze Bande
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.4";
+const AI_BUILD = "S3.5";
+// App-Version (eigenständig von der KI-Build-Kennung). Bei jedem Release erhöhen.
+// © 2026 Christian Weber / PBC Erding.
+const APP_VERSION = "1.0.0";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
+
+// ── 07c KI-Spielstärke-Handicap (stufenlose Abschwächung der beiden oberen Stufen) ──
+// 1.0 = unverändertes bisheriges Verhalten (kein Regress). Tiefer = schwächer, bis
+// knapp an die jeweils nächstniedrigere Stufe. Easy bleibt unberührt.
+let CFG_AI_STRENGTH_MEDIUM = 1.0;   // Fortgeschrittener (1.0 = unverändert)
+let CFG_AI_STRENGTH_HARD   = 1.0;   // Profi             (1.0 = unverändert)
+const AI_STRENGTH_MIN = 0.50;       // Regler-Minimum (50 %)
+
+const AI_HC_K_JUMP_DEG  = 5.5;   // ° Winkel-Streuung auf Jumps (× rampJump)
+const AI_HC_K_JUMP_PWR  = 0.22;  // ±Power-Streuung auf Jumps
+const AI_HC_K_JUMP_ELEV = 0.06;  // ±Elevations-Streuung auf Jumps
+const AI_HC_K_BANK_DEG  = 3.2;   // Basis-σ Banks in Grad (× Bankschwierigkeit)
+const AI_HC_K_BANK_SUPPRESS = 220; // zusätzl. Bank-Score-Malus · rampBank
+const AI_HC_K_ZONE      = 1.6;   // Zonen-Akzeptanz-Schwellen × (1 + K·rampZone)
+const AI_HC_K_POT_DEG   = 1.4;   // Pott-σ = K·rampPot·fragility (Grad)
+const AI_HC_K_POT_PWR   = 0.05;  // Pott-Power-σ = K·rampPot·fragility
+const AI_HC_POS_WEIGHT_SCALE = 0.45; // Medium: positionWeight ×(1 − scale·rampZone)
+const AI_HC_BANK_LOCK_CEIL = 1.6;    // Schwierigkeits-Decke für Hard-Bank-Locks (× (1−rampBank))
+
+// Degradation des AKTUELLEN Profils; easy immer 0. d ∈ [0, 1−MIN] = [0, 0.5].
+function aiStrengthDegradation(prof = aiGetProfile()) {
+  const d = (prof?.searchDepth >= AI_HARD_MODE_DEPTH) ? (1 - CFG_AI_STRENGTH_HARD)
+          : (prof?.searchDepth >= 3)                  ? (1 - CFG_AI_STRENGTH_MEDIUM)
+          : 0;
+  return clamp(d, 0, 1 - AI_STRENGTH_MIN);
+}
+// Normierter Verlust über den GANZEN Reglerweg (50 %→100 %): loss ∈ [0, 1].
+// Die Rampen laufen auf loss, NICHT auf d — sonst erreichen sie am Minimum nur ~0.5.
+function aiStrengthLoss(prof = aiGetProfile()) {
+  return aiStrengthDegradation(prof) / (1 - AI_STRENGTH_MIN); // d=0.5 → loss=1.0
+}
+// Gestaffelte Rampen auf loss (alle 0 bei loss=0, alle 1 bei loss=1 = Regler-Minimum):
+function aiRampJump(l){ return Math.sqrt(clamp(l,0,1)); }                  // sofort, steilster Frühanstieg
+function aiRampBank(l){ return Math.pow(clamp((l-0.06)/0.94,0,1),0.8); }   // ab ~loss 0.06
+function aiRampZone(l){ return clamp((l-0.30)/0.70,0,1); }                 // ab ~loss 0.30
+function aiRampPot (l){ return Math.pow(clamp((l-0.50)/0.50,0,1),1.8); }   // ab ~loss 0.50, sanft
+
+// Eine Quelle für alle Per-Zug-Faktoren. Debug-/Test-freundlich.
+function aiGetSkillTuning(prof = aiGetProfile()) {
+  const d = aiStrengthDegradation(prof);
+  const loss = aiStrengthLoss(prof);
+  // 9-Ball: Zielball fest → Zonen-Aufweitung wirkt stärker; leicht dämpfen (Homogenität).
+  const zoneVar = (game.variant === "9ball") ? 0.8 : 1.0;
+  const rZone = aiRampZone(loss);
+  return {
+    d, loss,
+    isHard: aiIsHardenedProfi(prof),
+    jump: { ramp: aiRampJump(loss), deg: AI_HC_K_JUMP_DEG, pwr: AI_HC_K_JUMP_PWR, elev: AI_HC_K_JUMP_ELEV },
+    bank: { ramp: aiRampBank(loss), deg: AI_HC_K_BANK_DEG, suppress: AI_HC_K_BANK_SUPPRESS },
+    zone: { ramp: rZone, scale: 1 + AI_HC_K_ZONE * rZone * zoneVar,
+            posWeightMul: 1 - AI_HC_POS_WEIGHT_SCALE * rZone * zoneVar },
+    pot:  { ramp: aiRampPot(loss), deg: AI_HC_K_POT_DEG, pwr: AI_HC_K_POT_PWR }
+  };
+}
+// Bank-Schwierigkeit (0 = leicht/dick/kurz … groß = dünn/weit). Einheitlich genutzt.
+function aiBankDifficulty(cand) {
+  return (1 - (cand?.dotN ?? 0.75)) * (1 + (cand?.dTP ?? 0) / (PLAY_W * 0.45));
+}
+// Erlaubt einen Hard-Bank-Lock nur, wenn seine Schwierigkeit unter einer loss-abhängigen
+// Decke liegt. Bei loss=0 (100 %) immer erlaubt → No-Op.
+function aiBankLockAllowedBySkill(cand, prof = aiGetProfile()) {
+  const t = aiGetSkillTuning(prof);
+  if (t.bank.ramp <= 0) return true;
+  return aiBankDifficulty(cand) <= AI_HC_BANK_LOCK_CEIL * (1 - t.bank.ramp);
+}
+// Ausführungs-Handicap: NACH der Finalvalidierung anwenden — die KI PLANT wie ein Profi,
+// FÜHRT aber mit menschlicher Streuung aus. Mutiert game.aimAngle/powerPercent/cueElevation
+// direkt. Gibt die effektiv angewandte Streuung zurück (Debug). Bei loss=0 ein No-Op.
+function aiApplyStrengthHandicap(bestShot, prof = aiGetProfile()) {
+  const t = aiGetSkillTuning(prof);
+  if (t.d <= 0 || !bestShot || game.isBreakShot) return null;
+
+  // Prio 1 JUMP ZUERST — gilt auch für Jump-Kontakt-/Escape-Safeties.
+  if (bestShot.isJump) {
+    const rj = t.jump.ramp;
+    const dDeg = (Math.random() - 0.5) * 2 * t.jump.deg * rj;
+    game.aimAngle    += dDeg * Math.PI / 180;
+    game.powerPercent = clamp(game.powerPercent * (1 + (Math.random() - 0.5) * 2 * t.jump.pwr * rj), 5, 100);
+    game.cueElevation = clamp((game.cueElevation || 0) + (Math.random() - 0.5) * 2 * t.jump.elev * rj, 0, 1.2);
+    return { kind: "jump", deg: dDeg };
+  }
+
+  // Erst NACH der Jump-Behandlung: Nicht-Jump-Safeties + Garantie-Pots ausnehmen.
+  if (bestShot.isSafety) return null;               // defensive Nicht-Jump-Safety bleibt unbehelligt
+  if (bestShot.ballInHandPerfect) return null;      // garantierter Pflicht-Pot bleibt exakt
+
+  // Prio 4 POTT — fragility-gekoppelte Grundstreuung; Pott-Term NUR Profi
+  // (Medium bekommt seinen Pott-/Aim-Fehler über hcMul im 9774-Block).
+  const dotN = bestShot.dotN ?? 0.75, dTP = bestShot.dTP ?? 0;
+  const frag = aiShotFragility(dotN, dTP);
+  let sigDeg = 0, sigPwr = 0;
+  if (t.isHard) {
+    sigDeg = t.pot.deg * t.pot.ramp * frag;
+    sigPwr = t.pot.pwr * t.pot.ramp * frag;
+  }
+  // Prio 2 BANK — zusätzliche, schwierigkeitsskalierte Streuung (beide Stufen)
+  if (bestShot.type === "bankShot") {
+    sigDeg = Math.hypot(sigDeg, t.bank.deg * t.bank.ramp * (0.5 + aiBankDifficulty(bestShot)));
+  }
+  const applDeg = (Math.random() - 0.5) * 2 * sigDeg;
+  if (sigDeg > 0) game.aimAngle += applDeg * Math.PI / 180;
+  if (sigPwr > 0) game.powerPercent = clamp(game.powerPercent * (1 + (Math.random() - 0.5) * 2 * sigPwr), 5, 100);
+  if (sigDeg <= 0 && sigPwr <= 0) return null;
+  return { kind: bestShot.type === "bankShot" ? "bank" : "pot", deg: applDeg, frag };
+}
 
 // ── 07b KI-Rechenzeit-Budget (Stufe 1) ────────────────────────────────
 // Per Slider steuerbar: niedrig = Performance, hoch = gründlicher. Ein hartes
@@ -2542,9 +2679,18 @@ function launchCueBall(cue, dirX, dirY, power, spinX, spinY, elevationNorm, cueT
   // Stopp- oder Zieheffekte auf. Die spätere Version hatte hier einen Rollbasis-
   // Anteil addiert; dadurch wurden Unterschiede zwischen mittigem, oberem und
   // unterem Treffpunkt bei Bandenbällen weitgehend glattgebügelt.
-  const horizontalFactor = clamp(1 - profile.verticalLoss * Math.pow(vertical, 1.15), 0.18, 1.0);
-  const jumpHorizontalFactor = getJumpHorizontalFactor(cueType, vertical);
-  const launchPower = power * profile.powerGain * horizontalFactor * jumpHorizontalFactor;
+  const isJumpCue = cueType === "jump" || cueType === "jump_short";
+  let launchPower;
+  if (isJumpCue) {
+    // Physikalisch korrekt: die horizontale Komponente skaliert mit cos(θ)^jumpHExp.
+    // Höherer Anstellwinkel → weniger Horizontalgeschwindigkeit → KÜRZERE Landung,
+    // während vz0 (∝ sin θ) für die HÖHERE Flugkurve sorgt.
+    const horizontal = Math.cos(elevRad);
+    launchPower = power * profile.powerGain * Math.pow(horizontal, profile.jumpHExp || 2.1);
+  } else {
+    const horizontalFactor = clamp(1 - profile.verticalLoss * Math.pow(vertical, 1.15), 0.18, 1.0);
+    launchPower = power * profile.powerGain * horizontalFactor;
+  }
   cue.vx = dirX * launchPower;
   cue.vy = dirY * launchPower;
 
@@ -2560,12 +2706,14 @@ function launchCueBall(cue, dirX, dirY, power, spinX, spinY, elevationNorm, cueT
     cue.vy +=  dirX * Math.sign(spinX) * masse;
   }
 
-  const isJumpCue = cueType === "jump" || cueType === "jump_short";
   const jumpTrigger = vertical * (power / MAX_POWER);
   const jumpLimit = isJumpCue ? (profile.jumpLimit || 0.18) : 0.28;
   if (jumpTrigger > jumpLimit) {
+    // vz0 ∝ sin(θ)^jumpVExp (Jump-Queues: jumpVExp≈1.0 → physikalisch). Nicht-Jump-
+    // Queues behalten den steileren 1.7-Exponenten (selten relevant, Masse-Stöße).
+    const vExp = isJumpCue ? (profile.jumpVExp || 1.0) : 1.7;
     cue.z = Math.max(cue.z || 0, 0);
-    cue.vz = Math.max(cue.vz || 0, power * profile.jumpLift * Math.pow(vertical, 1.7) * 0.34);
+    cue.vz = Math.max(cue.vz || 0, power * profile.jumpLift * Math.pow(vertical, vExp) * 0.34);
     cue.motionState = "airborne";
   } else {
     cue.z = 0; cue.vz = 0; cue.motionState = "sliding";
@@ -2992,6 +3140,11 @@ function step() {
       }
     }
   }
+  // Debug: höchsten Flugpunkt (Apex) der Weißen während des Stoßes mitschreiben.
+  if (_shotRecording && _shotDebugRecord && game.cueBall) {
+    const z = game.cueBall.z || 0;
+    if (z > (_shotDebugRecord.post.apexActual || 0)) _shotDebugRecord.post.apexActual = z;
+  }
   if (game.shotInProgress && game.balls.every(b => !b.inPlay || b.isStill())) {
     game.shotInProgress = false;
     onShotComplete();
@@ -3395,6 +3548,9 @@ function startShot() {
   game.anyCushionAfterFirstHit = false;
   game.lowestAtShotStart = (game.variant === "9ball") ? lowestBallOnTable() : null;
   game.foulMessage = ""; game.foulTimer = 0;
+  // Debug: Spieler-Stoß aufzeichnen (Einstellungen + Flugschätzung) – nur wenn Debug
+  // aktiv und es KEIN KI-Stoß ist (die KI hat ihr eigenes Debug-Overlay).
+  if (_aiDebugMode && !(game.mode === "ai" && game.currentPlayer === 1)) captureHumanShotPre();
   game.spinPending = { x: game.spinX, y: game.spinY, dirX, dirY, power, elevation: game.cueElevation, cueType: game.cueType, used: false };
   const cue = game.cueBall;
   launchCueBall(cue, dirX, dirY, power, game.spinX, game.spinY, game.cueElevation, game.cueType);
@@ -3435,11 +3591,18 @@ function onShotComplete() {
   else if (game.variant === "basis") handleBasisShot();
   else if (game.variant === "training") handleTrainingShot();
   else handleSoloShot();
+  // Debug: Spieler-Stoß-Ergebnis festhalten (vor Cue-Respawn, nach Regelauswertung).
+  captureHumanShotPost();
   if (game.state === "ended") { if (game.mode === "online") sendOnlineSync(); showEndScreen(); return; }
   if (game.cuePotted) respawnCueBall();
   if (game.mode === "solo") game.currentPlayer = 0;
   game.aimActive = false;
-  game.cueType = "playing";
+  // Im Training mit aktivem Wiederholen-Modus bleibt die gewählte Queue erhalten,
+  // damit der Spieler dieselbe Übung (z. B. Jump) wiederholt spielen kann, ohne die
+  // Queue jedes Mal neu auszuwählen. Sonst nach jedem Stoß zurück auf die Spielqueue.
+  if (!(game.variant === "training" && game.basisRepeatMode)) {
+    game.cueType = "playing";
+  }
   game.state = "aiming";
   if (typeof updateCueTypeHint === "function") updateCueTypeHint();
   if (game.mode === "online") sendOnlineSync();
@@ -5115,6 +5278,10 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
   const ballInHand = !!options.ballInHand;
   const basePower = clamp(shot.powerPercent || 50, 20, 88);
   const baseShot = mkShot(baseSpinX, baseSpinY, basePower);
+  // S3.5 (Prio 3): KI-Spielstärke-Handicap weitet die Akzeptanz-Schwellen der
+  // Stellungs-Suche → die Weiße landet großzügiger, häufiger in mäßigen/verdeckten
+  // Lagen. Bei 100 % _hcZone=1 ⇒ unverändert. Weniger Sims bei großem _hcZone.
+  const _hcZone = aiGetSkillTuning(prof).zone.scale;   // 1.0 … ~2.6 (9-Ball gedämpft)
 
   // S3.1 (Defizite 1+2): Eigenes, vom globalen Planungsbudget ENTKOPPELTES
   // Zeitfenster. Die Stellungs-Suche läuft als letzter Pipeline-Schritt; das
@@ -5193,7 +5360,7 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
     [basePower * 0.62, basePower * 0.80, basePower, basePower * 1.16, basePower * 1.34],
     16, 90
   );
-  const maxSims = 16 + aiShortlistSize() * 7;   // 23 … 44, an Rechenzeit-Slider gekoppelt
+  const maxSims = Math.max(6, Math.round((16 + aiShortlistSize() * 7) / _hcZone));   // 23 … 44 (durch Handicap reduziert)
 
   // Stufe T (S3.3): Zielgerichtete Lösung von Treffpunkt und Tempo auf die
   // Wunschablage — der Kern von "erst Ablage, dann Technik". Das bisherige
@@ -5229,17 +5396,17 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
         if (r && (!cur || (r.tDist ?? 1e9) < (cur.tDist ?? 1e9))) { cur = r; curSy = sy2; }
         if (r && (!best || r.ctrl > best.ctrl)) best = r;
       }
-      if (cur && (cur.tDist ?? 1e9) <= 55) break;
+      if (cur && (cur.tDist ?? 1e9) <= 55 * _hcZone) break;
     }
     // Der Lauf der Weißen ist über Banden/Rollphasen NICHT monoton in der
     // Stoßhärte — der Abstieg kann in einer lokalen Mulde enden. Liegt die
     // beste gefundene Endlage weiter als 90 px neben der Wunschzone, sichert
     // eine grobe Tempo-Leiter am gefundenen Treffpunkt den Bereich quer ab.
-    if ((!best || (best.tDist ?? 1e9) > 90) && posBudgetLeft(50)) {
+    if ((!best || (best.tDist ?? 1e9) > 90 * _hcZone) && posBudgetLeft(50)) {
       for (const m of [0.90, 1.15, 1.40, 1.65]) {
         const r = tryV(curSy, clamp(basePower * m, 16, 88));
         if (r && (!best || r.ctrl > best.ctrl)) best = r;
-        if (best && (best.tDist ?? 1e9) <= 55) break;
+        if (best && (best.tDist ?? 1e9) <= 55 * _hcZone) break;
       }
     }
   }
@@ -5247,7 +5414,7 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
   // S3.3: "praktisch perfekt" verlangt jetzt beides — hervorragende Kette UND
   // Nähe zur Wunschablage. Vorher beendete chain ≥ 124 die Suche, auch wenn
   // die Weiße weit neben der geplanten Zone für die Folgekugel lag.
-  const _posPerfect = (r) => !!r && r.chain >= 124 && (!_desired || (r.tDist ?? 1e9) <= 70);
+  const _posPerfect = (r) => !!r && r.chain >= 124 && (!_desired || (r.tDist ?? 1e9) <= 70 * _hcZone);
 
   // Stufe A0: reine Stärkenvariation am Basis-Treffpunkt. Die Stoßhärte ist
   // die "natürlichste" Stellschraube eines Profis (Stun-Lauf dosieren) und die
@@ -5283,7 +5450,7 @@ function aiHardenedPositionControl(shot, prof, options = {}) {
   const allowSide = !!options.allowSide && !ballInHand
     && (shot.robust?.potProbability ?? 1) >= 0.90
     && (shot.robust?.scratchRisk ?? 0) <= 0.02;
-  if (allowSide && best && (best.chain < 122 || (_desired && (best.tDist ?? 1e9) > 90)) && posBudgetLeft(60)) {
+  if (allowSide && best && (best.chain < 122 || (_desired && (best.tDist ?? 1e9) > 90 * _hcZone)) && posBudgetLeft(60)) {
     const sy0 = best.cand.spinY || 0;
     const pw0 = best.cand.powerPercent;
     for (const sx of [-0.12, 0.12, -0.22, 0.22, -0.30, 0.30]) {
@@ -5458,11 +5625,15 @@ async function aiFindProBallInHandPlan(cue, targets, prof, token, tableAnalysis)
       const eightBonus = tableAnalysis
         ? EightBallStrategy.scoreCandidate(bihCtx8, { targetNum: validated.targetNum }, bihRob8, tableAnalysis, prof)
         : 0;
+      // S3.5 (Prio 3, [P2]): KI-Spielstärke-Handicap schwächt die BIH-POSITIONSQUALITÄT
+      // (nicht den garantierten Pflicht-Pot): die Stellungs-Terme werden geringer gewichtet,
+      // sodass der Profi mit reduziertem Regler eine weniger ideale Ablage wählt. mul=1 → No-Op.
+      const _bihPosMul = aiGetSkillTuning(prof).zone.posWeightMul;
       const totalScore = 200000
         + cand.geoScore
         + validated.score
-        + clamp(control.posValue, -120, 145) * 4.4
-        + (control.plan?.score ?? 0) * 2.4
+        + clamp(control.posValue, -120, 145) * 4.4 * _bihPosMul
+        + (control.plan?.score ?? 0) * 2.4 * _bihPosMul
         + control.controlBonus
         + eightBonus
         - control.shot.powerPercent * 0.16;
@@ -6395,8 +6566,12 @@ const CommonStrategy = {
   // cueControlPlan war zu stark im Verhältnis zur Pot-Robustheit; fragile
   // Stöße durften nicht mehr allein durch hohen Folge-Plan-Wert gewinnen.
   scorePosition(posValue, planScore, prof) {
-    const posV  = clamp(posValue ?? 0, -100, 135) * (prof.positionWeight || 0.5);
-    const planV = (planScore ?? 0) * (prof.searchDepth >= 3 ? 0.40 : 0.20);
+    // S3.5 (Prio 3): Beim Fortgeschrittenen senkt der Spielstärke-Regler das
+    // Positions-/Plan-Gewicht (legt großzügiger ab). Profi nutzt stattdessen die
+    // Zonen-Aufweitung in aiHardenedPositionControl. Bei 100 % mul=1 → unverändert.
+    const mul = aiIsHardenedProfi(prof) ? 1 : aiGetSkillTuning(prof).zone.posWeightMul;
+    const posV  = clamp(posValue ?? 0, -100, 135) * (prof.positionWeight || 0.5) * mul;
+    const planV = (planScore ?? 0) * (prof.searchDepth >= 3 ? 0.40 : 0.20) * mul;
     return posV + planV;
   },
 
@@ -7020,9 +7195,13 @@ function aiEstimateJumpFlight(cueType, powerPercent, elevNorm) {
   const isJumpCue = cueType === "jump" || cueType === "jump_short";
   const jumpLimit = isJumpCue ? (profile.jumpLimit || 0.18) : 0.28;
   if (vertical * (power / MAX_POWER) <= jumpLimit) return null; // hebt nicht ab
-  const vz0 = power * profile.jumpLift * Math.pow(vertical, 1.7) * 0.34;
-  const horizontalFactor = clamp(1 - profile.verticalLoss * Math.pow(vertical, 1.15), 0.18, 1.0);
-  const vH = power * profile.powerGain * horizontalFactor * getJumpHorizontalFactor(cueType, vertical);
+  // Muss EXAKT launchCueBall spiegeln: vz0 ∝ sin^jumpVExp, vH ∝ cos^jumpHExp.
+  const vExp = isJumpCue ? (profile.jumpVExp || 1.0) : 1.7;
+  const vz0 = power * profile.jumpLift * Math.pow(vertical, vExp) * 0.34;
+  const horizontal = Math.cos(elev * Math.PI / 2);
+  const vH = isJumpCue
+    ? power * profile.powerGain * Math.pow(horizontal, profile.jumpHExp || 2.1)
+    : power * profile.powerGain * clamp(1 - profile.verticalLoss * Math.pow(vertical, 1.15), 0.18, 1.0);
   if (vH <= 0.01 || vz0 <= 0.01) return null;
   const g = JUMP_GRAVITY;
   const tFlight = 2 * vz0 / g;
@@ -8120,8 +8299,19 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
                      || (_approachPenalty >= AI_FRAG_NOISE_THRESHOLD);
   const evalAimFloor = cand.type === "comboShot" ? AI_EVAL_COMBO_AIM_NOISE_FLOOR : AI_EVAL_AIM_NOISE_FLOOR;
   const evalPowerFloor = cand.type === "comboShot" ? AI_EVAL_COMBO_POWER_NOISE_FLOOR : AI_EVAL_POWER_NOISE_FLOOR;
-  const evalAimNoise = useNoiseFloor ? Math.max(prof.aimErrorDeg || 0, evalAimFloor) : (prof.aimErrorDeg || 0);
-  const evalPowerNoise = useNoiseFloor ? Math.max(prof.powerError || 0, evalPowerFloor) : (prof.powerError || 0);
+  let evalAimNoise = useNoiseFloor ? Math.max(prof.aimErrorDeg || 0, evalAimFloor) : (prof.aimErrorDeg || 0);
+  let evalPowerNoise = useNoiseFloor ? Math.max(prof.powerError || 0, evalPowerFloor) : (prof.powerError || 0);
+  // S3.5 (Prio 4): KI-Spielstärke-Handicap — fragility-gekoppelte Zusatz-Streuung in der
+  // BEWERTUNG. Senkt die geschätzte Pot-Wahrscheinlichkeit schwieriger Stöße (lange/dünne
+  // Schnitte, extremes Effet), sodass die abgeschwächte KI sie seltener wählt. Bei 100 %
+  // (loss=0 → rampPot=0) ein No-Op; Math.max verhindert Doppelzählung mit dem Noise-Floor.
+  {
+    const _pt = aiGetSkillTuning(prof).pot;
+    if (_pt.ramp > 0 && _isPotLike) {
+      evalAimNoise   = Math.max(evalAimNoise,   _pt.deg * _pt.ramp * _fragility);
+      evalPowerNoise = Math.max(evalPowerNoise, _pt.pwr * _pt.ramp * _fragility);
+    }
+  }
   // S3.2: Exakte Winkel-Nachführung für Pot-Kandidaten — VOR der
   // Robust-Bewertung, damit ein nur geometrisch knapp verfehlter Pot nicht
   // mit potProbability 0 stirbt. Combos (Zwei-Kontakt-Geometrie) und Jumps
@@ -8306,6 +8496,12 @@ function evaluateShotCandidate(cand, prof, ctx, tableAnalysis) {
     // Bank über die lange Bande) sollen gewinnen.
     if (cand.type === "bankShot" && (cand.bankSide === "left" || cand.bankSide === "right")
         && POCKETS[cand.pocketIdx]?.type === "side") score -= 90;
+    // S3.5 (Prio 2): KI-Spielstärke-Handicap — schwere Banker (dünn/weit) zuerst entwerten,
+    // damit sie zugunsten Direktpot/Safety aus der Auswahl fallen. Bei 100 % ein No-Op.
+    if (cand.type === "bankShot") {
+      const _bt = aiGetSkillTuning(prof).bank;
+      if (_bt.ramp > 0) score -= _bt.suppress * _bt.ramp * (0.4 + aiBankDifficulty(cand));
+    }
     // S2.11: Center-Ball-Bias — Throw-Control nur bei klarem Pot-Wahrscheinlichkeits-
     // Gewinn bevorzugen. Die Sim kennt applySpinOnContact nicht und kann
     // Outside-English-Stellung "zu schön" rechnen; -40 entspricht ~13 % potProb-
@@ -8405,6 +8601,92 @@ function aiSelectSpin(shot) {
 // ── 19 Debug Tools ────────────────────────────────────────────────────
 let _aiDebugMode = false;
 let _aiLastDebugInfo = null;
+// Aufzeichnung manueller (Spieler-)Stöße — wirkt in ALLEN Modi (auch Training).
+// Erlaubt das Analysieren von Stoßeinstellungen und Stoßwirkung (z. B. Jump-Kalibrierung).
+let _shotDebugRecord = null;
+let _shotRecording = false;
+let _aiDebugTs = 0, _humanDebugTs = 0;
+
+// Vollständige Tisch-Aufstellung (alle Kugelpositionen) als Momentaufnahme.
+function captureTableLayout() {
+  return (game.balls || [])
+    .filter(b => b.inPlay && !isTrainingVorratBall(b))
+    .map(b => ({ num: b.num, x: +b.x.toFixed(1), y: +b.y.toFixed(1), cue: !!b.isCue }));
+}
+
+// Aktuelle Einstellungen + Flugschätzung als Pre-Objekt (ohne Seiteneffekt).
+function buildHumanShotPre() {
+  const cue = game.cueBall;
+  const flight = aiEstimateJumpFlight(game.cueType, game.powerPercent, game.cueElevation);
+  return {
+    kind: "humanShot",
+    ts: new Date().toISOString(),
+    build: AI_BUILD,
+    variant: game.variant,
+    mode: game.mode,
+    trainingPreset: game.trainingActivePreset || null,
+    pre: {
+      cueType: game.cueType || "playing",
+      powerPercent: +(+game.powerPercent).toFixed(1),
+      aimAngleDeg: +(game.aimAngle * 180 / Math.PI).toFixed(2),
+      spinX: +(+game.spinX).toFixed(3),
+      spinY: +(+game.spinY).toFixed(3),
+      cueElevationDeg: +((game.cueElevation || 0) * 90).toFixed(1),
+      cueX: cue ? +cue.x.toFixed(1) : null,
+      cueY: cue ? +cue.y.toFixed(1) : null,
+      layout: captureTableLayout()
+    },
+    launch: flight ? {
+      airborne: true,
+      vz0: +flight.vz0.toFixed(3),
+      vH: +flight.vH.toFixed(3),
+      apexEst: +flight.apex.toFixed(1),
+      landDistEst: Math.round(flight.landDist),
+      tFlightEst: +flight.tFlight.toFixed(1),
+      clearFrom: Number.isFinite(flight.clearFrom) ? Math.round(flight.clearFrom) : null,
+      clearTo: Number.isFinite(flight.clearTo) ? Math.round(flight.clearTo) : null
+    } : { airborne: false },
+    post: { apexActual: 0 }
+  };
+}
+
+// Vor dem Stoß (beim Abschuss): Pre-Record erzeugen und Aufzeichnung starten.
+function captureHumanShotPre() {
+  if (!_aiDebugMode) return;
+  _shotDebugRecord = buildHumanShotPre();
+  _shotRecording = true;
+  _humanDebugTs = performance.now();
+}
+
+// Live-Erfassung der aktuellen Aufstellung+Einstellung VOR dem Stoß (per Alt+C).
+// Überschreibt den letzten Datensatz bewusst mit dem aktuellen Stand (post = leer).
+function captureHumanShotLive() {
+  if (!_aiDebugMode) return;
+  if (_shotRecording) return;                 // während eines Stoßes nicht überschreiben
+  _shotDebugRecord = buildHumanShotPre();
+  _shotDebugRecord.live = true;               // markiert: nur Aufstellung vor dem Stoß
+  _shotDebugRecord.post = null;
+  _humanDebugTs = performance.now();
+}
+
+// Nach dem Stoß (vor Cue-Respawn): tatsächliches Ergebnis festhalten.
+function captureHumanShotPost() {
+  if (!_shotDebugRecord || !_shotRecording || !_shotDebugRecord.post) return;
+  const cue = game.cueBall;
+  const p = _shotDebugRecord, sx = p.pre.cueX, sy = p.pre.cueY;
+  p.post.cueX = cue ? +cue.x.toFixed(1) : null;
+  p.post.cueY = cue ? +cue.y.toFixed(1) : null;
+  p.post.travelDist = (cue && sx != null) ? Math.round(Math.hypot(cue.x - sx, cue.y - sy)) : null;
+  p.post.apexActual = +(+p.post.apexActual || 0).toFixed(1);
+  p.post.firstHit = (game.firstHit && (game.firstHit.num ?? game.firstHit)) ?? null;
+  p.post.potted = [...(game.ballsPottedThisShot || [])].map(b => (b && b.num != null) ? b.num : b);
+  p.post.cuePotted = !!game.cuePotted;
+  p.post.foul = !!game.foulMessage;
+  p.post.foulMessage = game.foulMessage || "";
+  p.post.layout = captureTableLayout();
+  _shotRecording = false;
+  _humanDebugTs = performance.now();
+}
 
 function aiDebugSelectedReason(shot, bestPot, bestSafety) {
   if (!shot) return "none";
@@ -8425,18 +8707,62 @@ function aiDebugSelectedReason(shot, bestPot, bestSafety) {
 }
 
 function aiDebugExport() {
-  if (!_aiLastDebugInfo) return;
+  // Neuesten Datensatz exportieren: KI-Planung oder manueller (Spieler-)Stoß.
+  const useHuman = _shotDebugRecord && _humanDebugTs >= _aiDebugTs;
+  const data = useHuman ? _shotDebugRecord : _aiLastDebugInfo;
+  if (!data) return;
   const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  const blob = new Blob([JSON.stringify(_aiLastDebugInfo, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `ki-debug-${ts}.json`;
+  a.download = `${useHuman ? "shot-debug" : "ki-debug"}-${ts}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
 
+// Kompaktes Overlay für einen manuellen Stoß (Pre/Launch/Post).
+function drawHumanShotOverlay(ctx) {
+  const r = _shotDebugRecord;
+  if (!r) return;
+  ctx.save();
+  ctx.font = "11px monospace";
+  const lines = [];
+  const tag = r.live ? "AUFSTELLUNG (vor Stoß)" : "SHOT";
+  lines.push(`${tag}[${r.variant}/${r.mode} ${r.build}]  [Alt+E] Export  [Alt+C] Erfassen`);
+  const pre = r.pre;
+  const nballs = (pre.layout || []).length;
+  lines.push(`pre: ${pre.cueType}  pwr:${pre.powerPercent}%  elev:${pre.cueElevationDeg}°  ang:${pre.aimAngleDeg}°  Kugeln:${nballs}`);
+  lines.push(`     spin x:${pre.spinX} y:${pre.spinY}  cue:(${pre.cueX},${pre.cueY})`);
+  if (r.launch && r.launch.airborne) {
+    lines.push(`jump: vz0:${r.launch.vz0} vH:${r.launch.vH}  apexEst:${r.launch.apexEst} landEst:${r.launch.landDistEst}`);
+    lines.push(`      Freifenster:${r.launch.clearFrom}…${r.launch.clearTo}px  tFlight:${r.launch.tFlightEst}`);
+  } else {
+    lines.push(`jump: kein Absprung (flacher/zu schwacher Stoß)`);
+  }
+  const po = r.post;
+  if (r.live) {
+    lines.push(`post: — (Live-Aufstellung; jetzt schießen für Vorher/Nachher)`);
+  } else if (po && po.cueX != null) {
+    lines.push(`post: Weiß→(${po.cueX},${po.cueY})  Weg:${po.travelDist}px  apexReal:${po.apexActual}`);
+    lines.push(`      1.Treffer:${po.firstHit ?? "–"}  versenkt:[${(po.potted||[]).join(",")}]${po.cuePotted ? " +WEISS" : ""}${po.foul ? "  FOUL" : ""}`);
+  } else {
+    lines.push(`post: (läuft …)`);
+  }
+  const BOX_W = 360, rowH = 14;
+  ctx.fillStyle = "rgba(0,0,0,0.72)";
+  ctx.fillRect(PLAY_X1, PLAY_Y1, BOX_W, lines.length * rowH + 10);
+  for (let i = 0; i < lines.length; i++) {
+    ctx.fillStyle = i === 0 ? "#0f0" : (lines[i].startsWith("jump") ? "#ff0" : (lines[i].startsWith("post") ? "#8cf" : "#ddd"));
+    ctx.fillText(lines[i], PLAY_X1 + 4, PLAY_Y1 + 13 + i * rowH);
+  }
+  ctx.restore();
+}
+
 function aiDrawDebugOverlay(ctx) {
-  if (!_aiDebugMode || !_aiLastDebugInfo) return;
+  if (!_aiDebugMode) return;
+  // Neuesten Datensatz zeigen: manueller Stoß (auch Training) vs. KI-Planung.
+  if (_shotDebugRecord && (_humanDebugTs >= _aiDebugTs || !_aiLastDebugInfo)) { drawHumanShotOverlay(ctx); return; }
+  if (!_aiLastDebugInfo) return;
   const info = _aiLastDebugInfo;
   ctx.save();
   ctx.font = "11px monospace";
@@ -8485,6 +8811,14 @@ function aiDrawDebugOverlay(ctx) {
   if (info.tableAnalysis8) {
     const ta = info.tableAnalysis8;
     row5 += `own:${ta.ownCount}(blk:${ta.ownBlocked})${ta.isLastBall ? " LAST" : ""}`;
+  }
+  // KI-Spielstärke-Handicap (nur sichtbar, wenn aktiv < 100 %)
+  const _st = info.skillTuning;
+  if (_st && _st.loss > 0) {
+    const hc = info.skillHandicap;
+    const hcStr = hc ? ` hc:${hc.kind}${hc.deg !== undefined ? " " + hc.deg.toFixed(2) + "°" : ""}` : "";
+    row5 += `  skill:${Math.round((info.skillStrength ?? 1) * 100)}% loss:${_st.loss.toFixed(2)} ` +
+            `r[J${_st.jump.ramp.toFixed(2)} B${_st.bank.ramp.toFixed(2)} Z${_st.zone.ramp.toFixed(2)} P${_st.pot.ramp.toFixed(2)}]${hcStr}`;
   }
   if (row5) ctx.fillText(row5, PLAY_X1 + 4, PLAY_Y1 + 65);
   ctx.fillStyle = "rgba(0,200,0,0.6)";
@@ -9227,6 +9561,7 @@ async function aiPlanShot() {
       candidates: [forcedBIHShot],
       selected: forcedBIHShot
     };
+    _aiDebugTs = performance.now();
 
     game.aimAngle = forcedBIHShot.angle;
     // S3.1 (Defizit 3): Gehärteter Profi führt validierte BIH-Werte 1:1 aus.
@@ -9596,7 +9931,10 @@ async function aiPlanShot() {
         aiSetPlanProgress("Bank-Shot prüfen", 5, 6, "validierte Bande");
         await yieldToBrowser();
         const bankShotLock = aiFindHardBankShotCandidates(cue, lockTargets, prof);
-        if (bankShotLock && lockMayReplace(bankShotLock)) {
+        // S3.5 (Prio 2, 4b): Hard-Bank-Lock planungsseitig gaten — bei reduzierter
+        // Stärke verschwinden schwere Banker aus der AUSWAHL (statt erst in der
+        // Ausführung zu verfehlen). Bei 100 % immer erlaubt → unverändert.
+        if (bankShotLock && aiBankLockAllowedBySkill(bankShotLock, prof) && lockMayReplace(bankShotLock)) {
           bestShot = bankShotLock;
         }
       }
@@ -9643,10 +9981,14 @@ async function aiPlanShot() {
     bestPot: potCands[0] ?? null,
     bestSafety: safeCands[0] ?? null,
     tableAnalysis8: tableAnalysis ?? null,
+    skillTuning: aiGetSkillTuning(prof),
+    skillStrength: aiIsHardenedProfi(prof) ? CFG_AI_STRENGTH_HARD : (prof.searchDepth >= 3 ? CFG_AI_STRENGTH_MEDIUM : 1),
+    skillHandicap: null,
     selected: null,
     selectedReason: null,
   };
   _aiLastDebugInfo.selected = bestShot;
+  _aiDebugTs = performance.now();
   _aiLastDebugInfo.selectedReason = aiDebugSelectedReason(bestShot, potCands[0], safeCands[0]);
   _aiLastDebugInfo.hardSpecial = bestShot ? {
     jumpUsed: !!bestShot.isJump,
@@ -9669,14 +10011,17 @@ async function aiPlanShot() {
   aiApply8BallCallForShot(bestShot, me);
 
   if (!aiIsHardenedProfi(prof) && !bestShot.ballInHandPerfect && !bestShot.noRandomError) {
-    const baseErrRad = prof.aimErrorDeg * Math.PI / 180;
+    // S3.5: KI-Spielstärke-Regler verstärkt den vorhandenen Fortgeschrittenen-Fehler
+    // (loss=1 → 2.1×). Bei 100 % (loss=0) ⇒ hcMul=1 ⇒ unverändert.
+    const hcMul = 1 + 1.1 * aiStrengthLoss(prof);
+    const baseErrRad = prof.aimErrorDeg * Math.PI / 180 * hcMul;
     let err = baseErrRad;
     if (prof.searchDepth >= 3 && bestShot.score !== undefined && !bestShot.isSafety) {
       const shotQuality = clamp((bestShot.score + 40) / 170, 0, 1);
       err = baseErrRad * (0.4 + 0.6 * (1 - shotQuality));
     }
     bestShot.angle += (Math.random() - 0.5) * err * 2;
-    bestShot.powerPercent = clamp(bestShot.powerPercent * (1 + (Math.random() - 0.5) * prof.powerError * 2), 5, 100);
+    bestShot.powerPercent = clamp(bestShot.powerPercent * (1 + (Math.random() - 0.5) * prof.powerError * hcMul * 2), 5, 100);
   }
 
   game.aimAngle = bestShot.angle;
@@ -9853,6 +10198,13 @@ async function aiPlanShot() {
       };
       _aiLastDebugInfo.selected = bestShot;
     }
+  }
+
+  // S3.5 (Prio 1/2/4): Ausführungs-Handicap NACH der Finalvalidierung — Jump+Bank beide
+  // Stufen, Pott-Term Profi-intern. Bei 100 % ein No-Op. Kein Re-Validate danach.
+  {
+    const _hc = aiApplyStrengthHandicap(bestShot, prof);
+    if (_aiLastDebugInfo) _aiLastDebugInfo.skillHandicap = _hc;
   }
 
   if (typeof updateCueTypeHint === "function") updateCueTypeHint();
@@ -10939,8 +11291,12 @@ window.addEventListener("keydown", (e) => {
     _aiDebugMode = !_aiDebugMode;
     const btn = document.getElementById("btnDebugExport");
     if (btn) btn.style.display = _aiDebugMode ? "block" : "none";
+    // Beim Einschalten sofort die aktuelle Aufstellung erfassen (vor jedem Stoß),
+    // damit Overlay & Export auch ohne vorherigen Stoß etwas zeigen.
+    if (_aiDebugMode && !(game.mode === "ai" && game.currentPlayer === 1)) captureHumanShotLive();
   }
   else if (e.altKey && e.key.toLowerCase() === "e") { if (_aiDebugMode) aiDebugExport(); }
+  else if (e.altKey && e.key.toLowerCase() === "c") { if (_aiDebugMode) { captureHumanShotLive(); render(); } }
 });
 
 // ── 17 UI / Input / Mobile Controls ───────────────────────────────────
@@ -11199,6 +11555,8 @@ bindOptions(ui.optVariant, v => {
   const sec = document.getElementById("modeSection");
   if (sec) sec.style.display = isPool ? "" : "none";
   if (ui.aiSection) ui.aiSection.style.display = (isPool && game.mode === "ai") ? "" : "none";
+  const aiStrSec = document.getElementById("aiStrengthSection");
+  if (aiStrSec) aiStrSec.style.display = (isPool && game.mode === "ai") ? "" : "none";
   const rack9sec = document.getElementById("rack9Section");
   if (rack9sec) rack9sec.style.display = (v === "9ball") ? "" : "none";
   // Mini-Kugelanzahl-Abschnitt
@@ -11218,6 +11576,8 @@ bindOptions(ui.miniCount9Opts.querySelector(".options"), v => { game.miniCount9 
 bindOptions(ui.optMode, v => {
   game.mode = v;
   ui.aiSection.style.display = (v === "ai") ? "" : "none";
+  const aiStrSec = document.getElementById("aiStrengthSection");
+  if (aiStrSec) aiStrSec.style.display = (v === "ai") ? "" : "none";
   updateSetsVisibility();
 });
 updateSetsVisibility();
@@ -11249,6 +11609,24 @@ function updateAiComputeBudgetUI() {
 }
 document.getElementById("slAiComputeBudget")?.addEventListener("input", updateAiComputeBudgetUI);
 updateAiComputeBudgetUI();
+
+function updateAiStrengthUI() {
+  const m = document.getElementById("slAiStrengthMedium");
+  const h = document.getElementById("slAiStrengthHard");
+  if (m) {
+    CFG_AI_STRENGTH_MEDIUM = clamp(parseFloat(m.value) || 1, AI_STRENGTH_MIN, 1);
+    const lbl = document.getElementById("lblAiStrengthMedium");
+    if (lbl) lbl.textContent = Math.round(CFG_AI_STRENGTH_MEDIUM * 100) + " %";
+  }
+  if (h) {
+    CFG_AI_STRENGTH_HARD = clamp(parseFloat(h.value) || 1, AI_STRENGTH_MIN, 1);
+    const lbl = document.getElementById("lblAiStrengthHard");
+    if (lbl) lbl.textContent = Math.round(CFG_AI_STRENGTH_HARD * 100) + " %";
+  }
+}
+document.getElementById("slAiStrengthMedium")?.addEventListener("input", updateAiStrengthUI);
+document.getElementById("slAiStrengthHard")?.addEventListener("input", updateAiStrengthUI);
+updateAiStrengthUI();
 
 // ── Tischprofil-Presets ──────────────────────────────────────────────────────
 const TABLE_PRESETS = {
@@ -11305,6 +11683,106 @@ bindOptions(document.getElementById("optTablePreset"), v => applyTablePreset(v))
 ["slFriction","slRollingDrag","slCushionEN","slCushionMu","slClothSlide","slRailFriction","slRailSpinGrip","slBallBounce"].forEach(id => {
   document.getElementById(id).addEventListener("input", updatePhysicsSliderLabels);
 });
+
+// ── Menü-Einstellungen persistieren (localStorage) + Standard wiederherstellen ──────
+// Quelle der Wahrheit sind die DOM-Controls. Gespeichert werden ihre Werte; wiederhergestellt
+// wird durch erneutes Auslösen der vorhandenen Handler (Klick auf .opt, input-Event am Slider).
+const MENU_STORE_KEY = "pbc_menuSettings";
+function menuOptionGroups() {
+  return {
+    optVariant:     document.getElementById("optVariant"),
+    optMode:        document.getElementById("optMode"),
+    optDiff:        document.getElementById("optDiff"),
+    optBreak:       document.getElementById("optBreak"),
+    optSound:       document.getElementById("optSound"),
+    optShotTimer:   document.getElementById("optShotTimer"),
+    optTablePreset: document.getElementById("optTablePreset"),
+    optRack9:       document.getElementById("optRack9"),
+    miniCount8:     document.querySelector("#miniCount8Opts .options"),
+    miniCount9:     document.querySelector("#miniCount9Opts .options"),
+  };
+}
+const MENU_SLIDER_IDS = ["slAiShotDelay","slAiComputeBudget","slAiStrengthMedium","slAiStrengthHard",
+  "slFriction","slRollingDrag","slCushionEN","slCushionMu","slClothSlide","slRailFriction",
+  "slRailSpinGrip","slBallBounce"];
+
+function collectMenuSettings() {
+  const adv = document.getElementById("advancedOptions");
+  const s = { opts: {}, sliders: {}, sets: game.setsTarget, adv: !!(adv && adv.open) };
+  const g = menuOptionGroups();
+  for (const k in g) { const sel = g[k] && g[k].querySelector(".opt.selected"); if (sel) s.opts[k] = sel.dataset.val; }
+  for (const id of MENU_SLIDER_IDS) { const el = document.getElementById(id); if (el) s.sliders[id] = el.value; }
+  return s;
+}
+
+// Sätze über die vorhandenen +/–-Buttons auf den Zielwert bringen (updateSetsUI ist IIFE-lokal).
+function applySetsTarget(t) {
+  t = clamp(parseInt(t) || 1, 1, 23);
+  const up = document.getElementById("setsUp"), down = document.getElementById("setsDown");
+  let guard = 0;
+  while (game.setsTarget < t && guard++ < 40 && up) up.click();
+  while (game.setsTarget > t && guard++ < 40 && down) down.click();
+}
+
+function applyMenuSettings(s) {
+  if (!s) return;
+  const g = menuOptionGroups();
+  // Variante & Modus zuerst (setzen Sichtbarkeit + resetten miniCount), danach der Rest.
+  const order = ["optVariant","optMode","optTablePreset","optDiff","optBreak","optSound",
+                 "optShotTimer","optRack9","miniCount8","miniCount9"];
+  for (const k of order) {
+    const val = s.opts && s.opts[k]; if (val == null || !g[k]) continue;
+    const opt = g[k].querySelector('.opt[data-val="' + val + '"]');
+    if (opt) opt.click();                       // löst bindOptions-Callback + Seiteneffekte aus
+  }
+  for (const id of MENU_SLIDER_IDS) {
+    const v = s.sliders && s.sliders[id]; if (v == null) continue;
+    const el = document.getElementById(id); if (!el) continue;
+    el.value = v; el.dispatchEvent(new Event("input", { bubbles: true })); // löst Slider-Handler aus
+  }
+  if (s.sets != null) applySetsTarget(s.sets);
+  if (g && document.getElementById("advancedOptions")) document.getElementById("advancedOptions").open = !!s.adv;
+}
+
+let _menuSaveTimer = 0;
+function saveMenuSettings() {
+  try { localStorage.setItem(MENU_STORE_KEY, JSON.stringify(collectMenuSettings())); } catch (_) {}
+}
+function saveMenuSettingsDebounced() { clearTimeout(_menuSaveTimer); _menuSaveTimer = setTimeout(saveMenuSettings, 200); }
+
+function loadMenuSettings() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(MENU_STORE_KEY) || "null"); } catch (_) {}
+  if (s) applyMenuSettings(s);
+}
+
+function resetMenuSettings() {
+  try { localStorage.removeItem(MENU_STORE_KEY); } catch (_) {}
+  applyMenuSettings(MENU_DEFAULTS);             // alle Controls + game.*/CFG_* zurück auf Default
+  saveMenuSettings();
+}
+
+// HTML-Default-Snapshot (vor dem Anwenden gespeicherter Werte) für den Reset.
+const MENU_DEFAULTS = collectMenuSettings();
+loadMenuSettings();                              // gespeicherte Werte über die Defaults legen
+
+// Auto-Speichern: ein delegierter Listener am Menü genügt (Events blubbern).
+const _menuEl = (typeof ui !== "undefined" && ui.menu) || document.getElementById("menu");
+if (_menuEl) {
+  _menuEl.addEventListener("input", saveMenuSettingsDebounced);                 // Slider
+  _menuEl.addEventListener("click", (e) => {                                    // Options + Sets-Stepper
+    if (e.target.closest(".opt") || e.target.closest("#setsUp, #setsDown")) saveMenuSettingsDebounced();
+  });
+}
+document.getElementById("advancedOptions")?.addEventListener("toggle", saveMenuSettingsDebounced);
+document.getElementById("btnResetSettings")?.addEventListener("click", resetMenuSettings);
+// Versions-/Copyright-Zeile im Menü-Footer
+{
+  const _vs = document.getElementById("versionStamp");
+  if (_vs) _vs.textContent = "Version " + APP_VERSION + " · KI " + AI_BUILD + " · © 2026 Christian Weber / PBC Erding";
+}
+// ────────────────────────────────────────────────────────────────────────────────────
+
 function updateCueTypeHint() {
   const sel = document.getElementById("cueTypeSelect");
   const hint = document.getElementById("cueTypeHint");

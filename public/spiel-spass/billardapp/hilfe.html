@@ -1,4 +1,12 @@
 <!DOCTYPE html>
+<!--
+  PBC Erding – Pool Billard App · Spielanleitung
+  Version 1.0.0 · KI-Build S3.5
+
+  Copyright (c) 2026 Christian Weber / PBC Erding.
+  Original development repository and history retained by the author.
+  All rights reserved unless explicitly licensed otherwise.
+-->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -362,6 +370,8 @@
         <li><a href="#s8-4">Sound</a></li>
         <li><a href="#s8-5">KI-Stoßverzögerung</a></li>
         <li><a href="#s8-6">KI-Rechenzeit</a></li>
+        <li><a href="#s8-7">KI-Spielstärke Fortgeschritten</a></li>
+        <li><a href="#s8-8">KI-Spielstärke Profi</a></li>
       </ol>
     </li>
     <li><a href="#s9">Vollbild &amp; Mobile</a></li>
@@ -1037,6 +1047,7 @@
     </ul>
     Die kurze Denkpause ist normal und zeigt, dass eine vollständige Physik-Simulation läuft.
   </div>
+  <p>Beide oberen Stufen lassen sich <strong>stufenlos abschwächen</strong>, um die Lücke zwischen Anfänger, Fortgeschrittenem und Profi zu füllen → <a href="#s8-7">8.7</a> / <a href="#s8-8">8.8 KI-Spielstärke-Feinabstimmung</a>. Bei <strong>100 %</strong> (Standard) entspricht jede Stufe exakt dem oben beschriebenen Verhalten; der Profi ist dann deterministisch. Unter 100 % bleibt die <em>Planung</em> stark, doch Sprungstöße, Banker, Stellungsspiel und schwere Pots werden – in dieser Reihenfolge – zunehmend menschlicher.</p>
 
   <h3 id="s6-2">6.2 KI-Debug-Modus <span class="badge badge-gray">Entwickler</span></h3>
   <p>Der Debug-Modus zeigt nach jedem KI-Stoß ein Analyse-Panel oben links auf dem Spielfeld – direkt auf dem Canvas. Er ist für Neugierige und Entwickler gedacht, die nachvollziehen wollen, warum die KI einen bestimmten Stoß gewählt hat.</p>
@@ -1095,6 +1106,27 @@
   <div class="tip">
     <strong>💡 Tipp zur Analyse</strong>
     Die exportierte JSON-Datei lässt sich z.&nbsp;B. in VS&nbsp;Code oder einem Online-JSON-Viewer (jsoncrack.com) bequem aufklappen und durchsuchen – ideal um die KI-Entscheidungen Schritt für Schritt nachzuvollziehen.
+  </div>
+
+  <h4 id="s6-2-stoss">Stoß-Analyse für eigene Stöße <span class="badge badge-gray">alle Modi inkl. Training</span></h4>
+  <p>Der Debug-Modus zeichnet nicht nur KI-Züge auf, sondern auch <strong>eigene (manuelle) Stöße</strong> – in jedem Spielmodus, besonders nützlich im <strong>Trainingsmodus</strong>. So lassen sich Stoßeinstellungen und ihre Wirkung Schritt für Schritt analysieren (z.&nbsp;B. zur Feinabstimmung von Jump-Shots).</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Taste</th><th>Wirkung</th></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>D</kbd></td><td>Debug-Panel an/aus. Beim Einschalten wird sofort die aktuelle <strong>Aufstellung vor dem Stoß</strong> erfasst.</td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>C</kbd></td><td><strong>Aufstellung erfassen</strong> – hält die aktuelle Tischstellung und alle Stoßeinstellungen <em>vor</em> dem Stoß fest (jederzeit beim Zielen).</td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>E</kbd></td><td>Aktuellen Datensatz als JSON exportieren (Dateiname <code>shot-debug-DATUM-UHRZEIT.json</code>).</td></tr>
+    </table>
+  </div>
+  <p>Das Panel und der Export enthalten:</p>
+  <ul>
+    <li><strong>pre</strong> – Queue, Stoßstärke (%), Elevation (°), Zielwinkel (°), Effet (spinX/Y), Position der Weißen sowie die vollständige <strong>Aufstellung</strong> (alle Kugelpositionen) <em>vor</em> dem Stoß.</li>
+    <li><strong>launch</strong> – bei Jump-Stößen die ballistische Schätzung: Absprung-/Horizontalgeschwindigkeit, geschätzte Flughöhe (<code>apexEst</code>), Landedistanz (<code>landDistEst</code>), Flugzeit und das „Freifenster" (Bereich, in dem die Weiße hoch genug für einen Überflug fliegt).</li>
+    <li><strong>post</strong> – nach dem Stoß: Endlage der Weißen, zurückgelegter Weg, <strong>real gemessene Flughöhe</strong> (<code>apexReal</code>), erster Treffer, versenkte Kugeln, Foul – plus die Aufstellung <em>nach</em> dem Stoß.</li>
+  </ul>
+  <div class="tip">
+    <strong>💡 Workflow „Vorher/Nachher"</strong>
+    <kbd>Alt</kbd>+<kbd>D</kbd> einschalten → mit <kbd>Alt</kbd>+<kbd>C</kbd> die geplante Aufstellung festhalten → Stoß ausführen. Der Datensatz enthält dann beides: die Aufstellung und Einstellungen <em>vor</em> dem Stoß und das tatsächliche Ergebnis <em>danach</em>. So lässt sich die Stoßwirkung exakt nachvollziehen und optimieren.
   </div>
 
   <h3 id="s6-3">6.3 KI-Ansage &amp; Vorschau <span class="badge badge-red">Profi</span></h3>
@@ -1251,6 +1283,10 @@
 
   <h3 id="s8-1">8.1 Spieloptionen (Startmenü)</h3>
   <p>Eine vollständige Beschreibung aller Startmenü-Optionen mit Zweck und Verfügbarkeit je Spielvariante befindet sich in <a href="#s1-3">Kapitel 1.3 Startmenü</a>. Die nachfolgenden Abschnitte behandeln Einstellungen, die <em>während des Spiels</em> zugänglich sind.</p>
+  <div class="tip">
+    <strong>💾 Einstellungen werden gespeichert</strong>
+    Alle Startmenü-Einstellungen (Spielvariante, Modus, KI-Spielstärke, Break-Regel, Sound, Shot-Timer, Tischprofil, Sätze sowie alle KI- und Physik-Regler) werden <strong>automatisch im Browser gespeichert</strong> und beim nächsten Start wiederhergestellt. Der Knopf <strong>„↺ Alle Einstellungen auf Standard"</strong> unter <em>Erweiterte Optionen</em> setzt alles auf die Werkseinstellung zurück.
+  </div>
 
   <h3 id="s8-2">8.2 Physik &amp; Tischprofile</h3>
   <p>Über den Button <strong>⚙ Physik</strong> in der unteren Leiste (während des Spiels) lassen sich alle Physik-Parameter fein abstimmen:</p>
@@ -1300,6 +1336,42 @@
     Die <strong>KI-Stoßverzögerung</strong> (→ <a href="#s8-5">8.5</a>) steuert nur die <em>Wartezeit nach dem Aufstellen</em> des Stoßes (sichtbare Ansage-Vorschau). Die <strong>KI-Rechenzeit</strong> steuert dagegen das <em>eigentliche Planungsbudget vor dem Aufstellen</em> – also Geschwindigkeit vs. Präzision der KI-Entscheidung. Beide Parameter sind vollständig unabhängig voneinander.
   </div>
   <a href="#" class="back">↑ Nach oben</a>
+
+  <h3 id="s8-7">8.7 KI-Spielstärke Fortgeschritten <span class="badge badge-gray">Erweiterte Optionen</span></h3>
+  <p>Im Startmenü unter <strong>Erweiterte Optionen → KI-Spielstärke-Feinabstimmung</strong> (nur im Modus <strong>Gegen die KI</strong> sichtbar) schwächt der Regler <em>„Fortgeschrittener"</em> die mittlere KI stufenlos ab. <strong>100 % = unverändert</strong> – schon kleine Reduktionen fügen menschliche Ausführungsfehler hinzu: Die KI <em>plant</em> weiterhin stark, <em>trifft</em> aber seltener.</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Einstellung</th><th>Bereich</th><th>Standardwert</th></tr>
+      <tr><td>Fortgeschrittener</td><td>50 % – 100 %</td><td>100 %</td></tr>
+    </table>
+  </div>
+  <p>Die Abschwächung greift <strong>gestaffelt</strong> in dieser Reihenfolge (zuerst nachlassend zuerst):</p>
+  <ol>
+    <li><strong>Sprungstöße</strong> – Trefferquote sinkt zuerst und am stärksten.</li>
+    <li><strong>Bandenbälle (Banker)</strong> – schwierige Banken (dünn/weit) brechen zuerst weg, leichte später.</li>
+    <li><strong>Stellungsspiel</strong> – die Weiße landet großzügiger, häufiger in mäßigen oder verdeckten Lagen.</li>
+    <li><strong>Allgemeine Pott-Sicherheit</strong> – zuletzt; die Streuung wächst mit der Stoßschwierigkeit (großer Winkel × große Distanz, extremes Effet).</li>
+  </ol>
+  <div class="tip">
+    <strong>💡 Hinweis</strong>
+    Bei 100 % ist das Verhalten identisch zum klassischen Fortgeschrittenen-Level. Schon geringe Reduktionen schwächen zuerst Sprung- und Bandenstöße – die alltäglichen Direktpots bleiben länger zuverlässig.
+  </div>
+  <a href="#" class="back">↑ Nach oben</a>
+
+  <h3 id="s8-8">8.8 KI-Spielstärke Profi <span class="badge badge-gray">Erweiterte Optionen</span></h3>
+  <p>Der Regler <em>„Profi"</em> schwächt die stärkste, sonst <strong>deterministische</strong> KI stufenlos ab. <strong>100 % = unverändert</strong> (deterministischer Profi → vgl. <a href="#s6-1">6.1</a>). Unter 100 % erhält der Profi dieselbe gestaffelte menschliche Streuung wie der Fortgeschrittene – so lässt sich die Lücke zwischen beiden Stufen nahtlos feinabstimmen.</p>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Einstellung</th><th>Bereich</th><th>Standardwert</th></tr>
+      <tr><td>Profi</td><td>50 % – 100 %</td><td>100 %</td></tr>
+    </table>
+  </div>
+  <p>Reihenfolge der Abschwächung identisch zu <a href="#s8-7">8.7</a>: Sprung → Bank → Stellung → Pott. Die Wirkung ist gleitend und für <strong>8-Ball</strong> wie <strong>9-Ball</strong> abgestimmt (sie wirkt auf Geometrie und Physik, nicht auf die Spielvariante; im 9-Ball ist die Stellungs-Aufweitung leicht gedämpft, da dort der Zielball fest vorgegeben ist).</p>
+  <div class="tip">
+    <strong>💡 Tipp</strong>
+    Ein Profi bei etwa 50 % spielt ungefähr auf dem Niveau des vollen Fortgeschrittenen – ideal, um einen nahtlosen Schwierigkeitsverlauf zwischen den Stufen einzustellen.
+  </div>
+  <a href="#" class="back">↑ Nach oben</a>
 </section>
 
 <!-- ─── 9. Vollbild & Mobile ─── -->
@@ -1331,8 +1403,9 @@
       <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Stoßstärke um 2 % erhöhen / verringern</td></tr>
       <tr><td><kbd>Space</kbd></td><td>Stoß ausführen</td></tr>
       <tr><td><kbd>M</kbd></td><td>Zurück zum Hauptmenü (nur außerhalb Vollbild)</td></tr>
-      <tr><td><kbd>Alt</kbd>+<kbd>D</kbd></td><td>KI-Debug-Overlay ein-/ausblenden <span class="badge badge-gray">Entwickler</span></td></tr>
-      <tr><td><kbd>Alt</kbd>+<kbd>E</kbd></td><td>KI-Debug als JSON-Datei exportieren (nur wenn Debug aktiv) <span class="badge badge-gray">Entwickler</span></td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>D</kbd></td><td>Debug-Overlay ein-/ausblenden (KI-Züge &amp; eigene Stöße, → <a href="#s6-2">6.2</a>) <span class="badge badge-gray">Entwickler</span></td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>C</kbd></td><td>Aktuelle Aufstellung &amp; Einstellungen <em>vor</em> dem Stoß erfassen (nur wenn Debug aktiv) <span class="badge badge-gray">Entwickler</span></td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>E</kbd></td><td>Debug-Daten als JSON-Datei exportieren (nur wenn Debug aktiv) <span class="badge badge-gray">Entwickler</span></td></tr>
       <tr><td>RMB halten + ziehen</td><td>Power einstellen (Loslassen = Schießen)</td></tr>
       <tr><td>LMB halten + ziehen (Spielfeld)</td><td>Zielrichtung einstellen</td></tr>
       <tr><td>LMB halten + ziehen (Ball-in-Hand)</td><td>Weiße positionieren</td></tr>
@@ -1345,8 +1418,9 @@
 </div>
 
 <footer>
-  PBC Erding Pool – Spielanleitung &nbsp;|&nbsp; Stand: 2026 &nbsp;|&nbsp;
+  PBC Erding Pool – Spielanleitung &nbsp;|&nbsp; Version 1.0.0 · KI-Build S3.5 &nbsp;|&nbsp;
   <a href="index.html" class="footer-link">→ Zur App</a>
+  <br>© 2026 Christian Weber / PBC Erding. All rights reserved unless explicitly licensed otherwise.
 </footer>
 
 </body>
