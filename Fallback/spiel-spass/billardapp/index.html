@@ -63,6 +63,7 @@
     color: var(--text);
     font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
     overflow: hidden;
+    -webkit-user-select: none;
     user-select: none;
     -webkit-font-smoothing: antialiased;
   }
@@ -82,6 +83,7 @@
     border: 1px solid var(--border-gold);
     border-radius: 10px;
     padding: 8px 16px;
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
   }
@@ -186,6 +188,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 24px rgba(0,0,0,0.5);
   }
@@ -213,6 +216,7 @@
     position: relative;
     cursor: pointer;
     touch-action: none;
+    -webkit-user-select: none;
     user-select: none;
   }
   .power-bar:hover { border-color: rgba(255,255,255,0.3); }
@@ -344,6 +348,7 @@
       radial-gradient(ellipse at 85% 15%, rgba(212,160,67,0.15) 0%, transparent 50%),
       radial-gradient(ellipse at 50% 100%, rgba(19,77,34,0.20) 0%, transparent 60%),
       var(--charcoal-950);
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     z-index: 10;
     display: flex; flex-direction: column;
@@ -364,6 +369,7 @@
     color: rgba(255,255,255,0.05);
     letter-spacing: 0.02em;
     line-height: 1; pointer-events: none;
+    -webkit-user-select: none;
     user-select: none;
   }
   .menu-eyebrow {
@@ -485,6 +491,7 @@
     border: 1px solid #4cc9f0;
     border-radius: 4px;
     padding: 10px 18px;
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     box-shadow: 0 4px 22px rgba(76, 201, 240, 0.25);
   }
@@ -513,6 +520,7 @@
     border: 1px solid var(--gold-500);
     border-radius: 4px;
     padding: 10px 18px;
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     box-shadow: 0 4px 22px rgba(212, 160, 67, 0.25);
     animation: callPulse 1.6s ease-in-out infinite;
@@ -601,6 +609,7 @@
     z-index: 9;
     flex-direction: column;
     align-items: center; justify-content: center;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
   #endScreen.show { display: flex; }
@@ -647,6 +656,7 @@
     position: fixed; inset: 0; display: none;
     background: rgba(10,10,11,0.92); z-index: 300;
     flex-direction: column; align-items: center; justify-content: center;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
   #onlineLobby .card {
@@ -683,7 +693,7 @@
   #roomCodeDisplay {
     font-family: "Bebas Neue", monospace; font-size: 52px;
     color: var(--gold-500); text-align: center; letter-spacing: 0.2em;
-    cursor: pointer; user-select: none; transition: color 0.15s;
+    cursor: pointer; -webkit-user-select: none; user-select: none; transition: color 0.15s;
   }
   #roomCodeDisplay:hover { color: var(--gold-400); }
   #copyHint { font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 2px; }
@@ -692,7 +702,7 @@
   #onlineDisconnect {
     position: fixed; inset: 0; display: none;
     background: rgba(10,10,11,0.92); z-index: 400;
-    align-items: center; justify-content: center; backdrop-filter: blur(10px);
+    align-items: center; justify-content: center; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   }
   #onlineDisconnect .card {
     background: linear-gradient(180deg, rgba(20,20,24,0.95), rgba(10,10,11,0.95));
@@ -714,7 +724,7 @@
   #confirmDialog {
     position: fixed; inset: 0; display: none;
     background: rgba(10,10,11,0.92); z-index: 500;
-    align-items: center; justify-content: center; backdrop-filter: blur(10px);
+    align-items: center; justify-content: center; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   }
   #confirmDialog.show { display: flex; }
   #confirmDialog .card {
@@ -852,6 +862,7 @@
     border: 1px solid var(--border-gold);
     border-radius: 10px;
     padding: 8px;
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     box-shadow: 0 -4px 24px rgba(0,0,0,0.6);
   }
@@ -999,7 +1010,7 @@
   .slider-row input[type=range] { flex: 1 1 100px; accent-color: var(--gold-500, #d4a043); }
   .slider-row span:last-child { width: 38px; text-align: right; font-size: 12px; color: var(--gold-500, #d4a043); font-variant-numeric: tabular-nums; }
   #advancedOptions { margin-top: 4px; }
-  #advancedOptions > summary { cursor: pointer; font-weight: 600; padding: 8px 0; color: var(--gold-500, #d4a043); list-style: none; user-select: none; }
+  #advancedOptions > summary { cursor: pointer; font-weight: 600; padding: 8px 0; color: var(--gold-500, #d4a043); list-style: none; -webkit-user-select: none; user-select: none; }
   #advancedOptions > summary::before { content: "▶ "; font-size: 0.75em; }
   #advancedOptions[open] > summary::before { content: "▼ "; }
   .cue-section { display: flex; flex-direction: column; gap: 6px; }
@@ -1036,6 +1047,7 @@
     background: rgba(10,10,11,0.92); z-index: 600;
     display: none;
     align-items: center; justify-content: center;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
   #physicsOverlayCard {
@@ -1090,6 +1102,7 @@
     background: rgba(10,10,11,0.92); z-index: 650;
     display: none;
     align-items: center; justify-content: center;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
   #presetSelectCard {
