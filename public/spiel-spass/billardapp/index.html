@@ -1499,6 +1499,14 @@
         STOSS!
         <span class="hint">Leertaste oder RMB-Release</span>
       </button>
+
+      <div id="inGameAiStrength" style="display:none;">
+        <p class="panel-title" id="lblInGameAiStrengthTitle">KI-STÄRKE · PROFI</p>
+        <label class="slider-row" style="font-size:11px;gap:6px;">
+          <input type="range" id="slAiStrengthIngame" min="0.5" max="1" step="0.01" value="1" style="flex:1;">
+          <span id="lblAiStrengthIngame" style="width:36px;font-size:11px;text-align:right;">100 %</span>
+        </label>
+      </div>
     </div>
   </div>
 
@@ -2002,10 +2010,10 @@ let _aiPotRefineSims = 0;
 // schwere Direktstöße oder Banks über die LANGE Bande übernehmen.
 const AI_BANK_SHORTRAIL_SIDE_MAXDIST = 230; // max. Abstand Objektkugel → gebankte kurze Bande
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.5";
+const AI_BUILD = "S3.6";
 // App-Version (eigenständig von der KI-Build-Kennung). Bei jedem Release erhöhen.
 // © 2026 Christian Weber / PBC Erding.
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.1";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07c KI-Spielstärke-Handicap (stufenlose Abschwächung der beiden oberen Stufen) ──
@@ -3566,9 +3574,26 @@ function startShot() {
   game.anyCushionAfterFirstHit = false;
   game.lowestAtShotStart = (game.variant === "9ball") ? lowestBallOnTable() : null;
   game.foulMessage = ""; game.foulTimer = 0;
-  // Debug: Spieler-Stoß aufzeichnen (Einstellungen + Flugschätzung) – nur wenn Debug
-  // aktiv und es KEIN KI-Stoß ist (die KI hat ihr eigenes Debug-Overlay).
-  if (_aiDebugMode && !(game.mode === "ai" && game.currentPlayer === 1)) captureHumanShotPre();
+  // Debug: Stoß aufzeichnen – bei KI-Stößen Pre-Layout in _aiLastDebugInfo,
+  // bei Spieler-Stößen vollständige Pre-Erfassung wie bisher.
+  if (_aiDebugMode) {
+    if (game.mode === "ai" && game.currentPlayer === 1) {
+      if (_aiLastDebugInfo) {
+        _aiLastDebugInfo.preLayout = captureTableLayout();
+        _aiLastDebugInfo.shotParams = {
+          aimAngleDeg: +(game.aimAngle * 180 / Math.PI).toFixed(2),
+          powerPercent: +(+game.powerPercent).toFixed(1),
+          spinX: +(+game.spinX).toFixed(3),
+          spinY: +(+game.spinY).toFixed(3),
+          cueElevationDeg: +((game.cueElevation || 0) * 90).toFixed(1),
+          cueType: game.cueType || "playing"
+        };
+      }
+      _shotRecording = true;
+    } else {
+      captureHumanShotPre();
+    }
+  }
   game.spinPending = { x: game.spinX, y: game.spinY, dirX, dirY, power, elevation: game.cueElevation, cueType: game.cueType, used: false };
   const cue = game.cueBall;
   launchCueBall(cue, dirX, dirY, power, game.spinX, game.spinY, game.cueElevation, game.cueType);
@@ -8624,6 +8649,7 @@ let _aiLastDebugInfo = null;
 let _shotDebugRecord = null;
 let _shotRecording = false;
 let _aiDebugTs = 0, _humanDebugTs = 0;
+let _debugOverlayUntil = 0;
 
 // Vollständige Tisch-Aufstellung (alle Kugelpositionen) als Momentaufnahme.
 function captureTableLayout() {
@@ -8689,21 +8715,42 @@ function captureHumanShotLive() {
 
 // Nach dem Stoß (vor Cue-Respawn): tatsächliches Ergebnis festhalten.
 function captureHumanShotPost() {
-  if (!_shotDebugRecord || !_shotRecording || !_shotDebugRecord.post) return;
-  const cue = game.cueBall;
-  const p = _shotDebugRecord, sx = p.pre.cueX, sy = p.pre.cueY;
-  p.post.cueX = cue ? +cue.x.toFixed(1) : null;
-  p.post.cueY = cue ? +cue.y.toFixed(1) : null;
-  p.post.travelDist = (cue && sx != null) ? Math.round(Math.hypot(cue.x - sx, cue.y - sy)) : null;
-  p.post.apexActual = +(+p.post.apexActual || 0).toFixed(1);
-  p.post.firstHit = (game.firstHit && (game.firstHit.num ?? game.firstHit)) ?? null;
-  p.post.potted = [...(game.ballsPottedThisShot || [])].map(b => (b && b.num != null) ? b.num : b);
-  p.post.cuePotted = !!game.cuePotted;
-  p.post.foul = !!game.foulMessage;
-  p.post.foulMessage = game.foulMessage || "";
-  p.post.layout = captureTableLayout();
-  _shotRecording = false;
-  _humanDebugTs = performance.now();
+  if (_shotDebugRecord && _shotRecording && _shotDebugRecord.post) {
+    // Spieler-/Training-Stoß
+    const cue = game.cueBall;
+    const p = _shotDebugRecord, sx = p.pre.cueX, sy = p.pre.cueY;
+    p.post.cueX = cue ? +cue.x.toFixed(1) : null;
+    p.post.cueY = cue ? +cue.y.toFixed(1) : null;
+    p.post.travelDist = (cue && sx != null) ? Math.round(Math.hypot(cue.x - sx, cue.y - sy)) : null;
+    p.post.apexActual = +(+p.post.apexActual || 0).toFixed(1);
+    p.post.firstHit = (game.firstHit && (game.firstHit.num ?? game.firstHit)) ?? null;
+    p.post.potted = [...(game.ballsPottedThisShot || [])].map(b => (b && b.num != null) ? b.num : b);
+    p.post.cuePotted = !!game.cuePotted;
+    p.post.foul = !!game.foulMessage;
+    p.post.foulMessage = game.foulMessage || "";
+    p.post.layout = captureTableLayout();
+    _shotRecording = false;
+    _humanDebugTs = performance.now();
+    _debugOverlayUntil = performance.now() + 5000;
+    return;
+  }
+  // KI-Stoß: Post-Daten in _aiLastDebugInfo einfügen
+  if (_aiLastDebugInfo && _shotRecording) {
+    const cue = game.cueBall;
+    _aiLastDebugInfo.postShot = {
+      cueX: cue ? +cue.x.toFixed(1) : null,
+      cueY: cue ? +cue.y.toFixed(1) : null,
+      firstHit: (game.firstHit && (game.firstHit.num ?? game.firstHit)) ?? null,
+      potted: [...(game.ballsPottedThisShot || [])].map(b => (b && b.num != null) ? b.num : b),
+      cuePotted: !!game.cuePotted,
+      foul: !!game.foulMessage,
+      foulMessage: game.foulMessage || "",
+      layout: captureTableLayout()
+    };
+    _shotRecording = false;
+    _aiDebugTs = performance.now();
+    _debugOverlayUntil = performance.now() + 5000;
+  }
 }
 
 function aiDebugSelectedReason(shot, bestPot, bestSafety) {
@@ -8746,7 +8793,7 @@ function drawHumanShotOverlay(ctx) {
   ctx.font = "11px monospace";
   const lines = [];
   const tag = r.live ? "AUFSTELLUNG (vor Stoß)" : "SHOT";
-  lines.push(`${tag}[${r.variant}/${r.mode} ${r.build}]  [Alt+E] Export  [Alt+C] Erfassen`);
+  lines.push(`${tag}[${r.variant}/${r.mode} ${r.build}]  [Alt+E] Export`);
   const pre = r.pre;
   const nballs = (pre.layout || []).length;
   lines.push(`pre: ${pre.cueType}  pwr:${pre.powerPercent}%  elev:${pre.cueElevationDeg}°  ang:${pre.aimAngleDeg}°  Kugeln:${nballs}`);
@@ -8778,6 +8825,7 @@ function drawHumanShotOverlay(ctx) {
 
 function aiDrawDebugOverlay(ctx) {
   if (!_aiDebugMode) return;
+  if (performance.now() > _debugOverlayUntil && !game.shotInProgress) return;
   // Neuesten Datensatz zeigen: manueller Stoß (auch Training) vs. KI-Planung.
   if (_shotDebugRecord && (_humanDebugTs >= _aiDebugTs || !_aiLastDebugInfo)) { drawHumanShotOverlay(ctx); return; }
   if (!_aiLastDebugInfo) return;
@@ -8785,7 +8833,7 @@ function aiDrawDebugOverlay(ctx) {
   ctx.save();
   ctx.font = "11px monospace";
   const candRows = Math.min((info.candidates?.length || 0), 8);
-  const totalRows = candRows + 5;
+  const totalRows = candRows + 5 + (info.preLayout ? 1 : 0);
   const BOX_W = 340;
   ctx.fillStyle = "rgba(0,0,0,0.70)";
   ctx.fillRect(PLAY_X1, PLAY_Y1, BOX_W, totalRows * 14 + 10);
@@ -8839,11 +8887,19 @@ function aiDrawDebugOverlay(ctx) {
             `r[J${_st.jump.ramp.toFixed(2)} B${_st.bank.ramp.toFixed(2)} Z${_st.zone.ramp.toFixed(2)} P${_st.pot.ramp.toFixed(2)}]${hcStr}`;
   }
   if (row5) ctx.fillText(row5, PLAY_X1 + 4, PLAY_Y1 + 65);
+  // Row 6: Pre-Layout-Kugelzahl + Post-Ergebnis (nur wenn vorhanden)
+  if (info.preLayout) {
+    const postStr = info.postShot
+      ? `post: 1.Treffer:${info.postShot.firstHit ?? "–"}  versenkt:[${(info.postShot.potted || []).join(",")}]${info.postShot.cuePotted ? " +WEISS" : ""}${info.postShot.foul ? "  FOUL" : ""}`
+      : "post: (läuft …)";
+    ctx.fillStyle = "#aaa";
+    ctx.fillText(`pre: ${info.preLayout.length} Kugeln  ${postStr}`, PLAY_X1 + 4, PLAY_Y1 + 79);
+  }
   ctx.fillStyle = "rgba(0,200,0,0.6)";
   ctx.fillText("[Alt+E] Export JSON", PLAY_X1 + BOX_W - 140, PLAY_Y1 + 13);
 
   // Candidate list
-  let y = PLAY_Y1 + 66;
+  let y = PLAY_Y1 + (info.preLayout ? 80 : 66);
   for (const c of (info.candidates || []).slice(0, candRows)) {
     y += 13;
     if (y > PLAY_Y1 + totalRows * 14 + 4) break;
@@ -9735,7 +9791,8 @@ async function aiPlanShot() {
     // gemeldeten Mehrbanden-Absurditäten.
     const bestDirectPotProb = potCands.reduce((m, c) =>
       (c.type !== "bankShot" && !c.isJump) ? Math.max(m, c.robust?.potProbability ?? 0) : m, 0);
-    const bankAllowed = bestDirectPotProb < 0.55;
+    const _bankThresh = 0.55 + 0.20 * aiStrengthLoss(prof);
+    const bankAllowed = bestDirectPotProb < _bankThresh;
     // Spielstärke-Erhalt: Eine Bank mit KLAR überlegener Versenkwahrscheinlich-
     // keit (≥ +22 Punkte ggü. bestem Direktpot) bleibt zulässig.
     const bankOk = (c) => c.type !== "bankShot" || bankAllowed
@@ -9939,8 +9996,9 @@ async function aiPlanShot() {
       // S3.0 (Punkt 5): Ein Lock ersetzt einen vorhandenen Pot nur noch, wenn
       // dessen Versenkwahrscheinlichkeit unter HARD_LOCK_REPLACE_POT_PROB liegt.
       // Direktpots werden nicht mehr durch score-stärkere Banden-Varianten verdrängt.
+      const _lockReplaceThresh = HARD_LOCK_REPLACE_POT_PROB * (1 - 0.55 * aiStrengthLoss(prof));
       const lockMayReplace = (lock) => !bestShot || bestShot.isSafety ||
-        ((bestShot.robust?.potProbability ?? 0) < HARD_LOCK_REPLACE_POT_PROB &&
+        ((bestShot.robust?.potProbability ?? 0) < _lockReplaceThresh &&
          (lock.score ?? -Infinity) > (bestShot.score ?? -Infinity));
       if (railPotLock && lockMayReplace(railPotLock)) {
         bestShot = railPotLock;
@@ -11647,6 +11705,23 @@ document.getElementById("slAiStrengthMedium")?.addEventListener("input", updateA
 document.getElementById("slAiStrengthHard")?.addEventListener("input", updateAiStrengthUI);
 updateAiStrengthUI();
 
+// ── KI-Stärke In-Game-Regler ─────────────────────────────────────────────────
+document.getElementById("slAiStrengthIngame")?.addEventListener("input", function() {
+  const v = clamp(parseFloat(this.value) || 1, AI_STRENGTH_MIN, 1);
+  const prof = aiGetProfile();
+  if (prof?.searchDepth >= AI_HARD_MODE_DEPTH) {
+    CFG_AI_STRENGTH_HARD = v;
+    const sl = document.getElementById("slAiStrengthHard");
+    if (sl) { sl.value = v; updateAiStrengthUI(); }
+  } else if (prof?.searchDepth >= 3) {
+    CFG_AI_STRENGTH_MEDIUM = v;
+    const sl = document.getElementById("slAiStrengthMedium");
+    if (sl) { sl.value = v; updateAiStrengthUI(); }
+  }
+  const lbl = document.getElementById("lblAiStrengthIngame");
+  if (lbl) lbl.textContent = Math.round(v * 100) + " %";
+});
+
 // ── Tischprofil-Presets ──────────────────────────────────────────────────────
 const TABLE_PRESETS = {
   // S3.0 (Punkt 7): Presets an die neuen, schnelleren Default-Physikwerte angepasst.
@@ -12047,6 +12122,10 @@ ui.endRestart.addEventListener("click", () => {
 ui.endMenu.addEventListener("click", () => { ui.endScreen.classList.remove("show"); showMenu(); });
 
 function showMenu() {
+  // Laufendes Spiel einfrieren (Physik, KI-Timer, Sound)
+  game._pausedByMenu = !game.paused;
+  game.paused = true;
+  if (audioCtx && audioCtx.state === "running") audioCtx.suspend().catch(() => {});
   if (game.mode === "online") {
     clearTimeout(_shotSafetyTimer);
     _onlineShotQueue.length = 0;
@@ -12084,7 +12163,15 @@ function showMenu() {
   ui.endScreen.classList.remove("show");
   ui.callShotBanner.classList.remove("show");
 }
-function hideMenu() { ui.menu.classList.add("hidden"); }
+function hideMenu() {
+  ui.menu.classList.add("hidden");
+  if (game._pausedByMenu) {
+    game.paused = false;
+    game._pausedByMenu = false;
+    if (game.soundOn && audioCtx && audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+    if (game.mode === "ai" && game.aiThinking && !game.aiPlanning) scheduleAiTurn(50);
+  }
+}
 function showEndScreen() {
   const w = game.winner;
   const mEl    = document.getElementById("endMatchScore");
@@ -12373,6 +12460,25 @@ function updateUI() {
     ui.btnUndo.style.display = (game.mode === "online" || game.state === "ended") ? "none" : "";
     ui.btnUndo.disabled = !game.lastSnapshot || (game.shotInProgress && !game.paused) || game.mode === "online";
   }
+  // KI-Stärke In-Game-Regler: Sichtbarkeit + Sync
+  const _inGameStr = document.getElementById("inGameAiStrength");
+  if (_inGameStr) {
+    const _showIngame = game.mode === "ai"
+      && (game.variant === "8ball" || game.variant === "9ball")
+      && (game.difficulty === "medium" || game.difficulty === "hard");
+    _inGameStr.style.display = _showIngame ? "" : "none";
+    if (_showIngame) {
+      const _prof = aiGetProfile();
+      const _cur = (_prof?.searchDepth >= AI_HARD_MODE_DEPTH) ? CFG_AI_STRENGTH_HARD : CFG_AI_STRENGTH_MEDIUM;
+      const _slI = document.getElementById("slAiStrengthIngame");
+      const _lblI = document.getElementById("lblAiStrengthIngame");
+      const _ttlI = document.getElementById("lblInGameAiStrengthTitle");
+      if (_slI) _slI.value = _cur;
+      if (_lblI) _lblI.textContent = Math.round(_cur * 100) + " %";
+      if (_ttlI) _ttlI.textContent = game.difficulty === "hard" ? "KI-STÄRKE · PROFI" : "KI-STÄRKE · FORTG.";
+    }
+  }
+
   _updateTimerDisplay();
   _updateExtendBtn();
   maybeShowCallModal();

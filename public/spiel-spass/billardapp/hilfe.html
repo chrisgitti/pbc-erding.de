@@ -1050,22 +1050,27 @@
   <p>Beide oberen Stufen lassen sich <strong>stufenlos abschwächen</strong>, um die Lücke zwischen Anfänger, Fortgeschrittenem und Profi zu füllen → <a href="#s8-7">8.7</a> / <a href="#s8-8">8.8 KI-Spielstärke-Feinabstimmung</a>. Bei <strong>100 %</strong> (Standard) entspricht jede Stufe exakt dem oben beschriebenen Verhalten; der Profi ist dann deterministisch. Unter 100 % bleibt die <em>Planung</em> stark, doch Sprungstöße, Banker, Stellungsspiel und schwere Pots werden – in dieser Reihenfolge – zunehmend menschlicher.</p>
 
   <h3 id="s6-2">6.2 KI-Debug-Modus <span class="badge badge-gray">Entwickler</span></h3>
-  <p>Der Debug-Modus zeigt nach jedem KI-Stoß ein Analyse-Panel oben links auf dem Spielfeld – direkt auf dem Canvas. Er ist für Neugierige und Entwickler gedacht, die nachvollziehen wollen, warum die KI einen bestimmten Stoß gewählt hat.</p>
+  <p>Der Debug-Modus zeichnet alle Stöße automatisch auf – KI- und Spieler-Stöße – und zeigt nach jedem Stoß kurz ein Analyse-Panel. Er ist für Neugierige und Entwickler gedacht, die nachvollziehen wollen, warum die KI einen bestimmten Stoß gewählt hat. Ab S3.6 läuft die Aufzeichnung vollständig automatisch im Hintergrund: kein manueller Schritt vor dem Stoß mehr nötig.</p>
 
   <h4>Aktivierung</h4>
   <ol class="steps">
-    <li><kbd>Alt</kbd>+<kbd>D</kbd> drücken – das Debug-Panel erscheint und ein grüner <strong>💾 Export</strong>-Button oben links auf dem Spielfeld wird eingeblendet.</li>
-    <li>Erneutes <kbd>Alt</kbd>+<kbd>D</kbd> blendet das Panel wieder aus.</li>
+    <li><kbd>Alt</kbd>+<kbd>D</kbd> drücken – der Debug-Modus startet; ein grüner <strong>💾 Export</strong>-Button oben links auf dem Spielfeld wird eingeblendet. Ab jetzt werden alle Stöße automatisch protokolliert.</li>
+    <li>Nach jedem Stoß erscheint das Analyse-Panel für 5 Sekunden, dann verschwindet es automatisch – das Spiel wird nicht gestört.</li>
+    <li>Erneutes <kbd>Alt</kbd>+<kbd>D</kbd> schaltet den Debug-Modus wieder aus.</li>
   </ol>
+  <div class="tip">
+    <strong>💡 Automatische Vollaufzeichnung (ab S3.6)</strong>
+    Einfach <kbd>Alt</kbd>+<kbd>D</kbd> drücken und weiterspielen. Nach einem unerwünschten KI-Stoß sofort <kbd>Alt</kbd>+<kbd>E</kbd> drücken – der Export enthält die Tischstellung vor und nach dem Stoß, alle KI-Überlegungen, die eingestellte Spielstärke und die tatsächlich ausgeführten Stoßparameter.
+  </div>
 
-  <h4>Inhalt des Debug-Panels</h4>
+  <h4>Inhalt des Debug-Panels (KI-Stoß)</h4>
   <div class="tbl-wrap">
     <table>
       <tr><th>Zeile</th><th>Farbe</th><th>Bedeutung</th></tr>
       <tr>
         <td>1</td>
         <td><span class="badge badge-green">Grün</span></td>
-        <td>KI-Profil, Spielvariante und Build-Kennung (z.&nbsp;B. <code>AI[Profi/8ball S2.2]</code>) · Kandidaten-Trichter (erzeugt → gefiltert → bewertet) · Planungsdauer in ms · Erlaubte Zielkugeln</td>
+        <td>KI-Profil, Spielvariante und Build-Kennung (z.&nbsp;B. <code>AI[Profi/8ball S3.6]</code>) · Kandidaten-Trichter (erzeugt → gefiltert → bewertet) · Planungsdauer in ms · Erlaubte Zielkugeln</td>
       </tr>
       <tr>
         <td>2</td>
@@ -1085,10 +1090,15 @@
       <tr>
         <td>5</td>
         <td><span class="badge badge-gray">Grau</span></td>
-        <td>Validierungsstatus des Schusses · Anzahl verworfener Kandidaten · bei 8-Ball: Anzahl eigener Kugeln und wie viele davon blockiert sind</td>
+        <td>Validierungsstatus · verworfene Kandidaten · bei 8-Ball: eigene Kugeln / davon blockiert · KI-Spielstärke in % wenn &lt; 100 %</td>
       </tr>
       <tr>
-        <td>6–13</td>
+        <td>6</td>
+        <td><span class="badge badge-gray">Grau</span></td>
+        <td>Anzahl Kugeln <strong>vor</strong> dem Stoß + Ergebnis nach dem Stoß (1. Treffer, versenkte Kugeln, Foul)</td>
+      </tr>
+      <tr>
+        <td>7–14</td>
         <td>Grau / Blau / Gelb</td>
         <td>Liste aller bewerteten Kandidaten nach Score · Safety-Kandidaten in Blau · Gewählter Kandidat in Gelb</td>
       </tr>
@@ -1102,19 +1112,19 @@
     <li><strong>💾 Export-Button</strong> (erscheint oben links auf dem Spielfeld, sobald Debug aktiv) – einfach klicken.</li>
     <li><strong><kbd>Alt</kbd>+<kbd>E</kbd></strong> – Tastenkürzel für denselben Vorgang.</li>
   </ul>
-  <p>Gespeichert wird eine <strong>JSON-Datei</strong> mit dem Namen <code>ki-debug-DATUM-UHRZEIT.json</code>, die den vollständigen Planungsstand des letzten KI-Zugs enthält: alle bewerteten Kandidaten mit Scores, Auswahlgrund, Tischanalyse (8-Ball), Validierungsstatus und mehr.</p>
+  <p>Der Export gibt eine <strong>JSON-Datei</strong> aus, die alle Daten des zuletzt aufgezeichneten Stoßes enthält: Tischstellung vor und nach dem Stoß, alle KI-Kandidaten mit Scores, Auswahlgrund, eingestellte KI-Spielstärke, tatsächlich ausgeführte Stoßparameter, Tischanalyse (8-Ball) und Validierungsstatus.</p>
   <div class="tip">
     <strong>💡 Tipp zur Analyse</strong>
     Die exportierte JSON-Datei lässt sich z.&nbsp;B. in VS&nbsp;Code oder einem Online-JSON-Viewer (jsoncrack.com) bequem aufklappen und durchsuchen – ideal um die KI-Entscheidungen Schritt für Schritt nachzuvollziehen.
   </div>
 
   <h4 id="s6-2-stoss">Stoß-Analyse für eigene Stöße <span class="badge badge-gray">alle Modi inkl. Training</span></h4>
-  <p>Der Debug-Modus zeichnet nicht nur KI-Züge auf, sondern auch <strong>eigene (manuelle) Stöße</strong> – in jedem Spielmodus, besonders nützlich im <strong>Trainingsmodus</strong>. So lassen sich Stoßeinstellungen und ihre Wirkung Schritt für Schritt analysieren (z.&nbsp;B. zur Feinabstimmung von Jump-Shots).</p>
+  <p>Der Debug-Modus zeichnet nicht nur KI-Züge auf, sondern auch <strong>eigene (manuelle) Stöße</strong> – in jedem Spielmodus, besonders nützlich im <strong>Trainingsmodus</strong>. Die Aufzeichnung (Pre-Einstellungen, Flugschätzung, Ergebnis) startet automatisch mit jedem Stoß. So lassen sich Stoßeinstellungen und ihre Wirkung analysieren (z.&nbsp;B. zur Feinabstimmung von Jump-Shots).</p>
   <div class="tbl-wrap">
     <table>
       <tr><th>Taste</th><th>Wirkung</th></tr>
-      <tr><td><kbd>Alt</kbd>+<kbd>D</kbd></td><td>Debug-Panel an/aus. Beim Einschalten wird sofort die aktuelle <strong>Aufstellung vor dem Stoß</strong> erfasst.</td></tr>
-      <tr><td><kbd>Alt</kbd>+<kbd>C</kbd></td><td><strong>Aufstellung erfassen</strong> – hält die aktuelle Tischstellung und alle Stoßeinstellungen <em>vor</em> dem Stoß fest (jederzeit beim Zielen).</td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>D</kbd></td><td>Debug-Modus an/aus. Alle folgenden Stöße werden automatisch vollständig aufgezeichnet.</td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>C</kbd></td><td>Optionaler Schnappschuss der aktuellen Tischstellung und Einstellungen <em>ohne</em> Stoß (z.&nbsp;B. zur Positionsanalyse beim Zielen) – für die automatische Stoß-Analyse nicht mehr nötig.</td></tr>
       <tr><td><kbd>Alt</kbd>+<kbd>E</kbd></td><td>Aktuellen Datensatz als JSON exportieren (Dateiname <code>shot-debug-DATUM-UHRZEIT.json</code>).</td></tr>
     </table>
   </div>
@@ -1404,7 +1414,7 @@
       <tr><td><kbd>Space</kbd></td><td>Stoß ausführen</td></tr>
       <tr><td><kbd>M</kbd></td><td>Zurück zum Hauptmenü (nur außerhalb Vollbild)</td></tr>
       <tr><td><kbd>Alt</kbd>+<kbd>D</kbd></td><td>Debug-Overlay ein-/ausblenden (KI-Züge &amp; eigene Stöße, → <a href="#s6-2">6.2</a>) <span class="badge badge-gray">Entwickler</span></td></tr>
-      <tr><td><kbd>Alt</kbd>+<kbd>C</kbd></td><td>Aktuelle Aufstellung &amp; Einstellungen <em>vor</em> dem Stoß erfassen (nur wenn Debug aktiv) <span class="badge badge-gray">Entwickler</span></td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>C</kbd></td><td>Optionaler Live-Schnappschuss der Aufstellung ohne Stoß (nur wenn Debug aktiv) <span class="badge badge-gray">Entwickler</span></td></tr>
       <tr><td><kbd>Alt</kbd>+<kbd>E</kbd></td><td>Debug-Daten als JSON-Datei exportieren (nur wenn Debug aktiv) <span class="badge badge-gray">Entwickler</span></td></tr>
       <tr><td>RMB halten + ziehen</td><td>Power einstellen (Loslassen = Schießen)</td></tr>
       <tr><td>LMB halten + ziehen (Spielfeld)</td><td>Zielrichtung einstellen</td></tr>
