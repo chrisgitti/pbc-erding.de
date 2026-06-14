@@ -184,14 +184,25 @@
     background: linear-gradient(180deg, rgba(20,20,24,0.95), rgba(10,10,11,0.95));
     border: 1px solid var(--border-gold);
     border-radius: 4px;
-    padding: 14px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 24px rgba(0,0,0,0.5);
   }
+  .panel-header-row { display: flex; align-items: center; justify-content: space-between; }
+  .panel-header-row .panel-title { margin: 0; }
+  .panel-help-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.5); font-size: 11px;
+    text-decoration: none; font-weight: 700; flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .panel-help-link:hover { border-color: var(--gold-500); color: var(--gold-500); }
   .panel-title {
     font-size: 10px;
     text-transform: uppercase;
@@ -283,7 +294,7 @@
     background: var(--gold-500);
     color: var(--charcoal-950);
     font-weight: 700; font-size: 15px;
-    padding: 16px;
+    padding: 10px 16px;
     border: 0; border-radius: 999px;
     cursor: pointer;
     letter-spacing: 0.16em;
@@ -296,9 +307,9 @@
   #btnShoot:disabled { background: var(--charcoal-700); color: rgba(255,255,255,0.3); cursor: not-allowed; box-shadow: none; transform: none; }
   #btnShoot .hint { font-size: 9px; opacity: 0.6; display: block; font-weight: 500; letter-spacing: 0.06em; margin-top: 3px; text-transform: none; }
 
-  .aim-section .aim-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .aim-section .aim-row { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
   .aim-section button {
-    flex: 1; padding: 6px 10px; font-size: 11px;
+    flex: 1; padding: 11px 4px; font-size: 15px;
     background: rgba(255,255,255,0.02);
     color: #fff;
     border: 1px solid rgba(255,255,255,0.18);
@@ -1435,33 +1446,30 @@
 
     <div id="controlPanel">
       <div class="aim-section">
-        <p class="panel-title">Steuerung</p>
-        <div class="ctrl-hint">
-          <div><span class="kbd">LMB</span> ziehen → Zielrichtung einstellen</div>
-          <div><span class="kbd">RMB</span> ziehen → Stoßstärke + Stoß</div>
-          <div><span class="kbd">←</span>/<span class="kbd">→</span> Feinzielen</div>
-          <div><span class="kbd">Leer</span> Stoß auslösen</div>
+        <div class="panel-header-row">
+          <p class="panel-title">Steuerung</p>
+          <a href="hilfe.html#s4" target="_blank" class="panel-help-link" title="Steuerungsanleitung öffnen">?</a>
         </div>
         <div class="aim-row">
-          <button id="btnAimLeft" title="Pfeil links">◄ fein</button>
-          <button id="btnAimRight" title="Pfeil rechts">fein ►</button>
-        </div>
-        <div class="aim-row">
-          <button id="btnAimLeftFine" title="Sehr feine Justierung links">◄◄ <span class="long-label">sehr fein</span></button>
-          <button id="btnAimRightFine" title="Sehr feine Justierung rechts"><span class="long-label">sehr fein</span> ►►</button>
+          <button id="btnAimLeftFine"  title="Sehr fein links (Shift+←)">◄◄</button>
+          <button id="btnAimLeft"      title="Fein links (←)">◄</button>
+          <button id="btnAimRight"     title="Fein rechts (→)">►</button>
+          <button id="btnAimRightFine" title="Sehr fein rechts (Shift+→)">▶▶</button>
         </div>
         <div class="aim-status" id="aimStatus">Aim: frei</div>
       </div>
 
       <div class="cue-section">
-        <p class="panel-title">Queue</p>
+        <div class="panel-header-row">
+          <p class="panel-title">Queue</p>
+          <a href="hilfe.html#s4-5" target="_blank" class="panel-help-link" title="Queue-Typen – Hilfe öffnen">?</a>
+        </div>
         <select id="cueTypeSelect" class="cue-select" title="Queue-Art für den nächsten Stoß (manuell wählen)">
           <option value="playing">Spielqueue</option>
           <option value="break">Break-Queue (harte Spitze)</option>
           <option value="jump">Jump-Queue</option>
           <option value="jump_short">Jump-Queue kurz</option>
         </select>
-        <div class="cue-note" id="cueTypeHint">Spielqueue: Standard. Break-/Jump-Queue vor dem Stoß manuell wählen.</div>
       </div>
 
       <div class="power-section">
@@ -1495,10 +1503,7 @@
         </div>
       </div>
 
-      <button id="btnShoot">
-        STOSS!
-        <span class="hint">Leertaste oder RMB-Release</span>
-      </button>
+      <button id="btnShoot">STOSS!</button>
 
       <div id="inGameAiStrength" style="display:none;">
         <p class="panel-title" id="lblInGameAiStrengthTitle">KI-STÄRKE · PROFI</p>
