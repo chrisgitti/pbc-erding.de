@@ -27,6 +27,43 @@ export type NewsItem = {
 
 export const news: NewsItem[] = [
   {
+    id: '14',
+    title: 'Jahreshauptversammlung 2026 – Weißwurstfrühstück, JHV und Vereinsmeisterschaft',
+    excerpt:
+      'Am Samstag, 27. Juni 2026: 10:00 Uhr gemeinsames Weißwurstfrühstück, 11:30 Uhr Jahreshauptversammlung, im Anschluss Vereinsmeisterschaft im Bowling Castle Erding.',
+    date: '2026-06-27',
+    category: 'Verein',
+    slug: 'jahreshauptversammlung-2026',
+    content: `Die diesjährige Jahreshauptversammlung des Pool Billard Club Erding e.V. findet am Samstag, 27. Juni 2026, im Bowling Castle Erding statt.
+
+Ablauf:
+– 10:00 Uhr: Gemeinsames Weißwurstfrühstück
+– 11:30 Uhr: Jahreshauptversammlung
+– Im Anschluss: Vereinsmeisterschaft im Bowling Castle Erding
+
+Alle Mitglieder sind herzlich eingeladen – wir freuen uns auf einen Tag mit Rückblick, Vereinsleben und sportlichem Wettkampf.`,
+  },
+  {
+    id: '13',
+    title: 'Mittwoch-Cup Juni – Markus Merz holt den Sieg',
+    excerpt:
+      'Die Juni-Ausgabe des Mi-Cups im Bowling Castle Erding: 6 Teilnehmer im 8-Ball – Markus Merz setzt sich durch.',
+    date: '2026-06-24',
+    category: 'Turnier',
+    slug: 'mittwoch-cup-juni-2026',
+    content: `Die Juni-Ausgabe des Mittwoch-Cups fand am 24. Juni 2026 im Bowling Castle Erding statt. Sechs Teilnehmer traten im 8-Ball-Modus gegeneinander an und sorgten für einen kurzweiligen Turnierabend.
+
+Das Siegertreppchen:
+– Platz 1: Markus Merz 🥇 (PBC Erding)
+– Platz 2: Josef Bendl 🥈 (BC 73 Pfeffenhausen)
+– Platz 3: Johann Grailach 🥉 (PBC Erding)
+– Platz 4: Urban Baumschlager (PBC Erding)
+
+Herzlichen Glückwunsch an alle Platzierten – und ein besonderes Dankeschön an Björn für die Organisation und das Team des Bowling Castle Erding für den reibungslosen Abend!
+
+Der nächste Mi-Cup findet am 29. Juli statt. Anmeldungen über die Mi-Cup-WhatsApp-Gruppe oder per E-Mail an turnier@pbc-erding.de – wir freuen uns auf eure Teilnahme!`,
+  },
+  {
     id: '12',
     title: 'Mittwoch-Cup Mai – Lucki Weidinger holt den Sieg',
     excerpt:
@@ -678,6 +715,8 @@ export type ChronikEntry = {
 
 export const chronik: ChronikEntry[] = [
   // 2026
+  { title: 'Jahreshauptversammlung 2026 – Weißwurstfrühstück, JHV und Vereinsmeisterschaft', date: '2026-06-27', slug: 'jahreshauptversammlung-2026'      },
+  { title: 'Mittwoch-Cup Juni – Markus Merz holt den Sieg',                            date: '2026-06-24', slug: 'mittwoch-cup-juni-2026'              },
   { title: 'Mittwoch-Cup Mai – Ludwig „Lucki" Weidinger gewinnt',                       date: '2026-05-27', slug: 'mittwoch-cup-mai-2026'                },
   { title: 'Saisonabschluss: Erding II – Kreisliga 2025/26 ungeschlagen abgeschlossen', date: '2026-05-16', slug: 'saisonabschluss-erding-2-2025-26'   },
   { title: 'Trainer-Fortbildung: Bart Claessen erfolgreich zertifiziert',               date: '2026-05-09', slug: 'trainer-fortbildung-bart-claessen'   },
