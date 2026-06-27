@@ -4,6 +4,30 @@
   var WD_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   var MONTH_NAMES = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 
+  // Sondertermine (JHV, Vereinsmeisterschaft …) – spiegelt vereinstermine[] aus lib/data.ts
+  var vereinstermine = [
+    {
+      date:  '2026-06-27',
+      title: 'Jahreshauptversammlung 2026',
+      time:  '10:00 Uhr Weißwurstfrühstück · 11:30 Uhr Versammlung',
+      note:  'Mit anschließender Vereinsmeisterschaft',
+      badge: 'verein',
+      slug:  'jahreshauptversammlung-2026'
+    },
+    {
+      date:  '2026-06-27',
+      title: 'Vereinsmeisterschaft 2026',
+      time:  'im Anschluss an die JHV',
+      note:  'Internes Turnier um den Vereinsmeistertitel',
+      badge: 'turnier'
+    }
+  ];
+
+  function parseISO(s) {
+    var p = s.split('-');
+    return new Date(+p[0], +p[1] - 1, +p[2]);
+  }
+
   function lastWednesdayOfMonth(year, month) {
     var lastDay = new Date(year, month + 1, 0);
     var wd = lastDay.getDay();
@@ -35,6 +59,21 @@
       result.push({ date: lastWed, title: 'Mittwochsturnier', time: '18:30 Uhr', type: 'turnier', note: 'Offenes Turnier für Vereins- und Hobbyspieler' });
     }
 
+    // Sondertermine für diesen Monat einmischen
+    vereinstermine.forEach(function (v) {
+      var d = parseISO(v.date);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        result.push({
+          date:  d,
+          title: v.title,
+          time:  v.time,
+          type:  v.badge === 'turnier' ? 'vereinstermin-turnier' : 'vereinstermin-verein',
+          note:  v.note,
+          slug:  v.slug
+        });
+      }
+    });
+
     result.sort(function (a, b) { return a.date - b.date; });
     return result;
   }
@@ -44,13 +83,24 @@
     var wd = WD_SHORT[d.getDay()];
     var day = String(d.getDate()).padStart(2, '0');
     var mon = MONTH_NAMES[d.getMonth()].substring(0, 3);
-    var isTurnier = ev.type === 'turnier';
-    var badgeClass = isTurnier ? 'badge-gold' : 'badge-neutral';
-    var badgeLabel = isTurnier ? 'Turnier' : (ev.type === 'probetraining' ? 'Schnuppertraining' : 'Training');
-    var rowClass = 'cal-event-row' + (isTurnier ? ' cal-event-turnier' : '') + (isPast ? ' cal-event-past' : '');
+    var isTurnier = ev.type === 'turnier' || ev.type === 'vereinstermin-turnier';
+    var isVereinstermin = ev.type === 'vereinstermin-turnier' || ev.type === 'vereinstermin-verein';
+    var badgeClass, badgeLabel;
+    if (ev.type === 'turnier' || ev.type === 'vereinstermin-turnier') {
+      badgeClass = 'badge-gold'; badgeLabel = 'Turnier';
+    } else if (ev.type === 'vereinstermin-verein') {
+      badgeClass = 'badge-green'; badgeLabel = 'Verein';
+    } else if (ev.type === 'probetraining') {
+      badgeClass = 'badge-neutral'; badgeLabel = 'Schnuppertraining';
+    } else {
+      badgeClass = 'badge-neutral'; badgeLabel = 'Training';
+    }
+    var rowClass = 'cal-event-row'
+      + (ev.type === 'turnier' ? ' cal-event-turnier' : '')
+      + (isVereinstermin ? ' cal-event-vereinstermin' : '')
+      + (isPast ? ' cal-event-past' : '');
 
-    return '<div class="' + rowClass + '">' +
-      '<div class="cal-date-block' + (isPast ? ' cal-past' : '') + '">' +
+    var inner = '<div class="cal-date-block' + (isPast ? ' cal-past' : '') + '">' +
         '<span class="cal-wd">' + wd + '</span>' +
         '<span class="cal-day">' + day + '</span>' +
         '<span class="cal-mon' + (isTurnier ? ' cal-mon-gold' : '') + '">' + mon + '</span>' +
@@ -61,10 +111,14 @@
           '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>' +
           '<span class="cal-time">' + ev.time + '</span>' +
         '</div>' +
-        '<p class="cal-event-title' + (isTurnier ? ' cal-title-gold' : '') + '">' + ev.title + '</p>' +
+        '<p class="cal-event-title' + (ev.type === 'turnier' ? ' cal-title-gold' : '') + '">' + ev.title + '</p>' +
         '<p class="cal-event-note">' + ev.note + '</p>' +
-      '</div>' +
-    '</div>';
+      '</div>';
+
+    if (ev.slug) {
+      return '<a class="' + rowClass + '" href="news/' + ev.slug + '.html">' + inner + '</a>';
+    }
+    return '<div class="' + rowClass + '">' + inner + '</div>';
   }
 
   function renderCalendar() {
@@ -89,8 +143,8 @@
       var future = events.filter(function (e) { return e.date >= today; });
       if (future.length === 0) return;
 
-      var trainingCount = future.filter(function (e) { return e.type !== 'turnier'; }).length;
-      var turnierCount  = future.filter(function (e) { return e.type === 'turnier'; }).length;
+      var trainingCount = future.filter(function (e) { return e.type === 'training' || e.type === 'probetraining'; }).length;
+      var turnierCount  = future.filter(function (e) { return e.type === 'turnier' || e.type === 'vereinstermin-turnier'; }).length;
       var monthLabel = MONTH_NAMES[m.month] + ' ' + m.year;
 
       html += '<div class="month-block">' +

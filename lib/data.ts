@@ -769,6 +769,40 @@ export const chronik: ChronikEntry[] = [
   { title: 'Saisonstart 2010: PBC Erding wächst auf 45 Mitglieder',                      date: '2010-11-22', slug: 'saisonstart-2010'                         },
 ]
 
+// ─── Vereinstermine ──────────────────────────────────────────────────────────
+// Ad-hoc-Termine (JHV, Vereinsmeisterschaft, Sommerfest …), die zusätzlich
+// zum automatisch berechneten Trainings-/Turnier-/Liga-Kalender erscheinen.
+
+export type Vereinstermin = {
+  date: string         // YYYY-MM-DD
+  title: string
+  time: string
+  location: string
+  badge: 'Verein' | 'Turnier'
+  note: string
+  slug?: string        // optionaler Link auf News-Artikel
+}
+
+export const vereinstermine: Vereinstermin[] = [
+  {
+    date:     '2026-06-27',
+    title:    'Jahreshauptversammlung 2026',
+    time:     '10:00 Uhr Weißwurstfrühstück · 11:30 Uhr Versammlung',
+    location: 'Bowling Castle Erding',
+    badge:    'Verein',
+    note:     'Mit anschließender Vereinsmeisterschaft',
+    slug:     'jahreshauptversammlung-2026',
+  },
+  {
+    date:     '2026-06-27',
+    title:    'Vereinsmeisterschaft 2026',
+    time:     'im Anschluss an die JHV',
+    location: 'Bowling Castle Erding',
+    badge:    'Turnier',
+    note:     'Internes Turnier um den Vereinsmeistertitel',
+  },
+]
+
 // ─── Events ──────────────────────────────────────────────────────────────────
 
 export type Event = {

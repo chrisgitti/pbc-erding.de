@@ -7,6 +7,25 @@
   var spielplan = [
   ];
 
+  // ── Sondertermine (JHV, Vereinsmeisterschaft …) – spiegelt vereinstermine[] aus lib/data.ts ──
+  var vereinstermine = [
+    {
+      date:  '2026-06-27',
+      title: 'Jahreshauptversammlung 2026',
+      time:  '10:00 Uhr Weißwurstfrühstück · 11:30 Uhr Versammlung',
+      sub:   'Bowling Castle Erding · mit anschließender Vereinsmeisterschaft',
+      badge: 'verein',
+      slug:  'jahreshauptversammlung-2026'
+    },
+    {
+      date:  '2026-06-27',
+      title: 'Vereinsmeisterschaft 2026',
+      time:  'im Anschluss an die JHV',
+      sub:   'Bowling Castle Erding · internes Turnier',
+      badge: 'turnier'
+    }
+  ];
+
   // ── Datumslogik ──
 
   function lastWednesdayOfMonth(year, month) {
@@ -93,6 +112,22 @@
       }
     });
 
+    // Sondertermine (JHV, Vereinsmeisterschaft …) – nur kommende
+    vereinstermine.forEach(function (v) {
+      var vDate = parseISO(v.date);
+      if (vDate >= today) {
+        entries.push({
+          type:    'vereinstermin-' + v.badge,
+          title:   v.title,
+          date:    vDate,
+          dateStr: formatDE(vDate),
+          time:    v.time,
+          sub:     v.sub,
+          slug:    v.slug
+        });
+      }
+    });
+
     // Nächster offener Spieltag je Mannschaft
     spielplan.forEach(function (sp) {
       var spDate = parseISO(sp.datum);
@@ -123,11 +158,13 @@
     var entries = computeEntries();
 
     var html = entries.map(function (e) {
-      return '<div class="event-card event-' + e.type + '">' +
-        '<p class="event-date">' + e.dateStr + '</p>' +
-        '<p class="event-title">' + e.title + '</p>' +
-        '<p class="event-time">' + e.time + ' · ' + e.sub + '</p>' +
-        '</div>';
+      var inner = '<p class="event-date">' + e.dateStr + '</p>' +
+                  '<p class="event-title">' + e.title + '</p>' +
+                  '<p class="event-time">' + e.time + ' · ' + e.sub + '</p>';
+      if (e.slug) {
+        return '<a class="event-card event-' + e.type + '" href="news/' + e.slug + '.html">' + inner + '</a>';
+      }
+      return '<div class="event-card event-' + e.type + '">' + inner + '</div>';
     }).join('');
 
     if (loading) loading.style.display = 'none';

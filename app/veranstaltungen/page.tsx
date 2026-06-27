@@ -3,6 +3,7 @@ import Container from '@/components/ui/Container'
 import SectionHeading from '@/components/ui/SectionHeading'
 import Badge from '@/components/ui/Badge'
 import { getNextMittwochsturnier } from '@/lib/turnier-utils'
+import { vereinstermine } from '@/lib/data'
 import HidePastCalendarEvents from './HidePastCalendarEvents'
 
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 // ─── Typen ────────────────────────────────────────────────────────────────────
 
-type EventType = 'probetraining' | 'training' | 'turnier'
+type EventType = 'probetraining' | 'training' | 'turnier' | 'vereinstermin-verein' | 'vereinstermin-turnier'
 
 type CalEvent = {
   date: Date
@@ -20,6 +21,7 @@ type CalEvent = {
   time: string
   type: EventType
   note: string
+  slug?: string
 }
 
 // ─── Kalender-Generierung (läuft zur Build-Zeit) ──────────────────────────────
@@ -72,6 +74,21 @@ function buildMonthEvents(year: number, month: number): CalEvent[] {
     })
   }
 
+  // Sondertermine (JHV, Vereinsmeisterschaft …) für diesen Monat einmischen
+  for (const v of vereinstermine) {
+    const d = new Date(v.date + 'T00:00:00')
+    if (d.getFullYear() === year && d.getMonth() === month) {
+      result.push({
+        date: d,
+        title: v.title,
+        time: v.time,
+        type: v.badge === 'Turnier' ? 'vereinstermin-turnier' : 'vereinstermin-verein',
+        note: v.note,
+        slug: v.slug,
+      })
+    }
+  }
+
   return result.sort((a, b) => a.date.getTime() - b.date.getTime())
 }
 
@@ -88,9 +105,11 @@ function getTwoMonths(): { year: number; month: number }[] {
 // ─── Darstellung ──────────────────────────────────────────────────────────────
 
 const badgeCfg: Record<EventType, { label: string; variant: 'green' | 'gold' | 'neutral' }> = {
-  probetraining: { label: 'Schnuppertraining', variant: 'neutral' },
-  training:      { label: 'Training',      variant: 'neutral' },
-  turnier:       { label: 'Turnier',        variant: 'gold'    },
+  probetraining:           { label: 'Schnuppertraining', variant: 'neutral' },
+  training:                { label: 'Training',          variant: 'neutral' },
+  turnier:                 { label: 'Turnier',           variant: 'gold'    },
+  'vereinstermin-verein':  { label: 'Verein',            variant: 'green'   },
+  'vereinstermin-turnier': { label: 'Turnier',           variant: 'gold'    },
 }
 
 function EventRow({ ev }: { ev: CalEvent }) {
@@ -100,40 +119,45 @@ function EventRow({ ev }: { ev: CalEvent }) {
   const monthShort = d.toLocaleDateString('de-DE', { month: 'short' })
   const badge   = badgeCfg[ev.type]
   const isTurnier = ev.type === 'turnier'
+  const isVereinstermin = ev.type === 'vereinstermin-verein' || ev.type === 'vereinstermin-turnier'
 
-  return (
-    <div
-      data-cal-date={`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`}
-      className={`group relative flex items-center gap-5 rounded-[1.5rem] border bg-white/[0.02] px-5 py-4 sm:gap-6 sm:px-6 overflow-hidden ${
-        isTurnier
-          ? 'border-gold-500/20 hover:border-gold-500/40 hover:bg-gold-500/[0.04]'
-          : 'border-white/6 hover:border-white/12 hover:bg-white/[0.035]'
-      } transition-colors`}
-    >
-      {/* Linke Akzentlinie */}
-      <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${isTurnier ? 'bg-gold-500' : 'bg-white/10'}`} />
+  const borderCls = isTurnier
+    ? 'border-gold-500/20 hover:border-gold-500/40 hover:bg-gold-500/[0.04]'
+    : isVereinstermin
+      ? 'border-white/6 hover:border-gold-500/20 hover:bg-white/[0.035]'
+      : 'border-white/6 hover:border-white/12 hover:bg-white/[0.035]'
 
-      {/* Datum-Block */}
+  const accentCls = isTurnier ? 'bg-gold-500' : isVereinstermin ? 'bg-green-700' : 'bg-white/10'
+  const monthCls  = isTurnier ? 'text-gold-500' : 'text-white/60'
+  const titleCls  = isTurnier ? 'text-gold-300' : 'text-white'
+
+  const inner = (
+    <>
+      <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${accentCls}`} />
       <div className="flex w-14 shrink-0 flex-col items-center text-center rounded-xl py-1">
         <span className="text-[0.65rem] text-white/60 uppercase tracking-wide">{weekday}</span>
         <span className="text-2xl font-black text-white leading-none">{day}</span>
-        <span className={`text-xs uppercase ${isTurnier ? 'text-gold-500' : 'text-white/60'}`}>{monthShort}</span>
+        <span className={`text-xs uppercase ${monthCls}`}>{monthShort}</span>
       </div>
-
       <div className="w-px self-stretch bg-white/10" />
-
-      {/* Inhalt */}
       <div className="flex-1 min-w-0">
         <div className="mb-1.5 flex flex-wrap items-center gap-2">
           <Badge variant={badge.variant}>{badge.label}</Badge>
           <span className="text-xs text-white/70 tabular-nums">{ev.time}</span>
         </div>
-        <p className={`font-bold leading-tight ${isTurnier ? 'text-gold-300' : 'text-white'}`}>
-          {ev.title}
-        </p>
+        <p className={`font-bold leading-tight ${titleCls}`}>{ev.title}</p>
         <p className="mt-0.5 text-xs text-white/70">{ev.note}</p>
       </div>
-    </div>
+    </>
+  )
+
+  const wrapperCls = `group relative flex items-center gap-5 rounded-[1.5rem] border bg-white/[0.02] px-5 py-4 sm:gap-6 sm:px-6 overflow-hidden ${borderCls} transition-colors`
+  const dataAttr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  return ev.slug ? (
+    <a href={`/news/${ev.slug}`} data-cal-date={dataAttr} className={wrapperCls}>{inner}</a>
+  ) : (
+    <div data-cal-date={dataAttr} className={wrapperCls}>{inner}</div>
   )
 }
 
@@ -143,8 +167,8 @@ function MonthBlock({ year, month, today }: { year: number; month: number; today
   if (events.length === 0) return null
 
   const monthName = new Date(year, month, 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })
-  const trainingCount = events.filter(e => e.type !== 'turnier').length
-  const turnierCount  = events.filter(e => e.type === 'turnier').length
+  const trainingCount = events.filter(e => e.type === 'training' || e.type === 'probetraining').length
+  const turnierCount  = events.filter(e => e.type === 'turnier' || e.type === 'vereinstermin-turnier').length
 
   return (
     <div className="overflow-hidden rounded-[1.75rem] border border-white/6">

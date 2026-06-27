@@ -6,7 +6,7 @@ import SectionHeading from '@/components/ui/SectionHeading'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { getNextMittwochsturnier, getNextTrainingDays } from '@/lib/turnier-utils'
-import { mannschaften } from '@/lib/data'
+import { mannschaften, vereinstermine, type Vereinstermin } from '@/lib/data'
 
 // ─── Typen ───────────────────────────────────────────────────────────────────
 
@@ -24,7 +24,13 @@ type SpieltagEntry = {
   heimspiel: boolean
 }
 
-type Entry = RegularEntry | SpieltagEntry
+type VereinsterminEntry = {
+  kind: 'vereinstermin'
+  date: Date
+  data: Vereinstermin
+}
+
+type Entry = RegularEntry | SpieltagEntry | VereinsterminEntry
 
 // ─── Konfiguration reguläre Zeilen ───────────────────────────────────────────
 
@@ -85,6 +91,14 @@ function computeEntries(): Entry[] {
     { kind: 'regular', date: turnier, type: 'turnier' },
     ...trainings.map((t): Entry => ({ kind: 'regular', date: t.date, type: t.type })),
   ]
+
+  // Sondertermine (JHV, Vereinsmeisterschaft …) – nur kommende Termine
+  for (const v of vereinstermine) {
+    const d = new Date(v.date + 'T00:00:00')
+    if (d >= today) {
+      entries.push({ kind: 'vereinstermin', date: d, data: v })
+    }
+  }
 
   // Nächster offener Spieltag je Mannschaft
   for (const m of mannschaften) {
@@ -179,6 +193,41 @@ function SpieltagRow({ entry }: { entry: SpieltagEntry }) {
   )
 }
 
+function VereinsterminRow({ entry }: { entry: VereinsterminEntry }) {
+  const { wd, day, month } = dateParts(entry.date)
+  const v = entry.data
+  const badgeVariant: 'gold' | 'neutral' = v.badge === 'Turnier' ? 'gold' : 'neutral'
+
+  const inner = (
+    <>
+      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-green-700" />
+      <div className="flex w-14 shrink-0 flex-col items-center text-center rounded-xl py-1">
+        <span className="text-xs text-white/60 uppercase tracking-wide">{wd}</span>
+        <span className="text-2xl font-black text-white leading-none">{day}</span>
+        <span className="text-xs uppercase text-white/60">{month}</span>
+      </div>
+      <div className="w-px self-stretch bg-white/10" />
+      <div className="flex-1 min-w-0">
+        <div className="mb-2 flex flex-wrap items-center gap-3">
+          <Badge variant={badgeVariant}>{v.badge}</Badge>
+          <span className="text-xs text-white/70">{v.time}</span>
+        </div>
+        <h3 className="truncate font-bold text-white transition-colors group-hover:text-gold-400">
+          {v.title}
+        </h3>
+        <p className="mt-0.5 text-xs text-white/65">{v.note}</p>
+      </div>
+      <span aria-hidden="true" className="text-lg text-white/50 transition-all group-hover:translate-x-1 group-hover:text-gold-500">→</span>
+    </>
+  )
+
+  const className = 'group relative flex items-center gap-5 rounded-[1.5rem] border border-white/6 bg-white/[0.02] px-5 py-5 transition-all sm:gap-6 sm:px-6 overflow-hidden hover:border-gold-500/20 hover:bg-white/[0.035]'
+
+  return v.slug
+    ? <a href={`/news/${v.slug}`} className={className}>{inner}</a>
+    : <div className={className}>{inner}</div>
+}
+
 // ─── Section ──────────────────────────────────────────────────────────────────
 
 export default function EventsSection() {
@@ -203,11 +252,11 @@ export default function EventsSection() {
               <div key={i} className="h-[88px] rounded-[1.5rem] border border-white/6 bg-white/[0.02] animate-pulse" />
             ))
           ) : (
-            entries.map((e, i) =>
-              e.kind === 'spieltag'
-                ? <SpieltagRow key={i} entry={e} />
-                : <RegularRow  key={i} date={e.date} type={e.type} />
-            )
+            entries.map((e, i) => {
+              if (e.kind === 'spieltag')      return <SpieltagRow      key={i} entry={e} />
+              if (e.kind === 'vereinstermin') return <VereinsterminRow key={i} entry={e} />
+              return <RegularRow key={i} date={e.date} type={e.type} />
+            })
           )}
         </div>
       </Container>
