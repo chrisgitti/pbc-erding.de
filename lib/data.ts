@@ -30,11 +30,11 @@ export const news: NewsItem[] = [
     id: '15',
     title: 'Vereinsmeisterschaft 2026 – Seppi Bendl ist Vereinsmeister',
     excerpt:
-      'Im Anschluss an die JHV: 8 Teilnehmer, Jeder gegen Jeden in 8-Ball, 9-Ball und 14.1 endlos – Josef „Seppi" Bendl gewinnt mit 18 Punkten und 72 % Quote die Vereinsmeisterschaft 2026.',
+      'Im Anschluss an die JHV: 8 Teilnehmer, Jeder gegen Jeden im 10-Ball auf 4 Gewinnspiele – Josef „Seppi" Bendl gewinnt mit 18 Punkten und 72 % Quote die Vereinsmeisterschaft 2026.',
     date: '2026-06-27',
     category: 'Turnier',
     slug: 'vereinsmeisterschaft-2026',
-    content: `Im Anschluss an die Jahreshauptversammlung am 27. Juni 2026 wurde im Bowling Castle Erding die diesjährige Vereinsmeisterschaft des PBC Erding ausgetragen. Acht Teilnehmer traten ab ca. 14:30 Uhr im „Jeder-gegen-Jeden"-Modus an – gespielt wurde 8-Ball, 9-Ball und 14.1 endlos.
+    content: `Im Anschluss an die Jahreshauptversammlung am 27. Juni 2026 wurde im Bowling Castle Erding die diesjährige Vereinsmeisterschaft des PBC Erding ausgetragen. Acht Teilnehmer traten ab ca. 14:30 Uhr im „Jeder-gegen-Jeden"-Modus an – gespielt wurde 10-Ball auf 4 Gewinnspiele.
 
 Nach sieben Runden stand der Vereinsmeister fest:
 
