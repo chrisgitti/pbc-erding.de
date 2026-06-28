@@ -2023,10 +2023,10 @@ let _aiPotRefineSims = 0;
 // schwere Direktstöße oder Banks über die LANGE Bande übernehmen.
 const AI_BANK_SHORTRAIL_SIDE_MAXDIST = 230; // max. Abstand Objektkugel → gebankte kurze Bande
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.10";
+const AI_BUILD = "S3.11";
 // App-Version (eigenständig von der KI-Build-Kennung). Bei jedem Release erhöhen.
 // © 2026 Christian Weber / PBC Erding.
-const APP_VERSION = "1.0.5";
+const APP_VERSION = "1.0.6";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07c KI-Spielstärke-Handicap (stufenlose Abschwächung der beiden oberen Stufen) ──
@@ -4208,59 +4208,37 @@ function handleDrill15Shot() {
 //   Ball-in-Hand.
 function handleEndlessDrillShot() {
   const cuePotted = game.ballsPottedThisShot.includes(0);
-  const headNum = game.endlessHeadBall;
-  const footNum = game.endlessFootBall;
-  const headPotted = headNum !== null && game.ballsPottedThisShot.includes(headNum);
-  const footPotted = footNum !== null && game.ballsPottedThisShot.includes(footNum);
+  // Die aktuell zu spielende Kugel ergibt sich aus dem aktiven Spot (Kopf/Fuß).
+  const activeSpot = game.endlessActiveSpot;
+  const activeNum  = activeSpot === "head" ? game.endlessHeadBall : game.endlessFootBall;
+  // game.firstHit ist die Nummer der zuerst getroffenen Kugel (oder null) — KEIN Objekt.
+  const firstHitNum   = game.firstHit;
+  const activeHitFirst = activeNum !== null && firstHitNum === activeNum;
+  const activePotted   = activeNum !== null && game.ballsPottedThisShot.includes(activeNum);
 
-  // Foul: Weiße versenkt → beide Spots erneuern (verbrauchen), Ball-in-Hand.
+  // Bewertung: Punkt nur bei sauberem Versenken der aktiven Kugel (zuerst getroffen).
   if (cuePotted) {
     game.endlessScore--;
-    game.endlessShots++;
     game.foulMessage = "Weiße versenkt – 1 Punkt Abzug.";
     game.foulTimer = 240;
-    endlessConsumeSpot("head");
-    endlessConsumeSpot("foot");
-    if (game.endlessShots >= 15) { endEndlessRound(); return; }
-    return;
-  }
-
-  // First-Hit auf Spot mappen (anhand der aktuellen Spot-Kugelnummern)
-  const firstHitNum = game.firstHit ? game.firstHit.num : null;
-  let hitSpot = null;
-  if (firstHitNum !== null && firstHitNum === headNum) hitSpot = "head";
-  else if (firstHitNum !== null && firstHitNum === footNum) hitSpot = "foot";
-
-  // Kein Treffer auf eine Spot-Kugel → verfehlter Stoß, Spots bleiben.
-  if (hitSpot === null) {
-    game.endlessShots++;
-    game.foulMessage = "Kein Treffer – Stoß zählt als verfehlt.";
-    game.foulTimer = 180;
-    if (game.endlessShots >= 15) { endEndlessRound(); return; }
-    return;
-  }
-
-  // Reihenfolge prüfen — die Sequenz ist zwingend 1 → 2 → 3 → … → 15
-  const wrongOrder = game.endlessActiveSpot !== hitSpot;
-
-  // Punkt zählen, wenn die angespielte Spot-Kugel versenkt wurde UND korrekte Reihenfolge
-  const spotPotted = (hitSpot === "head" && headPotted) || (hitSpot === "foot" && footPotted);
-  if (spotPotted && !wrongOrder) {
+  } else if (activeHitFirst && activePotted) {
     game.endlessPotted++;
     game.endlessScore++;
-  } else if (wrongOrder) {
-    game.foulMessage = "Falsche Reihenfolge – Stoß zählt nicht.";
-    game.foulTimer = 240;
+  } else if (!activeHitFirst) {
+    game.foulMessage = "Aktive Kugel nicht zuerst getroffen.";
+    game.foulTimer = 180;
   }
 
-  // Angespielte Spot-Kugel wird IMMER verbraucht (versenkt oder verfehlt)
-  endlessConsumeSpot(hitSpot);
-  // Falls die andere Spot-Kugel zufällig auch mit versenkt wurde, auch ersetzen
-  const otherSpot = hitSpot === "head" ? "foot" : "head";
-  const otherPotted = otherSpot === "head" ? headPotted : footPotted;
-  if (otherPotted) endlessConsumeSpot(otherSpot);
+  // Kernregel: Die aktuell gespielte Kugel verlässt IMMER den Tisch (versenkt
+  // ODER verschossen) und wird sofort durch die nächste Kugelnummer auf demselben
+  // Spot ersetzt — Kopf: 1 → 3 → 5 …, Fuß: 2 → 4 → 6 …, insgesamt zwingend 1..15.
+  endlessConsumeSpot(activeSpot);
+  // Falls die andere Spot-Kugel zufällig mit versenkt wurde, auch ersetzen.
+  const otherSpot = activeSpot === "head" ? "foot" : "head";
+  const otherNum  = otherSpot === "head" ? game.endlessHeadBall : game.endlessFootBall;
+  if (otherNum !== null && game.ballsPottedThisShot.includes(otherNum)) endlessConsumeSpot(otherSpot);
 
-  // Nächste Reihenfolge: andere Seite
+  // Nächste Reihenfolge: andere Seite (Kopf ↔ Fuß)
   game.endlessActiveSpot = otherSpot;
   game.endlessShots++;
 
