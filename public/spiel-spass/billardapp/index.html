@@ -1263,7 +1263,7 @@
       </div>
     </div>
 
-    <div class="menu-section">
+    <div class="menu-section" id="aiShotDelaySection" style="display:none;">
       <h3>KI-Stoßverzögerung</h3>
       <div class="physics-sliders">
         <label class="slider-row">
@@ -1274,7 +1274,7 @@
       </div>
     </div>
 
-    <div class="menu-section">
+    <div class="menu-section" id="aiComputeBudgetSection" style="display:none;">
       <h3>KI-Rechenzeit</h3>
       <div class="physics-sliders">
         <label class="slider-row">
@@ -11809,6 +11809,10 @@ bindOptions(ui.optVariant, v => {
   if (ui.aiSection) ui.aiSection.style.display = (isPool && game.mode === "ai") ? "" : "none";
   const aiStrSec = document.getElementById("aiStrengthSection");
   if (aiStrSec) aiStrSec.style.display = (isPool && game.mode === "ai") ? "" : "none";
+  const aiDelaySec = document.getElementById("aiShotDelaySection");
+  if (aiDelaySec) aiDelaySec.style.display = (isPool && game.mode === "ai") ? "" : "none";
+  const aiCompSec = document.getElementById("aiComputeBudgetSection");
+  if (aiCompSec) aiCompSec.style.display = (isPool && game.mode === "ai") ? "" : "none";
   const rack9sec = document.getElementById("rack9Section");
   if (rack9sec) rack9sec.style.display = (v === "9ball") ? "" : "none";
   // Mini-Kugelanzahl-Abschnitt
@@ -11830,6 +11834,10 @@ bindOptions(ui.optMode, v => {
   ui.aiSection.style.display = (v === "ai") ? "" : "none";
   const aiStrSec = document.getElementById("aiStrengthSection");
   if (aiStrSec) aiStrSec.style.display = (v === "ai") ? "" : "none";
+  const aiDelaySec = document.getElementById("aiShotDelaySection");
+  if (aiDelaySec) aiDelaySec.style.display = (v === "ai") ? "" : "none";
+  const aiCompSec = document.getElementById("aiComputeBudgetSection");
+  if (aiCompSec) aiCompSec.style.display = (v === "ai") ? "" : "none";
   updateSetsVisibility();
 });
 updateSetsVisibility();
