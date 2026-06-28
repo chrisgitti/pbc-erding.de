@@ -27,21 +27,47 @@ export type NewsItem = {
 
 export const news: NewsItem[] = [
   {
+    id: '15',
+    title: 'Vereinsmeisterschaft 2026 – Seppi Bendl ist Vereinsmeister',
+    excerpt:
+      'Im Anschluss an die JHV: 8 Teilnehmer, Jeder gegen Jeden in 8-Ball, 9-Ball und 14.1 endlos – Josef „Seppi" Bendl gewinnt mit 18 Punkten und 72 % Quote die Vereinsmeisterschaft 2026.',
+    date: '2026-06-27',
+    category: 'Turnier',
+    slug: 'vereinsmeisterschaft-2026',
+    content: `Im Anschluss an die Jahreshauptversammlung am 27. Juni 2026 wurde im Bowling Castle Erding die diesjährige Vereinsmeisterschaft des PBC Erding ausgetragen. Acht Teilnehmer traten ab ca. 14:30 Uhr im „Jeder-gegen-Jeden"-Modus an – gespielt wurde 8-Ball, 9-Ball und 14.1 endlos.
+
+Nach sieben Runden stand der Vereinsmeister fest:
+
+Endstand:
+– Platz 1: Josef „Seppi" Bendl 🥇 – 18 Punkte (6 Siege / 1 Niederlage · 72 %)
+– Platz 2: Johann Grailach 🥈 – 15 Punkte (5 / 2 · 51 %)
+– Platz 3: Robert Flaxl 🥉 – 12 Punkte (4 / 3 · 57 %)
+– Platz 4: Urban Baumschlager – 12 Punkte (4 / 3 · 55 %)
+– Platz 5: Markus Merz – 12 Punkte (4 / 3 · 49 %)
+– Platz 6: Felix Hecht – 9 Punkte (3 / 4 · 50 %)
+– Platz 7: Patrick Mittermüller – 3 Punkte (1 / 6 · 35 %)
+– Platz 8: Björn Haase – 3 Punkte (1 / 6 · 33 %)
+
+Mit einer Quote von 72 % und 26:10 Gewinnsätzen unterstrich Seppi seine Dominanz an diesem Tag. Hinter ihm war das Mittelfeld eng beisammen: Die Plätze 3 bis 5 trennten bei punktegleichen 12 Zählern nur die Gewinnsatzdifferenzen.
+
+Herzlichen Glückwunsch dem neuen Vereinsmeister und allen Platzierten – sowie ein Dank an die Organisatoren und das Team des Bowling Castle Erding für den reibungslosen Ablauf!`,
+  },
+  {
     id: '14',
     title: 'Jahreshauptversammlung 2026 – Weißwurstfrühstück, JHV und Vereinsmeisterschaft',
     excerpt:
-      'Am Samstag, 27. Juni 2026: 10:00 Uhr gemeinsames Weißwurstfrühstück, 11:30 Uhr Jahreshauptversammlung, im Anschluss Vereinsmeisterschaft im Bowling Castle Erding.',
+      'Am Samstag, 27. Juni 2026: 10:00 Uhr Weißwurstfrühstück und Jahreshauptversammlung in Jimmys Restaurant am Eisstadion, im Anschluss Vereinsmeisterschaft im Bowling Castle Erding.',
     date: '2026-06-27',
     category: 'Verein',
     slug: 'jahreshauptversammlung-2026',
-    content: `Die diesjährige Jahreshauptversammlung des Pool Billard Club Erding e.V. findet am Samstag, 27. Juni 2026, im Bowling Castle Erding statt.
+    content: `Die diesjährige Jahreshauptversammlung des Pool Billard Club Erding e.V. fand am Samstag, 27. Juni 2026, in Jimmys Restaurant am Eisstadion statt. Im Anschluss ging es zur Vereinsmeisterschaft ins Bowling Castle Erding.
 
 Ablauf:
-– 10:00 Uhr: Gemeinsames Weißwurstfrühstück
-– 11:30 Uhr: Jahreshauptversammlung
+– 10:00 Uhr: Gemeinsames Weißwurstfrühstück (Jimmys Restaurant am Eisstadion)
+– 11:30 Uhr: Jahreshauptversammlung (Jimmys Restaurant am Eisstadion)
 – Im Anschluss: Vereinsmeisterschaft im Bowling Castle Erding
 
-Alle Mitglieder sind herzlich eingeladen – wir freuen uns auf einen Tag mit Rückblick, Vereinsleben und sportlichem Wettkampf.`,
+Ein Tag mit Rückblick, Vereinsleben und sportlichem Wettkampf – danke an alle Mitglieder, die dabei waren.`,
   },
   {
     id: '13',
@@ -715,6 +741,7 @@ export type ChronikEntry = {
 
 export const chronik: ChronikEntry[] = [
   // 2026
+  { title: 'Vereinsmeisterschaft 2026 – Seppi Bendl ist Vereinsmeister',               date: '2026-06-27', slug: 'vereinsmeisterschaft-2026'           },
   { title: 'Jahreshauptversammlung 2026 – Weißwurstfrühstück, JHV und Vereinsmeisterschaft', date: '2026-06-27', slug: 'jahreshauptversammlung-2026'      },
   { title: 'Mittwoch-Cup Juni – Markus Merz holt den Sieg',                            date: '2026-06-24', slug: 'mittwoch-cup-juni-2026'              },
   { title: 'Mittwoch-Cup Mai – Ludwig „Lucki" Weidinger gewinnt',                       date: '2026-05-27', slug: 'mittwoch-cup-mai-2026'                },
@@ -788,9 +815,9 @@ export const vereinstermine: Vereinstermin[] = [
     date:     '2026-06-27',
     title:    'Jahreshauptversammlung 2026',
     time:     '10:00 Uhr Weißwurstfrühstück · 11:30 Uhr Versammlung',
-    location: 'Bowling Castle Erding',
+    location: 'Jimmys Restaurant am Eisstadion',
     badge:    'Verein',
-    note:     'Mit anschließender Vereinsmeisterschaft',
+    note:     'Jimmys Restaurant am Eisstadion · anschließend Vereinsmeisterschaft im Bowling Castle',
     slug:     'jahreshauptversammlung-2026',
   },
   {

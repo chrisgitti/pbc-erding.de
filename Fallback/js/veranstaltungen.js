@@ -10,7 +10,7 @@
       date:  '2026-06-27',
       title: 'Jahreshauptversammlung 2026',
       time:  '10:00 Uhr Weißwurstfrühstück · 11:30 Uhr Versammlung',
-      note:  'Mit anschließender Vereinsmeisterschaft',
+      note:  'Jimmys Restaurant am Eisstadion · anschließend Vereinsmeisterschaft im Bowling Castle',
       badge: 'verein',
       slug:  'jahreshauptversammlung-2026'
     },
