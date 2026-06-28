@@ -1796,7 +1796,7 @@ const game = {
   // Endlosdrill: Kugeln 1..15 nacheinander in numerischer Reihenfolge auf
   // Kopf-/Fußpunkt (1+2 Start, dann 3,4,5,... bis 15). 15 Stöße pro Runde.
   endlessShots: 0, endlessPotted: 0, endlessRound: 1, endlessScore: 0,
-  endlessActiveSpot: null,   // 'head' | 'foot' | null (null = erste Spot-Wahl frei)
+  endlessActiveSpot: "head", // 'head' | 'foot' — Reihenfolge ist zwingend 1, 2, 3, ..., 15
   endlessHeadBall: 1,        // welche Kugelnummer liegt aktuell auf dem Kopfpunkt
   endlessFootBall: 2,        // welche Kugelnummer liegt aktuell auf dem Fußpunkt
   endlessNextBall: 3,        // nächste Kugelnummer, die respawned werden soll
@@ -3058,7 +3058,7 @@ function setupEndlessDrill() {
   const fp = endlessSpotPos("foot");
   const b2 = game.balls.find(b => b.num === 2);
   b2.x = fp.x; b2.y = fp.y; b2.inPlay = true; b2.motionState = "resting";
-  game.endlessActiveSpot = null;
+  game.endlessActiveSpot = "head";   // Kugel 1 muss zuerst gespielt werden
   game.placingCue = true;
   game.ballInHand = true;
   game.kitchenOnly = false;
@@ -4240,8 +4240,8 @@ function handleEndlessDrillShot() {
     return;
   }
 
-  // Reihenfolge prüfen (außer beim ersten Stoß = freie Wahl)
-  const wrongOrder = game.endlessActiveSpot !== null && game.endlessActiveSpot !== hitSpot;
+  // Reihenfolge prüfen — die Sequenz ist zwingend 1 → 2 → 3 → … → 15
+  const wrongOrder = game.endlessActiveSpot !== hitSpot;
 
   // Punkt zählen, wenn die angespielte Spot-Kugel versenkt wurde UND korrekte Reihenfolge
   const spotPotted = (hitSpot === "head" && headPotted) || (hitSpot === "foot" && footPotted);
@@ -12336,7 +12336,7 @@ ui.endRestart.addEventListener("click", () => {
     game.endlessRound++;
     game.endlessShots = 0;
     game.endlessPotted = 0;
-    game.endlessActiveSpot = null;
+    game.endlessActiveSpot = "head";
     game.endMessage = "";
     // Alle Kugeln zurück auf Anfangsstellung: head=1, foot=2, next=3
     game.endlessHeadBall = null;
@@ -12666,15 +12666,9 @@ function updateUI() {
   } else if (game.variant === "endlessDrill" && game.placingCue) {
     ui.statusLine.textContent = `Runde ${game.endlessRound} · Ball-in-Hand – Weiße frei platzieren`;
   } else if (game.variant === "endlessDrill") {
-    let next;
-    if (game.endlessActiveSpot === null) {
-      const h = game.endlessHeadBall, f = game.endlessFootBall;
-      next = (h !== null && f !== null) ? `Kugel ${h} (Kopf) oder ${f} (Fuß) wählen` : "Spot-Kugel wählen";
-    } else {
-      const num = game.endlessActiveSpot === "head" ? game.endlessHeadBall : game.endlessFootBall;
-      const spotLabel = game.endlessActiveSpot === "head" ? "Kopfpunkt" : "Fußpunkt";
-      next = num !== null ? `Kugel ${num} am ${spotLabel}` : `${spotLabel} leer`;
-    }
+    const num = game.endlessActiveSpot === "head" ? game.endlessHeadBall : game.endlessFootBall;
+    const spotLabel = game.endlessActiveSpot === "head" ? "Kopfpunkt" : "Fußpunkt";
+    const next = num !== null ? `Kugel ${num} am ${spotLabel}` : `${spotLabel} leer`;
     ui.statusLine.textContent = `Runde ${game.endlessRound} · Stoß ${game.endlessShots + 1}/15 · Versenkt: ${game.endlessPotted} · Punkte: ${game.endlessScore} · ${next}`;
   } else if (game.mode === "solo") {
     ui.statusLine.textContent = "Übungsmodus – versenke so viele Kugeln wie möglich";
@@ -12867,7 +12861,7 @@ function newGame() {
   game.drill15Potted = 0; game.drill15Shots = 0; game.drill15NextBall = 1; game.drill15Rotated = false;
   game.drill15Score = 0; game.drill15FromKitchen = false;
   game.endlessShots = 0; game.endlessPotted = 0; game.endlessRound = 1; game.endlessScore = 0;
-  game.endlessActiveSpot = null;
+  game.endlessActiveSpot = "head";
   game.endlessHeadBall = 1; game.endlessFootBall = 2; game.endlessNextBall = 3;
   game.basisShots = 0;
   game.basisRepeatMode = false; game.basisCueSaveX = 0; game.basisCueSaveY = 0;
