@@ -2023,10 +2023,10 @@ let _aiPotRefineSims = 0;
 // schwere Direktstöße oder Banks über die LANGE Bande übernehmen.
 const AI_BANK_SHORTRAIL_SIDE_MAXDIST = 230; // max. Abstand Objektkugel → gebankte kurze Bande
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.14";
+const AI_BUILD = "S3.15";
 // App-Version (eigenständig von der KI-Build-Kennung). Bei jedem Release erhöhen.
 // © 2026 Christian Weber / PBC Erding.
-const APP_VERSION = "1.0.9";
+const APP_VERSION = "1.0.10";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07c KI-Spielstärke-Handicap (stufenlose Abschwächung der beiden oberen Stufen) ──
@@ -3490,6 +3490,15 @@ function buildSnapshot() {
       z: b.z, vz: b.vz,
       inPlay: b.inPlay, motionState: b.motionState
     })),
+    // Stoß-Eingaben: damit "Zurück" denselben Stoß exakt wiederherstellt
+    // (Zielwinkel, Stärke, Queue-Treffpunkt = Effet/Nachlauf/Rücklauf, Elevation, Queue).
+    aimAngle: game.aimAngle,
+    aimActive: game.aimActive,
+    powerPercent: game.powerPercent,
+    spinX: game.spinX,
+    spinY: game.spinY,
+    cueElevation: game.cueElevation,
+    cueType: game.cueType,
     currentPlayer: game.currentPlayer,
     open8ball: game.open8ball,
     ballInHand: game.ballInHand,
@@ -3540,6 +3549,14 @@ function applySnapshot(s) {
     b.inPlay = saved.inPlay; b.motionState = saved.motionState;
   }
   game.cueBall = game.balls.find(b => b.isCue) || null;
+  // Stoß-Eingaben exakt zurücksetzen (Determinismus: gleicher Stoß → gleiches Ergebnis).
+  if (s.aimAngle     !== undefined) game.aimAngle     = s.aimAngle;
+  if (s.aimActive    !== undefined) game.aimActive    = s.aimActive;
+  if (s.powerPercent !== undefined) game.powerPercent = s.powerPercent;
+  if (s.spinX        !== undefined) game.spinX        = s.spinX;
+  if (s.spinY        !== undefined) game.spinY        = s.spinY;
+  if (s.cueElevation !== undefined) game.cueElevation = s.cueElevation;
+  if (s.cueType      !== undefined) game.cueType      = s.cueType;
   game.currentPlayer    = s.currentPlayer;
   game.open8ball        = s.open8ball;
   game.ballInHand       = s.ballInHand;
@@ -3611,6 +3628,14 @@ function restoreTrainingRepeatSnapshot() {
 function restoreSnapshot() {
   if (!applySnapshot(game.lastSnapshot)) return;
   game.lastSnapshot = null;
+
+  // Stoß-Eingaben sind wiederhergestellt → Effet-/Elevation-/Stärke-Anzeige nachziehen,
+  // damit Queue-Treffpunkt (Effet/Nachlauf/Rücklauf) und Stärke korrekt dargestellt sind.
+  drawSpinCanvas(); updateSpinLabel();
+  drawElevCanvas(); updateElevLabel();
+  if (typeof syncSpinElevTab === "function") syncSpinElevTab();
+  if (typeof updateCueTypeHint === "function") updateCueTypeHint();
+  if (typeof updatePowerUI === "function") updatePowerUI();
 
   const btnPause = document.getElementById("btnPause");
   if (btnPause) btnPause.textContent = "⏸ Pause";
