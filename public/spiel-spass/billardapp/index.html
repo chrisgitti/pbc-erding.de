@@ -1302,6 +1302,14 @@
     </div>
 
     <div class="menu-section">
+      <h3>Erweiterter Debug-Modus</h3>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.8);cursor:pointer;">
+        <input type="checkbox" id="chkFullRecEnable">
+        Stoß-Recorder im Spiel verfügbar machen
+      </label>
+    </div>
+
+    <div class="menu-section">
       <h3>Tischprofil</h3>
       <div class="options" id="optTablePreset">
         <div class="opt" data-val="fast">Profiturniertisch</div>
@@ -1512,6 +1520,12 @@
           <input type="range" id="slAiStrengthIngame" min="0.5" max="1" step="0.01" value="1" style="flex:1;">
           <span id="lblAiStrengthIngame" style="width:36px;font-size:11px;text-align:right;">100 %</span>
         </label>
+      </div>
+
+      <div id="inGameDebugRec" style="display:none;margin-top:8px;">
+        <p class="panel-title">DEBUG-RECORDER</p>
+        <button id="btnFullRecToggle" style="width:100%;font-size:12px;">● Debug-Aufzeichnung starten</button>
+        <span id="lblFullRecCount" style="display:block;font-size:11px;text-align:center;color:rgba(255,255,255,0.6);margin-top:4px;"></span>
       </div>
     </div>
   </div>
@@ -2023,10 +2037,10 @@ let _aiPotRefineSims = 0;
 // schwere Direktstöße oder Banks über die LANGE Bande übernehmen.
 const AI_BANK_SHORTRAIL_SIDE_MAXDIST = 230; // max. Abstand Objektkugel → gebankte kurze Bande
 // Build-Kennung – erscheint im KI-Debug-Overlay, damit der geladene Stand eindeutig ist.
-const AI_BUILD = "S3.15";
+const AI_BUILD = "S3.16";
 // App-Version (eigenständig von der KI-Build-Kennung). Bei jedem Release erhöhen.
 // © 2026 Christian Weber / PBC Erding.
-const APP_VERSION = "1.0.10";
+const APP_VERSION = "1.0.11";
 function aiIsHardenedProfi(prof = aiGetProfile()) { return (prof?.searchDepth ?? 0) >= AI_HARD_MODE_DEPTH; }
 
 // ── 07c KI-Spielstärke-Handicap (stufenlose Abschwächung der beiden oberen Stufen) ──
@@ -3190,6 +3204,7 @@ function resolveBallBallContact(a, c, nx, ny) {
 }
 
 function step() {
+  if (_fullRecMode && game.shotInProgress) _fullRecStepCount++;
   const balls = game.balls.filter(b => b.inPlay && !isTrainingVorratBall(b));
   let maxSpeed = 0;
   for (const b of balls) { const s = b.speed(); if (s > maxSpeed) maxSpeed = s; }
@@ -3767,9 +3782,11 @@ function startShot() {
       captureHumanShotPre();
     }
   }
+  if (_fullRecMode) fullRecPre();   // Ruhe-Zustand + Eingaben VOR dem Abschuss
   game.spinPending = { x: game.spinX, y: game.spinY, dirX, dirY, power, elevation: game.cueElevation, cueType: game.cueType, used: false };
   const cue = game.cueBall;
   launchCueBall(cue, dirX, dirY, power, game.spinX, game.spinY, game.cueElevation, game.cueType);
+  if (_fullRecMode) fullRecLaunch(shotAngle);   // Abschuss-Velocity (S0) NACH launchCueBall
   game.shotInProgress = true; game.state = "moving";
   scheduleShotSafety();
   resetCanvasZoom();
@@ -3804,6 +3821,7 @@ function onShotComplete() {
   // Debug: Stoß-Ergebnis VOR den Varianten-Handlern festhalten, weil Training/Basis
   // im Wiederholen-Modus die Weiße sofort zurücksetzen (→ travelDist wäre sonst 0).
   captureHumanShotPost();
+  if (_fullRecMode) { fullRecPost(); fullRecUpdateButton(); }
   if (game.variant === "8ball") handle8BallShot();
   else if (game.variant === "9ball") handle9BallShot();
   else if (game.variant === "drill15") handleDrill15Shot();
@@ -8890,6 +8908,119 @@ let _shotRecording = false;
 let _aiDebugTs = 0, _humanDebugTs = 0;
 let _debugOverlayUntil = 0;
 
+// ── Erweiterter Debug-Recorder (S3.16) ──────────────────────────────────────
+// Zeichnet ab Start JEDEN Stoß mit vollem Zustand (alle Kugeln, alle Eingaben,
+// Abschuss-Velocity, Ergebnis, Schrittanzahl) in hoher Präzision auf. Export beim
+// Beenden. Dient der Determinismus-Analyse (gleicher Stoß → gleiches Ergebnis?).
+let _fullRecEnabled  = false;   // in erweiterten Optionen freigeschaltet
+let _fullRecMode     = false;   // Aufzeichnung läuft (im Spiel gestartet)
+let _fullRecLog      = [];
+let _fullRecCounter  = 0;
+let _fullRecStepCount = 0;
+
+// Alle Kugeln mit vollen physik-relevanten Feldern in hoher Präzision.
+function fullRecLayout() {
+  return (game.balls || [])
+    .filter(b => !isTrainingVorratBall(b))
+    .map(b => ({
+      num: b.num, isCue: !!b.isCue, inPlay: !!b.inPlay,
+      x: +b.x.toFixed(4), y: +b.y.toFixed(4),
+      vx: +b.vx.toFixed(5), vy: +b.vy.toFixed(5),
+      wx: +b.wx.toFixed(5), wy: +b.wy.toFixed(5), wz: +b.wz.toFixed(5),
+      z: +(b.z || 0).toFixed(4), vz: +(b.vz || 0).toFixed(5),
+      motionState: b.motionState
+    }));
+}
+
+// Pre-Zustand (Ruhe, vor Abschuss): Meta + alle Eingaben + vollständiges Layout.
+function fullRecPre() {
+  _fullRecCounter++;
+  const cue = game.cueBall;
+  _fullRecLog.push({
+    shot: _fullRecCounter,
+    ts: new Date().toISOString(),
+    build: AI_BUILD,
+    version: APP_VERSION,
+    variant: game.variant,
+    mode: game.mode,
+    player: game.currentPlayer,
+    pre: {
+      aimAngle: +(+game.aimAngle).toFixed(8),
+      powerPercent: +(+game.powerPercent).toFixed(4),
+      spinX: +(+game.spinX).toFixed(5),
+      spinY: +(+game.spinY).toFixed(5),
+      cueElevation: +(+(game.cueElevation || 0)).toFixed(5),
+      cueType: game.cueType || "playing",
+      cueX: cue ? +cue.x.toFixed(4) : null,
+      cueY: cue ? +cue.y.toFixed(4) : null,
+      layout: fullRecLayout()
+    },
+    launch: null,
+    post: null
+  });
+}
+
+// Launch-Zustand (S0, direkt nach launchCueBall): Schusswinkel + Abschuss-Velocity.
+function fullRecLaunch(shotAngle) {
+  _fullRecStepCount = 0;
+  const rec = _fullRecLog[_fullRecLog.length - 1];
+  if (!rec) return;
+  const cue = game.cueBall;
+  rec.launch = {
+    shotAngle: +(+shotAngle).toFixed(8),
+    cueVx: cue ? +cue.vx.toFixed(6) : null,
+    cueVy: cue ? +cue.vy.toFixed(6) : null,
+    cueWx: cue ? +cue.wx.toFixed(6) : null,
+    cueWy: cue ? +cue.wy.toFixed(6) : null,
+    cueWz: cue ? +cue.wz.toFixed(6) : null
+  };
+}
+
+// Post-Zustand (nach Stillstand): Ergebnis + Schrittanzahl + vollständiges Layout.
+function fullRecPost() {
+  const rec = _fullRecLog[_fullRecLog.length - 1];
+  if (!rec || rec.post) return;
+  rec.post = {
+    firstHit: (game.firstHit && (game.firstHit.num ?? game.firstHit)) ?? null,
+    potted: [...(game.ballsPottedThisShot || [])].map(b => (b && b.num != null) ? b.num : b),
+    cuePotted: !!game.cuePotted,
+    stepCount: _fullRecStepCount,
+    layout: fullRecLayout()
+  };
+}
+
+function fullRecExport() {
+  if (!_fullRecLog.length) return;
+  const data = { build: AI_BUILD, version: APP_VERSION, exportedAt: new Date().toISOString(), shotCount: _fullRecLog.length, shots: _fullRecLog };
+  const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `pool-fullrec-${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function fullRecUpdateButton() {
+  const btn = document.getElementById("btnFullRecToggle");
+  if (btn) btn.textContent = _fullRecMode ? "■ Aufzeichnung beenden & Export" : "● Debug-Aufzeichnung starten";
+  const lbl = document.getElementById("lblFullRecCount");
+  if (lbl) lbl.textContent = _fullRecMode ? `${_fullRecLog.length} Stöße aufgezeichnet` : "";
+}
+
+function setFullRecording(on) {
+  if (on) {
+    _fullRecMode = true;
+    _fullRecLog = [];
+    _fullRecCounter = 0;
+    _fullRecStepCount = 0;
+  } else {
+    _fullRecMode = false;
+    if (_fullRecLog.length) fullRecExport();
+  }
+  fullRecUpdateButton();
+}
+
 // Vollständige Tisch-Aufstellung (alle Kugelpositionen) als Momentaufnahme.
 function captureTableLayout() {
   return (game.balls || [])
@@ -11976,6 +12107,16 @@ document.getElementById("slAiStrengthIngame")?.addEventListener("input", functio
   saveMenuSettingsDebounced();
 });
 
+// ── Erweiterter Debug-Recorder: Freischaltung + Start/Stopp ───────────────────
+document.getElementById("chkFullRecEnable")?.addEventListener("change", function () {
+  _fullRecEnabled = this.checked;
+  if (!_fullRecEnabled && _fullRecMode) setFullRecording(false);
+  updateUI();
+});
+document.getElementById("btnFullRecToggle")?.addEventListener("click", () => {
+  setFullRecording(!_fullRecMode);
+});
+
 // ── Tischprofil-Presets ──────────────────────────────────────────────────────
 const TABLE_PRESETS = {
   // S3.0 (Punkt 7): Presets an die neuen, schnelleren Default-Physikwerte angepasst.
@@ -12776,6 +12917,11 @@ function updateUI() {
       if (_ttlI) _ttlI.textContent = game.difficulty === "hard" ? "KI-STÄRKE · PROFI" : "KI-STÄRKE · FORTG.";
     }
   }
+
+  // Erweiterter Debug-Recorder: In-Game-Bedienelement nur sichtbar, wenn in den
+  // erweiterten Optionen freigeschaltet.
+  const _dbgRec = document.getElementById("inGameDebugRec");
+  if (_dbgRec) _dbgRec.style.display = _fullRecEnabled ? "" : "none";
 
   _updateTimerDisplay();
   _updateExtendBtn();
