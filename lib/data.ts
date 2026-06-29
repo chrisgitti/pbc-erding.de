@@ -51,6 +51,9 @@ Endstand:
 Mit einer Quote von 72 % und 26:10 Gewinnsätzen unterstrich Seppi seine Dominanz an diesem Tag. Hinter ihm war das Mittelfeld eng beisammen: Die Plätze 3 bis 5 trennten bei punktegleichen 12 Zählern nur die Gewinnsatzdifferenzen.
 
 Herzlichen Glückwunsch dem neuen Vereinsmeister und allen Platzierten – sowie ein Dank an die Organisatoren und das Team des Bowling Castle Erding für den reibungslosen Ablauf!`,
+    images: [
+      { src: '2026-06-27.jpg', alt: 'Vereinsmeisterschaft 2026 – Treppchen: 1. Josef „Seppi" Bendl, 2. Johann Grailach, 3. Robert Flaxl' },
+    ],
   },
   {
     id: '14',
