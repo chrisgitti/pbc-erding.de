@@ -1167,6 +1167,33 @@
     <kbd>Alt</kbd>+<kbd>D</kbd> einschalten → mit <kbd>Alt</kbd>+<kbd>C</kbd> die geplante Aufstellung festhalten → Stoß ausführen. Der Datensatz enthält dann beides: die Aufstellung und Einstellungen <em>vor</em> dem Stoß und das tatsächliche Ergebnis <em>danach</em>. So lässt sich die Stoßwirkung exakt nachvollziehen und optimieren.
   </div>
 
+  <h4 id="s6-2-fullrec">Erweiterter Debug-Modus – Stoß-Recorder <span class="badge badge-gray">Entwickler</span></h4>
+  <p>Zusätzlich zum Tasten-Debug (<kbd>Alt</kbd>+<kbd>D</kbd>) gibt es einen <strong>erweiterten Debug-Modus</strong>, der <em>jeden</em> Stoß ab dem Start lückenlos und hochpräzise mitschreibt – App-Version, alle Kugelpositionen vor und nach dem Stoß, sämtliche Stoßeinstellungen, die Abschussgeschwindigkeit der Weißen sowie die Anzahl der berechneten Physikschritte. Beim Beenden wird alles gesammelt als eine JSON-Datei gespeichert. Besonders nützlich, um zu prüfen, ob <strong>derselbe Stoß auch wirklich immer dasselbe Ergebnis liefert</strong> (Reproduzierbarkeit).</p>
+  <p><strong>Einmalig aktivieren</strong> (Startmenü):</p>
+  <ol class="steps">
+    <li>Im Startmenü die <strong>Erweiterten Optionen</strong> aufklappen.</li>
+    <li>Unter <strong>„Erweiterter Debug-Modus"</strong> das Häkchen <em>„Stoß-Recorder im Spiel verfügbar machen"</em> setzen.</li>
+  </ol>
+  <p><strong>Aufzeichnen</strong> (im Spiel-Bildschirm):</p>
+  <ol class="steps">
+    <li>Im rechten Bedienfeld erscheint der Block <strong>„Debug-Recorder"</strong> mit der Schaltfläche <strong>● Debug-Aufzeichnung starten</strong>.</li>
+    <li>Starten – ab jetzt wird jeder Stoß protokolliert (ein Zähler zeigt die laufende Anzahl).</li>
+    <li>Beliebig viele Stöße ausführen; mit <strong>Zurück</strong> lässt sich derselbe Stoß mehrfach exakt wiederholen.</li>
+    <li><strong>■ Aufzeichnung beenden &amp; Export</strong> klicken – die Datei <code>pool-fullrec-DATUM-UHRZEIT.json</code> wird heruntergeladen.</li>
+  </ol>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Abschnitt je Stoß</th><th>Inhalt</th></tr>
+      <tr><td><strong>pre</strong></td><td>Ausgangsstellung im Ruhezustand: alle Eingaben (Zielwinkel, Stärke, Effet, Elevation, Queue) und alle Kugelpositionen.</td></tr>
+      <tr><td><strong>launch</strong></td><td>Der exakte Abschuss: Schusswinkel nach Deflektion und die Startgeschwindigkeit/-rotation der Weißen.</td></tr>
+      <tr><td><strong>post</strong></td><td>Nach dem Stillstand: erster Treffer, versenkte Kugeln, Anzahl der Physikschritte und alle Endpositionen.</td></tr>
+    </table>
+  </div>
+  <div class="tip">
+    <strong>💡 Wofür ist das gut?</strong>
+    Spieler-Stöße müssen immer exakt reproduzierbar sein (gleicher Stoß = gleiches Ergebnis) – zufällige Streuung gibt es ausschließlich bei der KI. Wiederholt man denselben Stoß über <strong>Zurück</strong>, müssen <strong>pre</strong> und <strong>launch</strong> bei allen Wiederholungen identisch sein und damit auch das <strong>post</strong>-Ergebnis. Weicht etwas ab, zeigt der Vergleich sofort, ob es an der Wiederherstellung oder an der Physik liegt.
+  </div>
+
   <h3 id="s6-3">6.3 KI-Ansage &amp; Vorschau <span class="badge badge-red">Profi</span></h3>
   <p>Nachdem die Profi-KI ihren Zug geplant hat, stellt sie Queue, Stoßstärke und Effét ein und <strong>wartet sichtbar</strong>, bevor der Stoß ausgelöst wird. In dieser Vorschauphase ist erkennbar, was die KI vorhat:</p>
   <ul>
