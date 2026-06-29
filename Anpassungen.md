@@ -13,7 +13,7 @@ Dokumentiert alle wesentlichen Änderungen an der Next.js-Website des Pool Billa
 ---
 
 <details>
-<summary><strong>Website – Phasen 1–22</strong></summary>
+<summary><strong>Website – Phasen 1–23</strong></summary>
 
 ## Phase 1 – Vorstand-Feedback (Robert) zur Startseite
 
@@ -1232,6 +1232,52 @@ Chronik-Eintrag ergänzt: `{ title: 'Mittwoch-Cup Mai – Ludwig „Lucki" Weidi
 
 ---
 
+## Phase 23 – Quiz-Sync ins Fallback, neue News-Artikel & Vereinstermine im Kalender (27.–29. Juni 2026)
+
+Quiz-App-Spiegelung in die Fallback-Variante, drei neue News-Artikel (Mittwoch-Cup Juni, JHV 2026, Vereinsmeisterschaft 2026) inkl. nachgepflegtem Mai-Cup im Fallback sowie ein neues `vereinstermine[]`-Pattern, mit dem Sondertermine (JHV, Vereinsmeisterschaft) erstmals im Kalender erscheinen — ohne die bisherige Build-Zeit-Logik der dynamischen Termine zu brechen.
+
+### 23.1  Quiz-App in Fallback-Variante übernommen
+
+**Dateien:** `Fallback/spiel-spass/quiz/`, `Fallback/links.html`, `.claude/skills/pbc-ed_fallback/SKILL.md`
+
+Die PBC-spezifische Standalone-Quiz-App (Single-Page, eigenes Logo, nur Pool-Billard-Thema) ist 1:1 aus `public/spiel-spass/quiz/` in `Fallback/spiel-spass/quiz/` gespiegelt — Pfad gleich, `index.html`, `logo_pbced.png`, `td_poolbillard.htm`, `tq_poolbillard.htm`, `media/`-Sounds und `scripts/quiz_tool.py`. In der Fallback-Links-Seite ist die Quiz-App analog zum Pendant in `lib/data.ts` (Gruppe „Spiel & Spaß") verlinkt. Der Fallback-Skill ist um einen Sync-Abschnitt erweitert (mit dem expliziten Hinweis, dass die Quiz-App im PBC-Repo selbst gepflegt wird und nicht aus `C:\Daten\Projects\quiz` kommt).
+
+### 23.2  News Mittwoch-Cup Juni 2026
+
+**Dateien:** `lib/data.ts`, `Fallback/news/mittwoch-cup-juni-2026.html`, `Fallback/index.html`, `Fallback/verein.html`
+
+Neuer Neuigkeiten-Artikel (id `'13'`) hinzugefügt: „Mittwoch-Cup Juni – Markus Merz holt den Sieg". 6 Teilnehmer, 8-Ball — Platz 1 Markus Merz (PBC Erding), Platz 2 Josef Bendl (BC 73 Pfeffenhausen), Platz 3 Johann Grailach (PBC Erding), Platz 4 Urban Baumschlager (PBC Erding). Nächster Termin: 29. Juli 2026. Chronik-Eintrag oben in 2026. Fallback: neue Artikel-HTML, News-Karte auf der Startseite, Chronik-Eintrag in `verein.html`.
+
+### 23.3  News Jahreshauptversammlung 2026 (Ort: Jimmys Restaurant am Eisstadion)
+
+**Dateien:** `lib/data.ts`, `Fallback/news/jahreshauptversammlung-2026.html`, `Fallback/index.html`, `Fallback/verein.html`
+
+Neuer Neuigkeiten-Artikel (id `'14'`): „Jahreshauptversammlung 2026 – Weißwurstfrühstück, JHV und Vereinsmeisterschaft" (27.06.2026). Ablauf: 10:00 Uhr Weißwurstfrühstück in Jimmys Restaurant am Eisstadion, 11:30 Uhr Jahreshauptversammlung am gleichen Ort, im Anschluss Vereinsmeisterschaft im Bowling Castle Erding. Initial wurde der Ort fälschlich Bowling Castle angegeben — Korrektur an fünf Stellen synchron (Next.js: `data.ts` + `vereinstermine[]`; Fallback: HTML-Artikel + index-Karte + JS-Sondertermine). Chronik-Eintrag oben in 2026.
+
+### 23.4  News Vereinsmeisterschaft 2026 (10-Ball auf 4 Gewinnspiele, Jeder gegen Jeden)
+
+**Dateien:** `lib/data.ts`, `Fallback/news/vereinsmeisterschaft-2026.html`, `Fallback/index.html`, `Fallback/verein.html`
+
+Neuer Neuigkeiten-Artikel (id `'15'`): „Vereinsmeisterschaft 2026 – Seppi Bendl ist Vereinsmeister" (27.06.2026). 8 Teilnehmer im Bowling Castle Erding, Jeder gegen Jeden, 10-Ball auf 4 Gewinnspiele. Endstand mit allen 8 Platzierungen, Siegen, Niederlagen und Prozentwerten. Platz 1 Josef „Seppi" Bendl 18 Punkte / 72 %, Platz 2 Johann Grailach 15 / 51 %, Platz 3–5 Robert Flaxl / Urban Baumschlager / Markus Merz je 12 Punkte (Tiebreak Gewinnsatzdifferenz). Initial wurde versehentlich „8-Ball, 9-Ball und 14.1 endlos" geschrieben — korrigiert auf 10-Ball auf 4 Gewinnspiele. Chronik-Eintrag oben in 2026.
+
+### 23.5  Vereinstermine: neues Pattern für Sondertermine im Kalender
+
+**Dateien:** `lib/data.ts`, `components/sections/EventsSection.tsx`, `app/veranstaltungen/page.tsx`, `Fallback/js/events.js`, `Fallback/js/veranstaltungen.js`
+
+Bisher kannte der Kalender nur dynamisch berechnete Termine (Trainings, Mittwochsturnier, Liga-Spieltage). Ad-hoc-Termine wie eine Jahreshauptversammlung waren nicht abbildbar. Neues schmales `vereinstermine[]`-Array in `lib/data.ts` mit Typ `Vereinstermin` (`date`, `title`, `time`, `location`, `badge: 'Verein' | 'Turnier'`, `note`, `slug?`).
+
+Die `EventsSection` der Startseite und die `MonthBlock`-Logik der Veranstaltungsseite lesen das Array, filtern `date >= today` und mischen die Sondertermine in die bestehenden Einträge — eigene Zeilen-Variante mit grünem Akzent, Badge „Verein"/„Turnier" und optionalem Link auf den passenden News-Artikel über den `slug`. Die Trainings-/Turnier-/Liga-Logik bleibt unverändert. In der Veranstaltungsseite werden die Sondertermine korrekt in die Trainings-/Turnier-Counter pro Monat einsortiert (`vereinstermin-turnier` wird als Turnier gezählt, `vereinstermin-verein` außerhalb der Zähler).
+
+Im Fallback dieselbe Logik in Vanilla-JS (`vereinstermine`-Array, in `computeEntries` der Startseite und in `buildMonthEvents` der Veranstaltungsseite eingemischt). Erste konkrete Einträge: Jahreshauptversammlung 2026 und Vereinsmeisterschaft 2026 (beide 27.06.2026).
+
+### 23.6  Fallback-Chronik: Mai-Cup nachgepflegt
+
+**Dateien:** `Fallback/news/mittwoch-cup-mai-2026.html`, `Fallback/verein.html`
+
+Im Zuge der Juni-News-Pflege wurde bemerkt, dass die Fallback-Chronik den Mai-Cup-Eintrag (27.05.2026) noch nicht enthielt — Artikel-HTML neu angelegt (Inhalt aus `lib/data.ts` id `'12'`) und Chronik-Eintrag in `verein.html` ergänzt. Die Mai-Saisonabschluss-News (Erding I/II/III, Bart Claessen) waren bereits dort.
+
+---
+
 ## Architektur & Seitenstruktur (Stand: Mai 2026)
 
 ### Technologie-Stack
@@ -1418,7 +1464,7 @@ ohne Build-Prozess, für Pflege ohne Next.js-Kenntnisse.
 ---
 
 <details>
-<summary><strong>Billard App – Phasen 1–19</strong></summary>
+<summary><strong>Billard App – Phasen 1–20</strong></summary>
 
 ## Phase 1 – Proof of Concept einer PBC Erding Billard-App integriert (1. Mai 2026)
 
@@ -2990,6 +3036,58 @@ Die 8-Ball-Pyramide lief auch bei voller Power und Break-Queue zu wenig auseinan
 | Banden-`eN`-Offset in `applyRailRebound` | `-0.14` | `-0.08` | Effektive eN-Baseline 0.82 statt 0.76 – realistischer für Pool-Banden, alle Banden-Kontakte |
 
 Die KI verwendet dieselbe Physik in ihren Simulationen, daher gilt das Tuning auch dort konsistent. Andere Physik-Konstanten (`CFG_FRICTION`, `CFG_ROLLING_DRAG`, `CFG_BALL_BOUNCE`, `MAX_POWER`) blieben unverändert.
+
+---
+
+## Phase 20 – Endlosdrill als neue Spielvariante & KI-Optionen aufgeräumt (28.–29. Juni 2026)
+
+Neue Spielvariante „Endlosdrill" für gezieltes Stellungsspiel-Training zwischen Kopf- und Fußpunkt, plus eine UI-Hygiene-Anpassung: die KI-Einstellungssektionen werden bei Solo-Varianten nicht mehr unnötig angezeigt.
+
+### 20.1  Spielvariante Endlosdrill — Konzept
+
+**Datei:** `pbc-pool-app/index.html`
+
+Auf dem Kopfpunkt liegt eine Kugel, auf dem Fußpunkt eine zweite. Der Spieler startet mit Ball-in-Hand am ganzen Tisch und versenkt die Kugeln abwechselnd — sobald eine Kugel den Spot verlässt (versenkt oder verfehlt), rückt sofort die nächste Kugelnummer aus dem Vorrat (3, 4, 5 …) auf den frei gewordenen Spot nach. Nach 15 Stößen sind alle Kugeln 1–15 einmal dran gewesen; ein Overlay zeigt „x von 15 versenkt · Punkte: y" und bietet einen Button „Endlos weiter" für die nächste Runde (Round-Zähler hochzählend, Score zurückgesetzt).
+
+Reihenfolge ist zwingend numerisch (1 → 2 → 3 → … → 15). Punktewertung: +1 für korrekt versenkte Spot-Kugel, 0 bei verfehlt oder falscher Reihenfolge (Stoß zählt trotzdem, angespielte Kugel wird ersetzt), −1 bei Weiße versenkt (Foul + Ball-in-Hand, beide Spots werden ersetzt).
+
+### 20.2  Implementierung analog zu drill15
+
+**Datei:** `pbc-pool-app/index.html`
+
+Eigene State-Maschine im `game`-Objekt: `endlessShots`, `endlessPotted`, `endlessRound`, `endlessScore`, `endlessActiveSpot` (`'head' | 'foot'`), `endlessHeadBall`, `endlessFootBall`, `endlessNextBall`. Setup-Funktion `setupEndlessDrill()`, Respawn-Funktion `endlessConsumeSpot(spot)` und Shot-Handler `handleEndlessDrillShot()` analog zur bestehenden `drill15`-Logik.
+
+Variant-Routing in `onShotComplete`, `timerDuration` (30 s wie drill15), `_onTimerExpired` (Stoß zählt als verfehlt), `newGame` und Snapshot Save/Restore erweitert. Für Solo-only-UI-Sichtbarkeit ist `endlessDrill` in den bestehenden Checks (`isPool`-Flag, `p2Box`-Visibility, Tisch-Drehen-Button, `setBadge`, `playerInfoText`) ergänzt — eigenes Badge-Symbol `∞` in Gold.
+
+### 20.3  Endlos-weiter-Button im End-Overlay
+
+**Datei:** `pbc-pool-app/index.html`
+
+`showEndScreen` erkennt `game.variant === "endlessDrill"` und beschriftet den primären End-Button mit „Endlos weiter" (statt „Nochmal"). Neuer `_endRestartMode = "endlessContinue"` umgeht im Click-Handler den `newGame`-Pfad und resettet nur die Runden-Counter (`endlessRound++`, `endlessShots=0`, `endlessPotted=0`, `endlessActiveSpot="head"`), stellt die Kugeln 1 und 2 wieder auf die Spots und gibt Ball-in-Hand. Der „Menü"-Button beendet wie gewohnt.
+
+### 20.4  Bugfix: Kugeln 1..15 sequenziell + verschossene Kugel sofort ersetzt
+
+**Datei:** `pbc-pool-app/index.html`
+
+Erste Implementierung verwendete Kugeln 1 und 2 zyklisch — verschossene Kugel blieb auf dem Tisch liegen und keine neue Kugel erschien. Korrigiert: alle 15 Kugeln werden vorbereitet; `endlessConsumeSpot(spot)` entfernt die aktuelle Spot-Kugel und stellt sofort `endlessNextBall++` auf den freigewordenen Spot. Statuszeile zeigt jetzt die konkrete Kugel-Nummer („Kugel 5 am Fußpunkt").
+
+### 20.5  Zwingende Anfangs-Reihenfolge: 1 zuerst (Kopfpunkt)
+
+**Datei:** `pbc-pool-app/index.html`
+
+Initial wurde „freie Wahl" zugelassen (`endlessActiveSpot = null`). Auf User-Klarstellung umgestellt: `endlessActiveSpot` startet zwingend mit `"head"`, der Spieler muss mit Kugel 1 (Kopfpunkt) beginnen. Damit ergibt sich die feste Reihenfolge 1, 2, 3, 4, …, 15. Falsche Reihenfolge zählt nicht als Treffer, Stoß ist trotzdem verbraucht und die angespielte Kugel wird ersetzt.
+
+### 20.6  Hilfe-Kapitel 1.3.3b „Endlosdrill"
+
+**Datei:** `pbc-pool-app/hilfe.html`
+
+Neues Kapitel 1.3.3b zwischen „15-Kugeln Drill" und „Basisübung" mit Zweck, Ablauf, Punktewertung und einem Lern-Block. Letzterer erläutert die vier klassischen Stoßarten am Drill (natürlicher Lauf, Nachlauf, Rücklauf, Positionsspiel über den ganzen Tisch). Kurzeintrag in der Spielmodus-Übersicht von Kapitel 2 ergänzt; Inhaltsverzeichnis aktualisiert.
+
+### 20.7  KI-Einstellungen nur bei KI-Modus + Pool-Variante
+
+**Datei:** `pbc-pool-app/index.html`
+
+Die Menü-Sektionen „KI-Stoßverzögerung" und „KI-Rechenzeit" waren bisher immer sichtbar, auch in 15-Kugeln-Drill, Endlosdrill, Basisübung und Training (Solo-only). Beide Sektionen haben jetzt eigene IDs (`aiShotDelaySection`, `aiComputeBudgetSection`), starten initial `display:none` und werden in den `bindOptions`-Callbacks von Variante und Modus mit derselben Bedingung wie `aiStrengthSection` ein-/ausgeblendet (`isPool && game.mode === "ai"`).
 
 ---
 
